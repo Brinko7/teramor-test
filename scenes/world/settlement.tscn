@@ -313,6 +313,12 @@ biome_path = "res://resources/world/biomes/deepwood.tres"
 tier = 2
 return_location = &"settlement_camp"
 
+[node name="CaveEntrance" parent="Entities" instance=ExtResource("30_explore")]
+position = Vector2(520, 380)
+biome_path = "res://resources/world/biomes/cave.tres"
+tier = 3
+return_location = &"settlement_camp"
+
 [node name="Waypoints" type="Node2D" parent="."]
 
 [node name="mara_post" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]

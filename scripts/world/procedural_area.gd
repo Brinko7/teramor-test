@@ -24,6 +24,14 @@ extends Node2D
 const EDGE := 24
 const GATE_MARGIN := 20.0
 const TREASURE_SCENE := preload("res://scenes/entities/treasure_chest.tscn")
+const GATHER_SCENE := preload("res://scenes/entities/gather_node.tscn")
+
+## Tints applied to gather nodes so materials read distinctly at a glance.
+const GATHER_TINTS := {
+	&"stone": Color(0.82, 0.82, 0.86),
+	&"iron_ore": Color(0.78, 0.62, 0.46),
+	&"crystal": Color(0.5, 0.85, 0.95),
+}
 
 var _rng := RandomNumberGenerator.new()
 var _entities: Node2D
@@ -58,6 +66,7 @@ func _ready() -> void:
 	_scatter_props()
 	_spawn_enemies()
 	_spawn_treasure()
+	_spawn_gather_nodes()
 	_build_gates()
 	_clamp_camera()
 
@@ -156,6 +165,28 @@ func _spawn_treasure() -> void:
 		for i in range(n):
 			items.append(pool[_rng.randi() % pool.size()])
 		chest.call("configure", items)
+
+## Scatter harvestable resource nodes (mining/foraging). Richer deeper in.
+func _spawn_gather_nodes() -> void:
+	if _biome.gather_paths.is_empty() or _biome.max_gather <= 0:
+		return
+	var count: int = _rng.randi_range(_biome.min_gather, maxi(_biome.min_gather, _biome.max_gather))
+	for i in range(count):
+		var path: String = _biome.gather_paths[_rng.randi() % _biome.gather_paths.size()]
+		if not ResourceLoader.exists(path):
+			continue
+		var item := load(path) as Item
+		if item == null:
+			continue
+		var node := GATHER_SCENE.instantiate()
+		if node is Node2D:
+			(node as Node2D).position = Vector2(
+				_rng.randi_range(EDGE + 24, world_width - EDGE - 24),
+				_rng.randi_range(EDGE + 24, world_height - EDGE - 24)
+			)
+		_entities.add_child(node)
+		var qty: int = 2 + _rng.randi_range(0, 1 + _tier / 2)
+		node.call("configure", item, qty, GATHER_TINTS.get(item.id, Color.WHITE))
 
 func _build_loot() -> Array:
 	var table: Array[Item] = []

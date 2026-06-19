@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/biome_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"cave"
+display_name = "The Undervault"
+ground_texture_path = "res://assets/placeholder/grass.png"
+ground_tint = Color(0.42, 0.44, 0.55, 1)
+enemy_paths = PackedStringArray("res://scenes/entities/enemy_brute.tscn", "res://scenes/entities/enemy.tscn", "res://scenes/entities/enemy_wolf.tscn")
+enemy_weights = PackedFloat32Array(3, 3, 2)
+prop_paths = PackedStringArray("res://scenes/entities/props/rock.tscn", "res://scenes/entities/props/crate.tscn", "res://scenes/entities/props/barrel.tscn")
+border_path = "res://scenes/entities/props/rock.tscn"
+loot_paths = PackedStringArray("res://resources/items/health_potion.tres", "res://resources/items/iron_ore.tres", "res://resources/items/crystal.tres")
+base_tier = 3
+min_enemies = 3
+max_enemies = 5
+min_props = 18
+max_props = 28
+gather_paths = PackedStringArray("res://resources/items/stone.tres", "res://resources/items/iron_ore.tres", "res://resources/items/crystal.tres")
+min_gather = 3
+max_gather = 6
