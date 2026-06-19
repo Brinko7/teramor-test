@@ -52,7 +52,7 @@ func _render() -> void:
 
 func interact(player) -> void:
 	_player = player
-	Dialogue.start_conversation([], _build_menu, "Farm Plot")
+	UIManager.dialogue.start_conversation([], _build_menu, "Farm Plot")
 
 func _build_menu() -> Dictionary:
 	var inv: Inventory = _bag()

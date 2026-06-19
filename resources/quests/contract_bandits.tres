@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"contract_bandits"
+category = 1
 title = "Toll of the Road"
 description = "Bandits are shaking down travelers on the south road. Cut down 4 of them."
 objective = 0

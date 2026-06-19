@@ -1,17 +1,12 @@
 extends CanvasLayer
 
-## Autoload `StorageUI`. The camp storage screen. A chest prop calls `open()`;
+## The camp storage screen, owned by `UIManager` (reach it as `UIManager.storage`).
+## A chest prop calls `open()`;
 ## the panel shows two columns — the player's Bag on the left and the shared camp
 ## Storage (StorageManager.stash) on the right. Clicking a row moves that whole
 ## stack across; a destination that can't hold it all keeps the remainder behind.
 ## Pauses gameplay while open, like the inventory and shop screens. Built in code,
 ## matching the other autoload-owned panels.
-
-const PANEL_BG := Color(0.164706, 0.12549, 0.094118, 0.980392)
-const BORDER := Color(0.482353, 0.337255, 0.188235, 1)
-const TEXT := Color(0.913725, 0.886275, 0.831373, 1)
-const ACCENT := Color(0.72, 0.62, 0.42, 1)
-const MUTED := Color(0.7, 0.7, 0.7, 1)
 
 var _player: Node = null
 var _bag: Inventory = null
@@ -91,12 +86,7 @@ func _build() -> void:
 	add_child(center)
 
 	_panel = PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = PANEL_BG
-	style.set_border_width_all(1)
-	style.border_color = BORDER
-	style.set_corner_radius_all(3)
-	_panel.add_theme_stylebox_override("panel", style)
+	_panel.add_theme_stylebox_override("panel", UITheme.panel_style(0.980392))
 	center.add_child(_panel)
 
 	var margin := MarginContainer.new()
@@ -114,12 +104,12 @@ func _build() -> void:
 	header.add_theme_constant_override("separation", 16)
 	vbox.add_child(header)
 
-	_title_label = _make_label("Storage Chest", 12, ACCENT)
+	_title_label = UITheme.make_label("Storage Chest", 12, UITheme.TAN)
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(_title_label)
 
-	_usage_label = _make_label("", 12, ACCENT)
+	_usage_label = UITheme.make_label("", 12, UITheme.TAN)
 	_usage_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	header.add_child(_usage_label)
 
@@ -144,7 +134,7 @@ func _make_column(parent: Node, heading: String) -> VBoxContainer:
 	col.add_theme_constant_override("separation", 3)
 	parent.add_child(col)
 
-	col.add_child(_make_label(heading, 11, TEXT))
+	col.add_child(UITheme.make_label(heading, 11, UITheme.TEXT))
 
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(158, 150)
@@ -179,12 +169,12 @@ func _fill(list: VBoxContainer, inv: Inventory, on_click: Callable, empty_text: 
 		seen[item.id] = true
 		any = true
 		var count: int = inv.count_of(item.id)
-		var btn := _make_row_button("%s" % item.name, "x%d" % count, item.icon)
+		var btn := UITheme.make_row_button("%s" % item.name, "x%d" % count, item.icon)
 		btn.tooltip_text = item.description
 		btn.pressed.connect(on_click.bind(item))
 		list.add_child(btn)
 	if not any:
-		list.add_child(_make_label(empty_text, 9, MUTED))
+		list.add_child(UITheme.make_label(empty_text, 9, UITheme.MUTED))
 
 func _used(inv: Inventory) -> int:
 	var n: int = 0
@@ -193,23 +183,3 @@ func _used(inv: Inventory) -> int:
 			n += 1
 	return n
 
-func _make_row_button(left: String, right: String, icon: Texture2D) -> Button:
-	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(152, 0)
-	btn.add_theme_font_size_override("font_size", 10)
-	btn.clip_text = true
-	if icon != null:
-		btn.icon = icon
-		btn.expand_icon = false
-	btn.text = "%s   %s" % [left, right]
-	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	return btn
-
-func _make_label(text: String, font_size: int, color: Color) -> Label:
-	var label := Label.new()
-	label.text = text
-	var settings := LabelSettings.new()
-	settings.font_size = font_size
-	settings.font_color = color
-	label.label_settings = settings
-	return label

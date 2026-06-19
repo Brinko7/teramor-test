@@ -4,10 +4,12 @@ extends Node
 ##
 ## Friendship is stored as raw points; every `POINTS_PER_HEART` points is one
 ## heart, up to `MAX_HEARTS`. NPCs the player has spoken to at least once are
-## "known" and appear in the relationships panel (toggle with the `relationships`
-## action). Talking and gift-giving are limited per in-game day; `advance_day()`
-## (called by the future sleep/camp system) resets those limits.
+## "known" and appear in the player menu's Social tab (see `get_known`). Talking
+## and gift-giving are limited per in-game day; `advance_day()` (called by the
+## sleep/camp system) resets those limits.
 ##
+## This is a pure data manager — the Social UI lives in the player menu
+## (UIManager.menu) and refreshes on the signals below.
 ## Implements the SaveManager "persistent" contract.
 
 signal points_changed(npc_id: StringName, points: int)
@@ -23,7 +25,7 @@ const TALK_POINTS := 15
 
 ## npc_id -> int points
 var _points: Dictionary = {}
-## npc_id -> display name (for the panel)
+## npc_id -> display name
 var _names: Dictionary = {}
 ## npc_id -> true if talked to since last day reset
 var _talked_today: Dictionary = {}
@@ -31,14 +33,8 @@ var _talked_today: Dictionary = {}
 var _gifted_today: Dictionary = {}
 var _day: int = 1
 
-var _panel_layer: CanvasLayer = null
-var _list: VBoxContainer = null
-var _open: bool = false
-
 func _ready() -> void:
-	process_mode = Node.PROCESS_MODE_ALWAYS
 	add_to_group("persistent")
-	_build_panel()
 
 # --- Queries ----------------------------------------------------------------
 
@@ -59,7 +55,7 @@ func has_gifted_today(npc_id: StringName) -> bool:
 
 # --- Mutations --------------------------------------------------------------
 
-## Record that the player has met an NPC so it shows up in the panel.
+## Record that the player has met an NPC so it shows up in the Social tab.
 func meet(npc_id: StringName, display_name: String) -> void:
 	if _names.has(npc_id):
 		return
@@ -67,7 +63,6 @@ func meet(npc_id: StringName, display_name: String) -> void:
 	if not _points.has(npc_id):
 		_points[npc_id] = 0
 	npc_met.emit(npc_id, display_name)
-	_refresh_panel()
 
 ## Add (or subtract) friendship points, clamped to [0, MAX_POINTS]. Emits
 ## points_changed always and hearts_changed when the heart count crosses.
@@ -79,7 +74,6 @@ func add_points(npc_id: StringName, amount: int) -> void:
 	var after_hearts: int = updated / POINTS_PER_HEART
 	if after_hearts != before_hearts:
 		hearts_changed.emit(npc_id, after_hearts)
-	_refresh_panel()
 
 ## Apply the once-per-day talk bonus. Returns true if it was awarded.
 func try_talk(npc_id: StringName) -> bool:
@@ -105,105 +99,17 @@ func reset() -> void:
 	_talked_today.clear()
 	_gifted_today.clear()
 	_day = 1
-	_refresh_panel()
 
 func get_day() -> int:
 	return _day
 
-# --- Relationships panel ----------------------------------------------------
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event.is_action_pressed("relationships"):
-		_set_open(not _open)
-		get_viewport().set_input_as_handled()
-	elif _open and event.is_action_pressed("ui_cancel"):
-		_set_open(false)
-		get_viewport().set_input_as_handled()
-
-func _set_open(open: bool) -> void:
-	_open = open
-	if _panel_layer != null:
-		_panel_layer.visible = open
-	if open:
-		_refresh_panel()
-
-func _build_panel() -> void:
-	_panel_layer = CanvasLayer.new()
-	_panel_layer.layer = 90
-	_panel_layer.visible = false
-
-	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_panel_layer.add_child(center)
-
-	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.164706, 0.12549, 0.094118, 0.964706)
-	style.set_border_width_all(1)
-	style.border_color = Color(0.482353, 0.337255, 0.188235, 1)
-	style.set_corner_radius_all(3)
-	panel.add_theme_stylebox_override("panel", style)
-	center.add_child(panel)
-
-	var margin := MarginContainer.new()
-	margin.add_theme_constant_override("margin_left", 10)
-	margin.add_theme_constant_override("margin_top", 8)
-	margin.add_theme_constant_override("margin_right", 10)
-	margin.add_theme_constant_override("margin_bottom", 8)
-	panel.add_child(margin)
-
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 4)
-	vbox.custom_minimum_size = Vector2(220, 0)
-	margin.add_child(vbox)
-
-	var title := Label.new()
-	title.text = "Relationships"
-	var title_settings := LabelSettings.new()
-	title_settings.font_size = 12
-	title_settings.font_color = Color(0.85, 0.78, 0.55, 1)
-	title.label_settings = title_settings
-	vbox.add_child(title)
-
-	vbox.add_child(HSeparator.new())
-
-	_list = VBoxContainer.new()
-	_list.add_theme_constant_override("separation", 6)
-	vbox.add_child(_list)
-
-	var prompt := Label.new()
-	prompt.text = "[L] Close"
-	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	var prompt_settings := LabelSettings.new()
-	prompt_settings.font_size = 9
-	prompt_settings.font_color = Color(0.611765, 0.541176, 0.439216, 1)
-	prompt.label_settings = prompt_settings
-	vbox.add_child(prompt)
-
-	add_child(_panel_layer)
-
-func _refresh_panel() -> void:
-	if _list == null:
-		return
-	for child: Node in _list.get_children():
-		child.queue_free()
-	if _names.is_empty():
-		_list.add_child(_make_label("You haven't met anyone yet.", Color(0.7, 0.7, 0.7, 1)))
-		return
+## Every NPC the player has met, as an Array of {id, name, hearts}, for the menu's
+## Social tab.
+func get_known() -> Array:
+	var out: Array = []
 	for npc_id: Variant in _names.keys():
-		var hearts: int = get_hearts(npc_id)
-		var bar: String = "%s%s" % ["♥".repeat(hearts), "♡".repeat(MAX_HEARTS - hearts)]
-		var row: String = "%s   %s" % [String(_names[npc_id]), bar]
-		_list.add_child(_make_label(row, Color(0.913725, 0.886275, 0.831373, 1)))
-
-func _make_label(text: String, color: Color) -> Label:
-	var label := Label.new()
-	label.text = text
-	var settings := LabelSettings.new()
-	settings.font_size = 11
-	settings.font_color = color
-	label.label_settings = settings
-	return label
+		out.append({"id": npc_id, "name": String(_names[npc_id]), "hearts": get_hearts(npc_id)})
+	return out
 
 # --- Persistence (SaveManager "persistent" contract) ------------------------
 
@@ -231,4 +137,3 @@ func load_state(data: Dictionary) -> void:
 	for key: Variant in names_in.keys():
 		_names[StringName(key)] = String(names_in[key])
 	_day = int(data.get("day", 1))
-	_refresh_panel()

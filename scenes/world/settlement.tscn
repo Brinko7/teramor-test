@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3]
+[gd_scene load_steps=36 format=3]
 
 [ext_resource type="Script" path="res://scripts/settlement.gd" id="0_settlement"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="23_clock"]
@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="28_manabar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="29_hotbar"]
 [ext_resource type="PackedScene" path="res://scenes/entities/transition_zone.tscn" id="17_tz"]
+[ext_resource type="PackedScene" path="res://scenes/entities/explore_zone.tscn" id="30_explore"]
 [ext_resource type="PackedScene" path="res://scenes/entities/item_pickup.tscn" id="18_pickup"]
 [ext_resource type="Resource" path="res://resources/items/wood.tres" id="19_wood"]
 [ext_resource type="Resource" path="res://resources/items/health_potion.tres" id="20_potion"]
@@ -305,6 +306,12 @@ shape = SubResource("exit_shape")
 
 [node name="from_road" type="Marker2D" parent="Entities" groups=["spawn"]]
 position = Vector2(596, 240)
+
+[node name="DeepwoodEntrance" parent="Entities" instance=ExtResource("30_explore")]
+position = Vector2(120, 380)
+biome_path = "res://resources/world/biomes/deepwood.tres"
+tier = 2
+return_location = &"settlement_camp"
 
 [node name="Waypoints" type="Node2D" parent="."]
 

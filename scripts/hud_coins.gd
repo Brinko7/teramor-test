@@ -26,11 +26,7 @@ func _build() -> void:
 	panel.grow_vertical = Control.GROW_DIRECTION_END
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.164706, 0.12549, 0.094118, 0.85)
-	style.set_border_width_all(1)
-	style.border_color = Color(0.482353, 0.337255, 0.188235, 1)
-	style.set_corner_radius_all(3)
+	var style := UITheme.panel_style(0.85)
 	style.set_content_margin_all(4)
 	panel.add_theme_stylebox_override("panel", style)
 	add_child(panel)
@@ -48,7 +44,7 @@ func _build() -> void:
 	_label = Label.new()
 	var settings := LabelSettings.new()
 	settings.font_size = 12
-	settings.font_color = Color(0.95, 0.85, 0.45, 1)
+	settings.font_color = UITheme.GOLD
 	_label.label_settings = settings
 	_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	box.add_child(_label)

@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"contract_brutes"
+category = 1
 title = "The Brute of Hollow Glen"
 description = "A pair of brutes has made the glen a death trap. Bring them down."
 objective = 0

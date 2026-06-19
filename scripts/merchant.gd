@@ -18,4 +18,4 @@ func _ready() -> void:
 
 ## Called by the player when interacted with.
 func interact(_player) -> void:
-	ShopUI.open(stock, shop_name)
+	UIManager.shop.open(stock, shop_name)

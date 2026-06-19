@@ -110,6 +110,21 @@ func _update_animation(delta: float, moving: bool) -> void:
 	var col: int = WALK_FRAMES[int(_anim_time) % WALK_FRAMES.size()] if moving else 0
 	sprite.frame = _facing_row * sprite.hframes + col
 
+## Scale this enemy's threat to a difficulty tier (1 = base). Called by the area
+## generator right after spawning so the deeper wilds field tougher, more
+## rewarding creatures. Subclasses inherit this unchanged.
+func apply_tier(tier: int) -> void:
+	if tier <= 1:
+		return
+	var steps: int = tier - 1
+	touch_damage = int(round(touch_damage * (1.0 + 0.35 * steps)))
+	xp_reward = int(round(xp_reward * (1.0 + 0.5 * steps)))
+	var scaled_hp: int = int(round(health.max_health * (1.0 + 0.5 * steps)))
+	health.max_health = scaled_hp
+	health.health = scaled_hp
+	# Tint deeper-tier foes so they read as more dangerous.
+	modulate = modulate.lerp(Color(1.0, 0.6, 0.7), clampf(0.12 * steps, 0.0, 0.5))
+
 func take_damage(amount: int) -> void:
 	health.take_damage(amount)
 	_flash()

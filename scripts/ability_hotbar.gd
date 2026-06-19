@@ -10,8 +10,6 @@ const MAX_SLOTS: int = 4
 const SLOT: float = 18.0
 const SEP: int = 3
 
-const BG := Color(0.164706, 0.12549, 0.094118, 0.85)
-const BORDER := Color(0.482353, 0.337255, 0.188235, 1)
 const DIM := Color(0.4, 0.4, 0.4, 1)
 const COOLDOWN := Color(0, 0, 0, 0.55)
 
@@ -47,11 +45,7 @@ func _make_slot(index: int) -> Control:
 	var slot := Panel.new()
 	slot.custom_minimum_size = Vector2(SLOT, SLOT)
 	slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = BG
-	style.set_border_width_all(1)
-	style.border_color = BORDER
-	style.set_corner_radius_all(2)
+	var style := UITheme.panel_style(0.85, 2)
 	slot.add_theme_stylebox_override("panel", style)
 
 	var icon := TextureRect.new()

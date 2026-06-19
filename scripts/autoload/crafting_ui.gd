@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-## Autoload `CraftingUI`. A crafting screen toggled with the "crafting" action.
+## Crafting screen, owned by `UIManager`. Toggled with the "crafting" action.
 ## Loads every Recipe under res://resources/recipes/, lists them with their
 ## ingredient requirements, and marks each craftable when the bound player's
 ## Inventory satisfies all ingredients (Inventory.has_items). Crafting consumes
@@ -99,7 +99,7 @@ func _make_recipe_row(recipe: Recipe) -> Control:
 	label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var settings := LabelSettings.new()
 	settings.font_size = 10
-	settings.font_color = Color(0.913725, 0.886275, 0.831373, 1) if craftable else Color(0.6, 0.55, 0.5, 1)
+	settings.font_color = UITheme.TEXT if craftable else Color(0.6, 0.55, 0.5, 1)
 	label.label_settings = settings
 	row.add_child(label)
 

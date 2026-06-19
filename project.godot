@@ -23,17 +23,15 @@ PlayerProfile="*res://scripts/autoload/player_profile.gd"
 Story="*res://scripts/autoload/story.gd"
 Relationships="*res://scripts/autoload/relationship_manager.gd"
 TimeManager="*res://scripts/autoload/time_manager.gd"
-Dialogue="*res://scenes/ui/dialogue_box.tscn"
 SceneManager="*res://scripts/autoload/scene_manager.gd"
 Wallet="*res://scripts/autoload/wallet.gd"
 SaveManager="*res://scripts/autoload/save_manager.gd"
 QuestManager="*res://scripts/autoload/quest_manager.gd"
-InventoryUI="*res://scenes/ui/inventory_ui.tscn"
-CraftingUI="*res://scenes/ui/crafting_ui.tscn"
-ShopUI="*res://scripts/autoload/shop_ui.gd"
 FarmManager="*res://scripts/autoload/farm_manager.gd"
 StorageManager="*res://scripts/autoload/storage_manager.gd"
-StorageUI="*res://scripts/autoload/storage_ui.gd"
+WorldMap="*res://scripts/autoload/world_map.gd"
+TravelManager="*res://scripts/autoload/travel_manager.gd"
+UIManager="*res://scripts/autoload/ui_manager.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]
@@ -47,6 +45,10 @@ window/stretch/mode="viewport"
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg")
+
+[gui]
+
+theme/custom="res://resources/ui/teramor_theme.tres"
 
 [input]
 
@@ -142,6 +144,11 @@ ability_3={
 ability_4={
 "deadzone": 0.5,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":52,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
+player_menu={
+"deadzone": 0.5,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194306,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
 ]
 }
 

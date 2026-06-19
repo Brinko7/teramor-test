@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"find_elkar"
+category = 0
 title = "The Missing Father"
 description = "Your father Elkar walked into the Deepwood and never came back. Learn what happened to him."
 objective = 2
