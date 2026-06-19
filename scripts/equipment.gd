@@ -55,7 +55,41 @@ func total_defense() -> int:
 	var total: int = 0
 	for piece in armor.values():
 		total += (piece as ArmorItem).defense
+	# Affix defense from any equipped piece (armor or weapon).
+	total += _affix_sum(&"bonus_defense")
 	return total
+
+# --- Affix aggregation ------------------------------------------------------
+
+## Sum an affix field across every equipped item (weapon + all armor).
+func _affix_sum(field: StringName) -> int:
+	var total: int = 0
+	if weapon != null:
+		total += int(weapon.get(field))
+	for piece in armor.values():
+		total += int((piece as Item).get(field))
+	return total
+
+func bonus_melee() -> int:
+	return _affix_sum(&"bonus_melee")
+
+func bonus_ranged() -> int:
+	return _affix_sum(&"bonus_ranged")
+
+func bonus_spell() -> int:
+	return _affix_sum(&"bonus_spell")
+
+func bonus_max_hp() -> int:
+	return _affix_sum(&"bonus_max_hp")
+
+## Highest lifesteal fraction among equipped items (they don't stack).
+func lifesteal() -> float:
+	var best: float = 0.0
+	if weapon != null:
+		best = maxf(best, weapon.lifesteal)
+	for piece in armor.values():
+		best = maxf(best, (piece as Item).lifesteal)
+	return best
 
 ## --- Persistence (SaveManager "persistent" contract) ------------------------
 

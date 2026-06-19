@@ -293,6 +293,9 @@ func _make_bag_slot(index: int) -> Button:
 		var count: int = _inventory.get_count(index)
 		btn.text = str(count) if count > 1 else ""
 		btn.tooltip_text = _item_tooltip(item)
+		# Tint non-common gear toward its rarity colour as a cue.
+		if item.rarity != Item.Rarity.COMMON:
+			btn.modulate = Color.WHITE.lerp(item.rarity_color(), 0.5)
 		btn.pressed.connect(_on_bag_slot.bind(index))
 	else:
 		btn.disabled = true
@@ -319,14 +322,14 @@ func _make_stat_panel() -> Control:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 1)
 	var weapon: WeaponItem = _equipment.get_weapon()
-	var atk: int = _stats.attack_power() + (weapon.damage if weapon != null else 0)
+	var atk: int = _stats.attack_power() + (weapon.damage if weapon != null else 0) + _equipment.bonus_melee()
 	var defense: int = _stats.defense_power() + _equipment.total_defense()
 	var hp: String = "%d/%d" % [_health.health, _health.max_health] if _health != null else "—"
 	box.add_child(UITheme.make_label("Level %d" % _stats.level, 10, UITheme.TEXT))
 	box.add_child(UITheme.make_label("HP   %s" % hp, 10, UITheme.TEXT))
 	box.add_child(UITheme.make_label("ATK  %d" % atk, 10, UITheme.TEXT))
 	box.add_child(UITheme.make_label("DEF  %d" % defense, 10, UITheme.TEXT))
-	box.add_child(UITheme.make_label("Spell %d" % _stats.spell_power(), 10, UITheme.TEXT))
+	box.add_child(UITheme.make_label("Spell %d" % (_stats.spell_power() + _equipment.bonus_spell()), 10, UITheme.TEXT))
 	return box
 
 ## Equip a weapon/armor (swapping with any current piece), or use a consumable.
@@ -368,7 +371,7 @@ func _on_unequip_armor(slot: int) -> void:
 ## Item name/description plus its combat stats, with the currently-equipped piece
 ## shown for comparison.
 func _item_tooltip(item: Item) -> String:
-	var lines: Array[String] = [item.name]
+	var lines: Array[String] = ["%s  [%s]" % [item.name, item.rarity_name()]]
 	if item.description != "":
 		lines.append(item.description)
 	if item is WeaponItem:
@@ -387,6 +390,8 @@ func _item_tooltip(item: Item) -> String:
 		var c := item as ConsumableItem
 		if c.heal > 0:
 			lines.append("Heals %d HP" % c.heal)
+	for affix in item.affix_lines():
+		lines.append(String(affix))
 	if item.value > 0:
 		lines.append("Value %d g" % item.value)
 	return "\n".join(lines)
@@ -409,13 +414,13 @@ func _build_character() -> Control:
 
 	box.add_child(HSeparator.new())
 	var weapon: WeaponItem = _equipment.get_weapon()
-	var atk: int = _stats.attack_power() + (weapon.damage if weapon != null else 0)
+	var atk: int = _stats.attack_power() + (weapon.damage if weapon != null else 0) + _equipment.bonus_melee()
 	var defense: int = _stats.defense_power() + _equipment.total_defense()
-	box.add_child(UITheme.make_label("Max HP   %d" % _stats.max_hp, 11, UITheme.TEXT))
+	box.add_child(UITheme.make_label("Max HP   %d" % (_stats.max_hp + _equipment.bonus_max_hp()), 11, UITheme.TEXT))
 	box.add_child(UITheme.make_label("Attack   %d" % atk, 11, UITheme.TEXT))
-	box.add_child(UITheme.make_label("Ranged   %d" % _stats.ranged_power(), 11, UITheme.TEXT))
+	box.add_child(UITheme.make_label("Ranged   %d" % (_stats.ranged_power() + _equipment.bonus_ranged()), 11, UITheme.TEXT))
 	box.add_child(UITheme.make_label("Defense  %d" % defense, 11, UITheme.TEXT))
-	box.add_child(UITheme.make_label("Spell    %d" % _stats.spell_power(), 11, UITheme.TEXT))
+	box.add_child(UITheme.make_label("Spell    %d" % (_stats.spell_power() + _equipment.bonus_spell()), 11, UITheme.TEXT))
 	return box
 
 # --- Skills tab -------------------------------------------------------------

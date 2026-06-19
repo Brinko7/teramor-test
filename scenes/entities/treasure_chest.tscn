@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/treasure_chest.gd" id="1_chest"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/chest.png" id="2_tex"]
+
+[sub_resource type="RectangleShape2D" id="shape"]
+size = Vector2(16, 12)
+
+[node name="TreasureChest" type="Area2D" groups=["interactable"]]
+y_sort_enabled = true
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("1_chest")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = false
+offset = Vector2(-8, -16)
+texture = ExtResource("2_tex")
+modulate = Color(0.96, 0.82, 0.45, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -7)
+shape = SubResource("shape")

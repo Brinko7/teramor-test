@@ -155,6 +155,24 @@ Banners are shown via `UIManager.notify(title, subtitle)` (the UIManager-owned
 `Story` is registered **after** QuestManager/WorldMap/TravelManager in the autoload
 order because it connects to their signals in `_ready`.
 
+### Items, gear & loot
+`Item` (`scripts/items/item.gd`) carries a `rarity` (Common→Legendary, with
+`rarity_color()`/`rarity_name()`) and equip **affix** bonuses
+(`bonus_melee/ranged/spell/max_hp/defense`, `lifesteal`). The **Equipment**
+component aggregates affixes across the equipped weapon + armor
+(`bonus_melee()`, `lifesteal()`, etc.; `total_defense()` now folds affix defense
+in), and the combat code adds them: melee/ranged damage, the health pool (gear HP
+is re-applied on `equipment.changed`), spell power (in `AbilityCaster`), and
+melee lifesteal. The player menu shows rarity + affix lines in tooltips and tints
+bag slots by rarity.
+
+**Unique named weapons/armor** are just authored `.tres` with a high rarity and
+affixes (e.g. `emberbrand`, `windpiercer`, `wyrmscale_vest`). They drop from
+**treasure chests** (`scripts/treasure_chest.gd`) scattered by the area generator
+— more, fuller chests the deeper the tier — and from biome `loot_paths`, so
+braving the Cursed Wilds pays out. (Randomly-rolled per-instance affixes would
+need item duplication on drop; not done yet — affixes are authored for now.)
+
 ### Quests
 A `Quest` (`scripts/quest.gd`) has a `category` (Main / Contract / Rescue / Task)
 and a list of `QuestObjective`s (`scripts/quest_objective.gd`) — KILL, COLLECT or
