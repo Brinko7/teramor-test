@@ -18,3 +18,13 @@ signal item_collected(item_id: StringName, count: int)
 
 ## Emitted by the crafting system after a successful craft.
 signal item_crafted(item_id: StringName)
+
+## --- Combat feel / juice ----------------------------------------------------
+## Emitted whenever damage lands, so CombatFX can pop a number, shake, and
+## hit-stop. `to_enemy` is true for the player hitting a foe, false for the
+## player taking a hit.
+signal damage_dealt(position: Vector2, amount: int, to_enemy: bool)
+
+## Requests a camera shake of the given strength (in pixels). The player camera's
+## CameraShake listens.
+signal screen_shake(strength: float)

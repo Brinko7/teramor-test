@@ -31,6 +31,12 @@ const WALK_FRAMES := [0, 1, 0, 2]
 ## How far the melee hitbox sits from the player along the aim direction.
 const HITBOX_REACH := 14.0
 
+## Combat-feel tunables: melee knockback dealt to foes, and the player's own
+## forward lunge on a melee swing.
+const MELEE_KNOCKBACK := 175.0
+const LUNGE_SPEED := 95.0
+const LUNGE_DECAY := 620.0
+
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var outfit_sprite: Sprite2D = $Outfit
 @onready var hair_sprite: Sprite2D = $Hair
@@ -62,6 +68,8 @@ var _cooldown_timer: float = 0.0
 var _invuln_timer: float = 0.0
 var _blocking: bool = false
 var _hit_enemies: Array = []
+## Decaying forward step applied during a melee swing for weighty hits.
+var _lunge: Vector2 = Vector2.ZERO
 ## Cosmetic rendering (worn gear, held weapon/shield), created in _ready().
 var _visuals: PlayerVisuals
 ## Scene-placed start position, used as the respawn point after death.
@@ -185,8 +193,9 @@ func _movement(delta: float) -> void:
 	if input.length() > 1.0:
 		input = input.normalized()
 
-	velocity = input * speed
+	velocity = input * speed + _lunge
 	move_and_slide()
+	_lunge = _lunge.move_toward(Vector2.ZERO, LUNGE_DECAY * delta)
 
 	# Face where you're moving; when standing still, face the cursor.
 	_update_facing(input if input != Vector2.ZERO else _aim)
@@ -250,6 +259,7 @@ func _start_attack() -> void:
 	hitbox.position = _aim * HITBOX_REACH
 	hitbox.monitoring = true
 	hitbox_shape.disabled = false
+	_lunge = _aim * LUNGE_SPEED  # weighty step into the swing
 	_visuals.swing_melee(weapon, _aim)
 
 func _fire_projectile(weapon: WeaponItem) -> void:
@@ -279,7 +289,7 @@ func _apply_hit(target) -> void:
 		# Base (level + attributes + skills), the weapon's flat damage, and gear affixes.
 		var dmg: int = stats.attack_power() + weapon_dmg + (equipment.bonus_melee() if equipment != null else 0)
 		_hit_enemies.append(target)
-		target.take_damage(dmg)
+		target.take_damage(dmg, _aim * MELEE_KNOCKBACK)
 		var steal: float = equipment.lifesteal() if equipment != null else 0.0
 		if steal > 0.0:
 			health.heal(maxi(1, int(round(dmg * steal))))
@@ -295,7 +305,9 @@ func take_damage(amount: int) -> void:
 		var shield: ArmorItem = equipment.get_shield()
 		if shield != null:
 			reduction += shield.block
-	health.take_damage(maxi(1, amount - reduction))
+	var taken: int = maxi(1, amount - reduction)
+	health.take_damage(taken)
+	Events.damage_dealt.emit(global_position, taken, false)
 	_hit_flash()
 
 func _hit_flash() -> void:

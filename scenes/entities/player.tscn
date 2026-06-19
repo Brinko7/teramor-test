@@ -1,6 +1,7 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=28 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
+[ext_resource type="Script" path="res://scripts/components/camera_shake.gd" id="24_shake"]
 [ext_resource type="Script" path="res://scripts/stats.gd" id="12_stats"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/char/body.png" id="2_sheet"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/char/outfit_ranger.png" id="13_outfit"]
@@ -122,6 +123,7 @@ shape = SubResource("RectangleShape2D_feet")
 position = Vector2(0, -20)
 position_smoothing_enabled = true
 position_smoothing_speed = 8.0
+script = ExtResource("24_shake")
 
 [node name="Stats" type="Node" parent="."]
 script = ExtResource("12_stats")
