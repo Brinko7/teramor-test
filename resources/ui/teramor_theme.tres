@@ -1,0 +1,23 @@
+[gd_resource type="Theme" load_steps=2 format=3]
+
+; Project default theme. Mirrors the palette in res://scripts/ui/ui_theme.gd
+; (UITheme), which is the canonical source for code-built panels. This resource
+; supplies consistent defaults for any Control that does not override them.
+; Colours only — no metrics — so it never shifts the game's tight 480x270 layouts.
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.164706, 0.12549, 0.094118, 0.96)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.482353, 0.337255, 0.188235, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[resource]
+Label/colors/font_color = Color(0.913725, 0.886275, 0.831373, 1)
+RichTextLabel/colors/default_color = Color(0.913725, 0.886275, 0.831373, 1)
+PanelContainer/styles/panel = SubResource("StyleBoxFlat_panel")

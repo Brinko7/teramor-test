@@ -137,12 +137,7 @@ func _build_panel() -> void:
 	_panel_layer.add_child(center)
 
 	var panel := PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.164706, 0.12549, 0.094118, 0.964706)
-	style.set_border_width_all(1)
-	style.border_color = Color(0.482353, 0.337255, 0.188235, 1)
-	style.set_corner_radius_all(3)
-	panel.add_theme_stylebox_override("panel", style)
+	panel.add_theme_stylebox_override("panel", UITheme.panel_style(0.964706))
 	center.add_child(panel)
 
 	var margin := MarginContainer.new()
@@ -161,7 +156,7 @@ func _build_panel() -> void:
 	title.text = "Relationships"
 	var title_settings := LabelSettings.new()
 	title_settings.font_size = 12
-	title_settings.font_color = Color(0.85, 0.78, 0.55, 1)
+	title_settings.font_color = UITheme.SAND
 	title.label_settings = title_settings
 	vbox.add_child(title)
 
@@ -176,7 +171,7 @@ func _build_panel() -> void:
 	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	var prompt_settings := LabelSettings.new()
 	prompt_settings.font_size = 9
-	prompt_settings.font_color = Color(0.611765, 0.541176, 0.439216, 1)
+	prompt_settings.font_color = UITheme.PROMPT
 	prompt.label_settings = prompt_settings
 	vbox.add_child(prompt)
 
@@ -188,22 +183,13 @@ func _refresh_panel() -> void:
 	for child: Node in _list.get_children():
 		child.queue_free()
 	if _names.is_empty():
-		_list.add_child(_make_label("You haven't met anyone yet.", Color(0.7, 0.7, 0.7, 1)))
+		_list.add_child(UITheme.make_label("You haven't met anyone yet.", 11, UITheme.MUTED))
 		return
 	for npc_id: Variant in _names.keys():
 		var hearts: int = get_hearts(npc_id)
 		var bar: String = "%s%s" % ["♥".repeat(hearts), "♡".repeat(MAX_HEARTS - hearts)]
 		var row: String = "%s   %s" % [String(_names[npc_id]), bar]
-		_list.add_child(_make_label(row, Color(0.913725, 0.886275, 0.831373, 1)))
-
-func _make_label(text: String, color: Color) -> Label:
-	var label := Label.new()
-	label.text = text
-	var settings := LabelSettings.new()
-	settings.font_size = 11
-	settings.font_color = color
-	label.label_settings = settings
-	return label
+		_list.add_child(UITheme.make_label(row, 11, UITheme.TEXT))
 
 # --- Persistence (SaveManager "persistent" contract) ------------------------
 

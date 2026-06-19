@@ -9,4 +9,4 @@ func _ready() -> void:
 	add_to_group("interactable")
 
 func interact(_player) -> void:
-	StorageUI.open()
+	UIManager.storage.open()

@@ -1,6 +1,7 @@
 extends CanvasLayer
 
-## Autoload `ShopUI`. Global trading screen. A merchant calls `open(stock, name)`
+## Trading screen, owned by `UIManager` (reach it as `UIManager.shop`). A merchant
+## calls `open(stock, name)`
 ## with its wares; the panel shows two columns — BUY the merchant's stock (at full
 ## `value`) and SELL from the player's bag (at `SELL_FRACTION` of value) — both
 ## transacting against the Wallet. Pauses gameplay while open, like the inventory
@@ -8,11 +9,6 @@ extends CanvasLayer
 
 ## Fraction of an item's value the merchant pays when buying it from the player.
 const SELL_FRACTION := 0.5
-
-const PANEL_BG := Color(0.164706, 0.12549, 0.094118, 0.980392)
-const BORDER := Color(0.482353, 0.337255, 0.188235, 1)
-const TEXT := Color(0.913725, 0.886275, 0.831373, 1)
-const GOLD := Color(0.95, 0.85, 0.45, 1)
 
 var _player: Node = null
 var _inventory: Inventory = null
@@ -99,12 +95,7 @@ func _build() -> void:
 	add_child(center)
 
 	_panel = PanelContainer.new()
-	var style := StyleBoxFlat.new()
-	style.bg_color = PANEL_BG
-	style.set_border_width_all(1)
-	style.border_color = BORDER
-	style.set_corner_radius_all(3)
-	_panel.add_theme_stylebox_override("panel", style)
+	_panel.add_theme_stylebox_override("panel", UITheme.panel_style(0.980392))
 	center.add_child(_panel)
 
 	var margin := MarginContainer.new()
@@ -122,12 +113,12 @@ func _build() -> void:
 	header.add_theme_constant_override("separation", 16)
 	vbox.add_child(header)
 
-	_title_label = _make_label("Trader", 12, GOLD)
+	_title_label = UITheme.make_label("Trader", 12, UITheme.GOLD)
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(_title_label)
 
-	_gold_label = _make_label("", 12, GOLD)
+	_gold_label = UITheme.make_label("", 12, UITheme.GOLD)
 	_gold_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	header.add_child(_gold_label)
 
@@ -153,7 +144,7 @@ func _make_column(parent: Node, heading: String) -> VBoxContainer:
 	col.add_theme_constant_override("separation", 3)
 	parent.add_child(col)
 
-	col.add_child(_make_label(heading, 11, TEXT))
+	col.add_child(UITheme.make_label(heading, 11, UITheme.TEXT))
 
 	var scroll := ScrollContainer.new()
 	scroll.custom_minimum_size = Vector2(158, 132)
@@ -178,14 +169,14 @@ func _refresh_buy() -> void:
 	for child: Node in _buy_list.get_children():
 		child.queue_free()
 	if _stock.is_empty():
-		_buy_list.add_child(_make_label("Nothing for sale.", 9, Color(0.7, 0.7, 0.7)))
+		_buy_list.add_child(UITheme.make_label("Nothing for sale.", 9, UITheme.MUTED))
 		return
 	for entry: Variant in _stock:
 		var item: Item = entry
 		if item == null:
 			continue
 		var price: int = buy_price(item)
-		var btn := _make_row_button("%s" % item.name, "%d g" % price, item.icon)
+		var btn := UITheme.make_row_button("%s" % item.name, "%d g" % price, item.icon)
 		btn.disabled = not Wallet.can_afford(price)
 		btn.tooltip_text = item.description
 		btn.pressed.connect(_buy.bind(item))
@@ -205,30 +196,9 @@ func _refresh_sell() -> void:
 		seen[item.id] = true
 		any = true
 		var count: int = _inventory.count_of(item.id)
-		var btn := _make_row_button("%s x%d" % [item.name, count], "%d g" % sell_price(item), item.icon)
+		var btn := UITheme.make_row_button("%s x%d" % [item.name, count], "%d g" % sell_price(item), item.icon)
 		btn.tooltip_text = item.description
 		btn.pressed.connect(_sell.bind(item))
 		_sell_list.add_child(btn)
 	if not any:
-		_sell_list.add_child(_make_label("Your bag is empty.", 9, Color(0.7, 0.7, 0.7)))
-
-func _make_row_button(left: String, right: String, icon: Texture2D) -> Button:
-	var btn := Button.new()
-	btn.custom_minimum_size = Vector2(152, 0)
-	btn.add_theme_font_size_override("font_size", 10)
-	btn.clip_text = true
-	if icon != null:
-		btn.icon = icon
-		btn.expand_icon = false
-	btn.text = "%s   %s" % [left, right]
-	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	return btn
-
-func _make_label(text: String, font_size: int, color: Color) -> Label:
-	var label := Label.new()
-	label.text = text
-	var settings := LabelSettings.new()
-	settings.font_size = font_size
-	settings.font_color = color
-	label.label_settings = settings
-	return label
+		_sell_list.add_child(UITheme.make_label("Your bag is empty.", 9, UITheme.MUTED))

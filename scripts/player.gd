@@ -31,19 +31,6 @@ const WALK_FRAMES := [0, 1, 0, 2]
 ## How far the melee hitbox sits from the player along the aim direction.
 const HITBOX_REACH := 14.0
 
-## Sideways gap between the main hand (weapon) and off hand (shield), measured
-## perpendicular to the aim direction so the two never overlap.
-const HAND_SEPARATION := 5.0
-## Anchor for both hands in local space (roughly chest height).
-const HAND_ANCHOR := Vector2(0, -22)
-## Held-item draw order relative to the body sprite (z 0): in front for most
-## aims, behind the player when aiming north so the gear reads as held on the
-## far side of the body instead of laid over it. The pivots sit before the body
-## in the scene tree, so at equal z (0) they draw behind it while staying above
-## the ground; bumping to HAND_Z_FRONT lifts them in front.
-const HAND_Z_FRONT := 5
-const HAND_Z_BEHIND := 0
-
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var outfit_sprite: Sprite2D = $Outfit
 @onready var hair_sprite: Sprite2D = $Hair
@@ -74,9 +61,9 @@ var _attack_timer: float = 0.0
 var _cooldown_timer: float = 0.0
 var _invuln_timer: float = 0.0
 var _blocking: bool = false
-var _swinging: bool = false
 var _hit_enemies: Array = []
-var _swing_tween: Tween
+## Cosmetic rendering (worn gear, held weapon/shield), created in _ready().
+var _visuals: PlayerVisuals
 ## Scene-placed start position, used as the respawn point after death.
 var _home_position: Vector2 = Vector2.ZERO
 
@@ -85,7 +72,12 @@ func _ready() -> void:
 	add_to_group("persistent")
 	hitbox.monitoring = false
 	hitbox_shape.disabled = true
-	equipment.changed.connect(_refresh_gear_visuals)
+	_visuals = PlayerVisuals.new()
+	_visuals.name = "Visuals"
+	add_child(_visuals)
+	_visuals.setup(sprite, outfit_sprite, hair_sprite, gear_layers,
+		weapon_pivot, weapon_sprite, shield_pivot, shield_sprite, equipment)
+	equipment.changed.connect(_visuals.refresh_gear)
 	# Progression wiring: earn XP from kills, scale Health to leveled max HP.
 	Events.enemy_killed.connect(_on_enemy_killed)
 	Events.player_leveled_up.connect(_on_player_leveled_up)
@@ -96,7 +88,7 @@ func _ready() -> void:
 	PlayerProfile.changed.connect(_apply_appearance)
 	_apply_appearance()
 	_grant_starting_kit()
-	_refresh_gear_visuals()
+	_visuals.refresh_gear()
 
 ## Paints the paper-doll from the chosen identity: skin tints the body sprite,
 ## the hair style swaps its texture and the hair colour tints it.
@@ -137,7 +129,7 @@ func _physics_process(delta: float) -> void:
 
 	_blocking = Input.is_action_pressed("attack_secondary") and equipment.get_shield() != null
 
-	if _primary_pressed() and _cooldown_timer <= 0.0 and not _blocking and not Dialogue.is_active():
+	if _primary_pressed() and _cooldown_timer <= 0.0 and not _blocking and not UIManager.dialogue.is_active():
 		_start_attack()
 
 	_try_cast_abilities()
@@ -149,7 +141,7 @@ func _physics_process(delta: float) -> void:
 ## the cursor like ranged weapons; gated on dialogue. The AbilityCaster itself
 ## enforces mana and cooldown.
 func _try_cast_abilities() -> void:
-	if ability_caster == null or Dialogue.is_active():
+	if ability_caster == null or UIManager.dialogue.is_active():
 		return
 	var slots: int = mini(ability_caster.slot_count(), 4)
 	for slot in range(slots):
@@ -167,7 +159,7 @@ func _update_aim() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	# Interact is event-driven (not polled) so the dialogue box can consume the
 	# closing key press via set_input_as_handled(), preventing an instant reopen.
-	if event.is_action_pressed("interact") and not Dialogue.is_active():
+	if event.is_action_pressed("interact") and not UIManager.dialogue.is_active():
 		_try_interact()
 
 func _movement(delta: float) -> void:
@@ -200,70 +192,15 @@ func _update_animation(delta: float, moving: bool) -> void:
 		_anim_time = 0.0
 	var col: int = WALK_FRAMES[int(_anim_time) % WALK_FRAMES.size()] if moving else 0
 	sprite.frame = _facing_row * sprite.hframes + col
-	outfit_sprite.frame = sprite.frame
-	hair_sprite.frame = sprite.frame
-	for layer in gear_layers.values():
-		var gear: Sprite2D = layer
-		if gear.visible:
-			gear.frame = sprite.frame
+	_visuals.sync_frame(sprite.frame)
 
 # --- Equipped-gear visuals --------------------------------------------------
 
-func _refresh_gear_visuals() -> void:
-	var weapon: WeaponItem = _current_weapon()
-	if weapon != null and weapon.held_texture() != null:
-		weapon_sprite.texture = weapon.held_texture()
-		weapon_sprite.position.x = weapon.hold_distance
-		weapon_sprite.visible = true
-	else:
-		weapon_sprite.visible = false
-
-	var shield: ArmorItem = equipment.get_shield()
-	if shield != null and shield.hold_texture != null:
-		shield_sprite.texture = shield.hold_texture
-		shield_sprite.visible = true
-	else:
-		shield_sprite.visible = false
-
-	# Worn paper-doll layers (feet/legs/body/head). The off-hand slot is drawn
-	# as a held item above, not as a body overlay, so it is skipped here.
-	for slot in gear_layers:
-		var layer: Sprite2D = gear_layers[slot]
-		var piece: ArmorItem = equipment.get_armor(slot)
-		if piece != null and piece.overlay_sheet != null:
-			layer.texture = piece.overlay_sheet
-			layer.frame = sprite.frame
-			layer.visible = true
-		else:
-			layer.visible = false
-
-## Positions the held weapon/shield each frame so they point at the cursor and
-## sit in front of or behind the body depending on aim.
+## Aims the interaction probe at the cursor, then lets the visuals component pose
+## the held weapon/shield. Gear rendering itself lives in PlayerVisuals.
 func _update_gear_pose() -> void:
 	interact_probe.position = _aim * 10.0
-
-	var aim_angle: float = _aim.angle()
-	# Perpendicular to the aim: weapon rides the main hand on one side, shield
-	# the off hand on the other, so they no longer stack on top of each other.
-	var perp: Vector2 = Vector2(-_aim.y, _aim.x)
-
-	# Facing north the held items sit on the far side of the body, so render them
-	# behind the player sprite. Any other aim keeps them in front, where they
-	# stay readable.
-	var hand_z: int = HAND_Z_BEHIND if _aim.y < -0.35 else HAND_Z_FRONT
-	weapon_pivot.z_index = hand_z
-	shield_pivot.z_index = hand_z
-
-	if weapon_sprite.visible and not _swinging:
-		weapon_pivot.position = HAND_ANCHOR + perp * HAND_SEPARATION
-		weapon_pivot.rotation = aim_angle
-		weapon_sprite.flip_v = _aim.x < 0.0
-
-	if shield_sprite.visible:
-		shield_pivot.position = HAND_ANCHOR - perp * HAND_SEPARATION
-		shield_pivot.rotation = aim_angle
-		shield_sprite.flip_v = _aim.x < 0.0
-		shield_sprite.position.x = 13.0 if _blocking else 8.0
+	_visuals.update_pose(_aim, _blocking)
 
 # --- Combat / interaction ---------------------------------------------------
 
@@ -291,37 +228,14 @@ func _start_attack() -> void:
 
 	if weapon != null and weapon.is_ranged():
 		_fire_projectile(weapon)
-		_recoil()
+		_visuals.recoil(_aim)
 		return
 
 	_hit_enemies.clear()
 	hitbox.position = _aim * HITBOX_REACH
 	hitbox.monitoring = true
 	hitbox_shape.disabled = false
-	_swing_melee(weapon)
-
-func _swing_melee(weapon: WeaponItem) -> void:
-	if not weapon_sprite.visible:
-		return
-	var arc: float = weapon.swing_arc if weapon != null else 1.1
-	var dur: float = weapon.attack_duration if weapon != null else attack_duration
-	var base: float = _aim.angle()
-	_swinging = true
-	weapon_pivot.rotation = base - arc
-	weapon_sprite.flip_v = _aim.x < 0.0
-	if _swing_tween != null and _swing_tween.is_valid():
-		_swing_tween.kill()
-	_swing_tween = create_tween()
-	_swing_tween.tween_property(weapon_pivot, "rotation", base + arc, dur)
-	_swing_tween.tween_callback(func() -> void: _swinging = false)
-
-func _recoil() -> void:
-	weapon_sprite.flip_v = _aim.x < 0.0
-	weapon_pivot.rotation = _aim.angle()
-	var rest_x: float = weapon_sprite.position.x
-	var tw := create_tween()
-	tw.tween_property(weapon_sprite, "position:x", rest_x - 4.0, 0.05)
-	tw.tween_property(weapon_sprite, "position:x", rest_x, 0.12)
+	_visuals.swing_melee(weapon, _aim)
 
 func _fire_projectile(weapon: WeaponItem) -> void:
 	var arrow := ARROW_SCENE.instantiate() as Projectile

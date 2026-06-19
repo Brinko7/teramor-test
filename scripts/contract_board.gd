@@ -18,7 +18,7 @@ func interact(_player) -> void:
 	var intro: Array = []
 	if intro_line != "":
 		intro.append({"text": intro_line})
-	Dialogue.start_conversation(intro, _build_menu, board_title)
+	UIManager.dialogue.start_conversation(intro, _build_menu, board_title)
 
 # --- Menu construction ------------------------------------------------------
 

@@ -1,0 +1,115 @@
+# Teramor
+
+A top-down action-RPG / farming / town-sim hybrid built in **Godot 4.6** (Forward+,
+GDScript). The base viewport is 480×270 pixel-art, scaled to a 1280×720 window.
+Combat is mouse-aimed; the rest of the game (farming, crafting, shops, dialogue,
+relationships, quests, day/night) is interaction- and menu-driven.
+
+## Running
+
+Open the project in Godot 4.6. The main scene is `scenes/ui/main_menu.tscn`
+(`application/run/main_scene`). "New Game" → character creation →
+`scenes/world/settlement.tscn`.
+
+## Project layout
+
+```
+scripts/
+  autoload/        # Global singletons registered in project.godot [autoload]
+  components/      # Reusable nodes composed onto entities (e.g. player_visuals.gd)
+  ui/              # Shared UI code (ui_theme.gd)
+  items/           # Item resource subclasses (weapon/armor/tool/seed/consumable)
+  crops/           # crop_data.gd
+  abilities/       # ability_data.gd
+  *.gd             # Entities (player, enemy_*), props (chest, bed, farm_plot), etc.
+scenes/
+  entities/        # Player, enemies, NPCs, projectiles, props/
+  ui/              # Menus and HUD scenes
+  world/           # Settlement, town, road
+resources/         # Authored content as .tres (items, crops, abilities, recipes)
+assets/            # Art/audio
+addons/godot_ai/   # Editor/runtime helper plugin (_mcp_game_helper autoload)
+```
+
+## Architecture
+
+### Autoloads (singletons)
+Registered in `project.godot` under `[autoload]`:
+
+- **Events** — global signal bus. Systems emit/listen here instead of holding
+  references to each other (`enemy_killed`, `player_leveled_up`, `item_collected`,
+  `item_crafted`). Prefer adding a signal here over cross-wiring nodes.
+- **GameManager** — high-level flow: new game, continue, return to menu, the
+  death → game-over → respawn loop, and the sleep/day-advance sequence.
+- **PlayerProfile** — chosen identity (skin/hair) from character creation.
+- **Story**, **Relationships**, **QuestManager** — narrative/social/quest state.
+- **TimeManager** — in-game clock and day counter.
+- **Wallet** — gold balance.
+- **SceneManager** — fade transitions and player spawn placement.
+- **SaveManager** — generic group-based persistence (see below).
+- **FarmManager**, **StorageManager** — farm tiles and the shared camp stash.
+- **UIManager** — single owner of the overlay panels (dialogue, inventory,
+  crafting, shop, storage). See "UI" below.
+
+### UI
+`UIManager` instantiates the overlay panels once at startup and parents them under
+itself, so there is **one** UI autoload instead of five separate ones. Reach a
+panel through its accessor:
+
+```gdscript
+UIManager.dialogue.start_conversation(intro, menu_provider, speaker)
+UIManager.shop.open(stock, shop_name)
+UIManager.storage.open()
+```
+
+Each panel is still a `CanvasLayer` that processes while the tree is paused and
+handles its own toggle input — `UIManager` just owns it. The self-toggling panels
+(inventory `I`, crafting `C`) need no external calls.
+
+**Styling.** `scripts/ui/ui_theme.gd` (`class_name UITheme`) is the single source
+of truth for the UI palette (brown panels, parchment text, gold/green accents) and
+the shared widget builders (`make_label`, `make_row_button`, `panel_style`). All
+code-built panels route through it — change a colour once, there. The matching
+`resources/ui/teramor_theme.tres` mirrors those colours for the editor/.tscn side
+and is registered as the project default theme (`gui/theme/custom`); keep the two
+in sync, with `UITheme` as canonical.
+
+### Persistence (SaveManager contract)
+Any node that should be saved joins the `"persistent"` group in `_ready()` and
+implements three methods:
+
+```gdscript
+func get_save_id() -> String      # globally unique, stable key
+func save_state() -> Dictionary    # JSON-serializable snapshot
+func load_state(data: Dictionary) -> void
+```
+
+`SaveManager` walks the group and writes one JSON file (`user://teramor_save.json`)
+wrapped in a versioned envelope: `{"version": N, "entries": {id: state}}`. New
+systems become saveable just by implementing the contract — SaveManager itself
+does not change.
+
+When the **shape** of any saved state changes, bump `SAVE_VERSION` and add a step
+to `SaveManager._migrate()`. Pre-versioning files (a bare id→state dictionary with
+no `version` key) are read as version 0 and migrated forward. Keybinds: `F5` save,
+`F9` quick-load.
+
+### Player
+`scripts/player.gd` (`CharacterBody2D`) handles movement, mouse-aimed combat
+(melee + ranged), progression and death/respawn. Gameplay capabilities are
+composed as child nodes: `Health`, `Stats`, `Equipment`, `Inventory`, `Mana`,
+`AbilityCaster`. Cosmetic rendering — worn armour overlays and the held
+weapon/shield with their posing/swing/recoil — lives in
+`scripts/components/player_visuals.gd` (`class_name PlayerVisuals`), created in
+`_ready()` and fed state each frame (body frame, aim, block flag).
+
+## Conventions
+
+- **Decouple via `Events`** rather than direct node references where practical.
+- **Prefer typed code** (`class_name` types, typed signals) over string-based
+  `has_method`/`call` duck typing.
+- **Content is data.** New items/crops/abilities/recipes are `.tres` resources
+  under `resources/`; UIs load them by scanning their directory, so no code change
+  is needed to add content.
+- **Code-built UI** routes colours and shared widgets through `UITheme`.
+- Tabs for indentation (`.editorconfig`).

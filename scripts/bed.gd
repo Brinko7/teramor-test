@@ -13,7 +13,7 @@ func _ready() -> void:
 	add_to_group("interactable")
 
 func interact(_player) -> void:
-	Dialogue.start_conversation([], _build_menu, speaker_name)
+	UIManager.dialogue.start_conversation([], _build_menu, speaker_name)
 
 func _build_menu() -> Dictionary:
 	return {

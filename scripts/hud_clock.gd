@@ -26,11 +26,7 @@ func _build() -> void:
 	panel.grow_vertical = Control.GROW_DIRECTION_END
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.164706, 0.12549, 0.094118, 0.85)
-	style.set_border_width_all(1)
-	style.border_color = Color(0.482353, 0.337255, 0.188235, 1)
-	style.set_corner_radius_all(3)
+	var style := UITheme.panel_style(0.85)
 	style.set_content_margin_all(4)
 	panel.add_theme_stylebox_override("panel", style)
 	add_child(panel)
@@ -44,7 +40,7 @@ func _build() -> void:
 	_day_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var day_settings := LabelSettings.new()
 	day_settings.font_size = 9
-	day_settings.font_color = Color(0.611765, 0.541176, 0.439216, 1)
+	day_settings.font_color = UITheme.PROMPT
 	_day_label.label_settings = day_settings
 	box.add_child(_day_label)
 
@@ -52,7 +48,7 @@ func _build() -> void:
 	_time_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	var time_settings := LabelSettings.new()
 	time_settings.font_size = 13
-	time_settings.font_color = Color(0.95, 0.9, 0.7, 1)
+	time_settings.font_color = UITheme.PARCHMENT
 	_time_label.label_settings = time_settings
 	box.add_child(_time_label)
 

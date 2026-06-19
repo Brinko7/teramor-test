@@ -139,7 +139,7 @@ func _build_overlay() -> void:
 	title.text = "You Died"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	title.add_theme_font_size_override("font_size", 48)
-	title.add_theme_color_override("font_color", Color(0.85, 0.2, 0.2))
+	title.add_theme_color_override("font_color", UITheme.DANGER)
 	box.add_child(title)
 
 	_button_box = VBoxContainer.new()

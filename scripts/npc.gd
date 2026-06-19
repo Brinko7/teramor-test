@@ -126,7 +126,7 @@ func interact(player) -> void:
 	if first_meet and data.met_line != "":
 		intro.append({"text": data.met_line})
 
-	Dialogue.start_conversation(intro, _build_main_menu, data.display_name)
+	UIManager.dialogue.start_conversation(intro, _build_main_menu, data.display_name)
 
 # --- Menu construction ------------------------------------------------------
 
@@ -255,4 +255,4 @@ func _legacy_interact() -> void:
 	if offered_quest != null and not QuestManager.is_active(offered_quest.id) \
 			and not QuestManager.is_completed(offered_quest.id):
 		QuestManager.start_quest(offered_quest)
-	Dialogue.start(lines, speaker_name)
+	UIManager.dialogue.start(lines, speaker_name)

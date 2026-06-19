@@ -149,12 +149,7 @@ func _build_journal() -> void:
 
 	var panel := PanelContainer.new()
 	panel.set_anchors_preset(Control.PRESET_CENTER)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.164706, 0.12549, 0.094118, 0.964706)
-	style.set_border_width_all(1)
-	style.border_color = Color(0.482353, 0.337255, 0.188235, 1)
-	style.set_corner_radius_all(3)
-	panel.add_theme_stylebox_override("panel", style)
+	panel.add_theme_stylebox_override("panel", UITheme.panel_style(0.964706))
 	_journal.add_child(panel)
 
 	var margin := MarginContainer.new()
@@ -173,7 +168,7 @@ func _build_journal() -> void:
 	title.text = "Quest Journal"
 	var title_settings := LabelSettings.new()
 	title_settings.font_size = 12
-	title_settings.font_color = Color(0.368627, 0.588235, 0.282353, 1)
+	title_settings.font_color = UITheme.ACCENT
 	title.label_settings = title_settings
 	vbox.add_child(title)
 
@@ -188,7 +183,7 @@ func _build_journal() -> void:
 	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	var prompt_settings := LabelSettings.new()
 	prompt_settings.font_size = 9
-	prompt_settings.font_color = Color(0.913725, 0.886275, 0.831373, 1)
+	prompt_settings.font_color = UITheme.TEXT
 	prompt.label_settings = prompt_settings
 	vbox.add_child(prompt)
 
@@ -215,7 +210,7 @@ func _make_entry_label(text: String, tooltip: String) -> Label:
 	label.tooltip_text = tooltip
 	var settings := LabelSettings.new()
 	settings.font_size = 10
-	settings.font_color = Color(0.913725, 0.886275, 0.831373, 1)
+	settings.font_color = UITheme.TEXT
 	label.label_settings = settings
 	return label
 
