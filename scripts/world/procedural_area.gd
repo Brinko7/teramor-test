@@ -23,6 +23,7 @@ extends Node2D
 
 const EDGE := 24
 const GATE_MARGIN := 20.0
+const TREASURE_SCENE := preload("res://scenes/entities/treasure_chest.tscn")
 
 var _rng := RandomNumberGenerator.new()
 var _entities: Node2D
@@ -56,6 +57,7 @@ func _ready() -> void:
 	_paint_ground()
 	_scatter_props()
 	_spawn_enemies()
+	_spawn_treasure()
 	_build_gates()
 	_clamp_camera()
 
@@ -133,6 +135,27 @@ func _spawn_enemies() -> void:
 		_entities.add_child(enemy)
 		if enemy.has_method("apply_tier"):
 			enemy.call("apply_tier", _tier)
+
+## Scatter treasure chests. Excursions reward exploration more than one-off
+## encounters, and deeper tiers stock fuller chests — so braving the Wilds pays.
+func _spawn_treasure() -> void:
+	var pool: Array = _build_loot()
+	if pool.is_empty():
+		return
+	var chests: int = clampi(_tier - 1, 1, 3) if _explore else (1 if _rng.randf() < 0.4 else 0)
+	for c in range(chests):
+		var chest := TREASURE_SCENE.instantiate()
+		if chest is Node2D:
+			(chest as Node2D).position = Vector2(
+				_rng.randi_range(EDGE + 24, world_width - EDGE - 24),
+				_rng.randi_range(EDGE + 24, world_height - EDGE - 24)
+			)
+		_entities.add_child(chest)
+		var n: int = clampi(1 + _tier / 2, 1, 3)
+		var items: Array = []
+		for i in range(n):
+			items.append(pool[_rng.randi() % pool.size()])
+		chest.call("configure", items)
 
 func _build_loot() -> Array:
 	var table: Array[Item] = []

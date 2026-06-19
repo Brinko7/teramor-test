@@ -78,19 +78,32 @@ func _ready() -> void:
 	_visuals.setup(sprite, outfit_sprite, hair_sprite, gear_layers,
 		weapon_pivot, weapon_sprite, shield_pivot, shield_sprite, equipment)
 	equipment.changed.connect(_visuals.refresh_gear)
+	equipment.changed.connect(_on_gear_changed)
 	# Progression wiring: earn XP from kills, scale Health to leveled max HP.
 	Events.enemy_killed.connect(_on_enemy_killed)
 	Events.player_leveled_up.connect(_on_player_leveled_up)
 	health.died.connect(_on_died)
-	health.max_health = stats.max_hp
-	health.health = stats.max_hp
+	health.max_health = _max_hp()
+	health.health = health.max_health
 	_home_position = global_position
 	PlayerProfile.changed.connect(_apply_appearance)
 	_apply_appearance()
 	_grant_starting_kit()
+	# Top off to the full pool now that starting gear (and its HP affixes) is on.
+	health.health = health.max_health
 	_visuals.refresh_gear()
 	stats.skills_changed.connect(_on_skills_changed)
 	_sync_abilities()
+
+## Max HP from level/attributes/skills plus equipped-gear HP affixes.
+func _max_hp() -> int:
+	return stats.max_hp + (equipment.bonus_max_hp() if equipment != null else 0)
+
+## Equipped gear changed: resize the health pool to include gear HP affixes.
+func _on_gear_changed() -> void:
+	health.max_health = _max_hp()
+	health.health = mini(health.health, health.max_health)
+	health.health_changed.emit(health.health, health.max_health)
 
 ## Paints the paper-doll from the chosen identity: skin tints the body sprite,
 ## the hair style swaps its texture and the hair colour tints it.
@@ -242,7 +255,8 @@ func _start_attack() -> void:
 func _fire_projectile(weapon: WeaponItem) -> void:
 	var arrow := ARROW_SCENE.instantiate() as Projectile
 	arrow.global_position = global_position + _aim * 8.0 + Vector2(0, -10)
-	arrow.setup(_aim, weapon.damage + stats.ranged_power(), weapon.projectile_speed, weapon.range)
+	var ranged_dmg: int = weapon.damage + stats.ranged_power() + (equipment.bonus_ranged() if equipment != null else 0)
+	arrow.setup(_aim, ranged_dmg, weapon.projectile_speed, weapon.range)
 	get_parent().add_child(arrow)
 
 func _end_attack() -> void:
@@ -262,10 +276,13 @@ func _apply_hit(target) -> void:
 	if target.is_in_group("enemy") and target.has_method("take_damage"):
 		var weapon: WeaponItem = _current_weapon()
 		var weapon_dmg: int = weapon.damage if weapon != null else attack_power
-		# Base damage scales with level; the weapon contributes a flat bonus.
-		var dmg: int = stats.attack_power() + weapon_dmg
+		# Base (level + attributes + skills), the weapon's flat damage, and gear affixes.
+		var dmg: int = stats.attack_power() + weapon_dmg + (equipment.bonus_melee() if equipment != null else 0)
 		_hit_enemies.append(target)
 		target.take_damage(dmg)
+		var steal: float = equipment.lifesteal() if equipment != null else 0.0
+		if steal > 0.0:
+			health.heal(maxi(1, int(round(dmg * steal))))
 
 func take_damage(amount: int) -> void:
 	if _invuln_timer > 0.0:
@@ -293,13 +310,13 @@ func _on_enemy_killed(_enemy_id: StringName, xp_reward: int, _position: Vector2)
 
 func _on_player_leveled_up(_new_level: int) -> void:
 	# Grow the Health pool to the new max and refill on level-up.
-	health.max_health = stats.max_hp
-	health.heal(stats.max_hp)
+	health.max_health = _max_hp()
+	health.heal(health.max_health)
 
 ## Attributes/skills changed: grow the health pool (without a free heal) and
 ## refresh which elemental abilities are castable.
 func _on_skills_changed() -> void:
-	health.max_health = stats.max_hp
+	health.max_health = _max_hp()
 	health.health = mini(health.health, health.max_health)
 	health.health_changed.emit(health.health, health.max_health)
 	_sync_abilities()
@@ -325,8 +342,8 @@ func _on_died() -> void:
 ## Revives the player at the camp spawn with full (leveled) health. Death costs
 ## a slice of progress toward the current level rather than a hard XP/level loss.
 func revive() -> void:
-	health.max_health = stats.max_hp
-	health.revive(stats.max_hp)
+	health.max_health = _max_hp()
+	health.revive(health.max_health)
 	stats.apply_death_penalty()
 	_invuln_timer = invuln_time
 	modulate = Color.WHITE
@@ -346,6 +363,6 @@ func save_state() -> Dictionary:
 
 func load_state(data: Dictionary) -> void:
 	global_position = Vector2(float(data.get("x", global_position.x)), float(data.get("y", global_position.y)))
-	health.max_health = stats.max_hp
+	health.max_health = _max_hp()
 	health.health = clampi(int(data.get("health", health.health)), 0, health.max_health)
 	health.health_changed.emit(health.health, health.max_health)

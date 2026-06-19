@@ -26,6 +26,7 @@ var _catalog_order: Array[StringName] = []
 
 @onready var _mana: Mana = get_parent().get_node_or_null("Mana")
 @onready var _stats: Stats = get_parent().get_node_or_null("Stats")
+@onready var _equipment: Equipment = get_parent().get_node_or_null("Equipment")
 
 func _ready() -> void:
 	for ability in hotbar:
@@ -118,7 +119,9 @@ func _execute(a: AbilityData, origin: Vector2, aim: Vector2) -> void:
 				hp.heal(power)
 
 func _spell_power() -> int:
-	return _stats.spell_power() if _stats != null else 0
+	var power: int = _stats.spell_power() if _stats != null else 0
+	power += _equipment.bonus_spell() if _equipment != null else 0
+	return power
 
 ## Where spawned effects live: the player's parent (the world), matching how the
 ## player spawns arrows.
