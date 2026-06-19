@@ -113,6 +113,28 @@ weapon/shield with their posing/swing/recoil — lives in
 `scripts/components/player_visuals.gd` (`class_name PlayerVisuals`), created in
 `_ready()` and fed state each frame (body frame, aim, block flag).
 
+### Quests
+A `Quest` (`scripts/quest.gd`) has a `category` (Main / Contract / Rescue / Task)
+and a list of `QuestObjective`s (`scripts/quest_objective.gd`) — KILL, COLLECT or
+STORY — all of which must be met to finish. KILL/COLLECT advance automatically off
+the `Events` bus; STORY objectives advance when narrative code calls
+`QuestManager.advance_story(beat_id)`.
+
+For back-compat, a quest with an empty `objectives` array falls back to the flat
+`objective`/`target_id`/`required_count` fields (one synthesized objective), so
+pre-existing single-objective `.tres` files still work. Author multi-objective
+quests in the editor by populating the `objectives` array.
+
+If a quest `requires_turn_in`, meeting its objectives makes it **ready** rather
+than complete; the player turns it in to the NPC whose `NpcData.id` matches the
+quest's `giver_id` (the NPC offers a "Turn in" choice via
+`QuestManager.get_turn_in_quests`). Otherwise it auto-completes and grants rewards.
+
+`QuestManager` keeps one **tracked** quest (`set_tracked`/`get_tracked`); the
+on-screen `quest_tracker.gd` HUD (UIManager-owned) shows it during gameplay, and
+the menu's Quests tab has a Track button per quest. Quest progress saves
+per-objective; `load_state` also reads the old single-int format.
+
 ## Conventions
 
 - **Decouple via `Events`** rather than direct node references where practical.

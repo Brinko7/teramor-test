@@ -26,6 +26,7 @@ extends Node
 const DIALOGUE_SCENE := preload("res://scenes/ui/dialogue_box.tscn")
 const CRAFTING_SCENE := preload("res://scenes/ui/crafting_ui.tscn")
 const MENU_SCRIPT := preload("res://scripts/ui/player_menu.gd")
+const TRACKER_SCRIPT := preload("res://scripts/ui/quest_tracker.gd")
 const SHOP_SCRIPT := preload("res://scripts/autoload/shop_ui.gd")
 const STORAGE_SCRIPT := preload("res://scripts/autoload/storage_ui.gd")
 
@@ -35,6 +36,7 @@ const STORAGE_SCRIPT := preload("res://scripts/autoload/storage_ui.gd")
 var dialogue
 var crafting
 var menu
+var tracker
 var shop
 var storage
 
@@ -43,7 +45,8 @@ func _ready() -> void:
 	dialogue = DIALOGUE_SCENE.instantiate()
 	crafting = CRAFTING_SCENE.instantiate()
 	menu = MENU_SCRIPT.new()
+	tracker = TRACKER_SCRIPT.new()
 	shop = SHOP_SCRIPT.new()
 	storage = STORAGE_SCRIPT.new()
-	for panel: CanvasLayer in [dialogue, crafting, menu, shop, storage]:
+	for panel: CanvasLayer in [dialogue, crafting, menu, tracker, shop, storage]:
 		add_child(panel)

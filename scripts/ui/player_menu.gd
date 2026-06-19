@@ -28,6 +28,15 @@ const TAB_NAMES := {
 const COLUMNS := 6
 const SLOT := 34.0
 
+## Quest category -> Quests-tab heading. A var (not const) since the keys are
+## another class's enum.
+var _category_names := {
+	Quest.Category.MAIN: "Main Story",
+	Quest.Category.CONTRACT: "Contracts",
+	Quest.Category.RESCUE: "Rescues",
+	Quest.Category.TASK: "Tasks",
+}
+
 ## Paper-doll rows: [equipment slot, label]. Weapon is handled separately. A var
 ## (not const) because the entries reference another class's enum.
 var _doll_slots := [
@@ -132,8 +141,10 @@ func _connect_sources() -> void:
 		[_equipment.changed, _r0],
 		[_stats.stats_changed, _r0],
 		[QuestManager.quest_started, _r1],
-		[QuestManager.quest_progressed, _r2],
+		[QuestManager.quest_progressed, _r1],
+		[QuestManager.quest_ready, _r1],
 		[QuestManager.quest_completed, _r1],
+		[QuestManager.tracked_changed, _r1],
 		[Relationships.points_changed, _r2],
 		[Relationships.hearts_changed, _r2],
 		[Relationships.npc_met, _r2],
@@ -395,27 +406,67 @@ func _build_character() -> Control:
 func _build_quests() -> Control:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 4)
-	box.custom_minimum_size = Vector2(300, 0)
+	box.custom_minimum_size = Vector2(320, 0)
 
 	var active: Array = QuestManager.get_active_quests()
-	box.add_child(UITheme.make_label("Active", 11, UITheme.ACCENT))
 	if active.is_empty():
 		box.add_child(UITheme.make_label("No active quests.", 10, UITheme.MUTED))
 	else:
-		for entry: Dictionary in active:
-			var quest: Quest = entry["quest"]
-			var progress: int = int(entry["progress"])
-			var tag: String = "  [Contract]" if quest.repeatable else ""
-			var line: String = "%s  %d/%d%s" % [quest.title, progress, quest.required_count, tag]
-			var label := UITheme.make_label(line, 10, UITheme.TEXT)
-			label.tooltip_text = quest.description
-			box.add_child(label)
+		# Group under category headings, in a fixed order.
+		for category: int in [Quest.Category.MAIN, Quest.Category.CONTRACT, Quest.Category.RESCUE, Quest.Category.TASK]:
+			var group: Array = active.filter(
+				func(e: Dictionary) -> bool: return (e["quest"] as Quest).category == category)
+			if group.is_empty():
+				continue
+			box.add_child(UITheme.make_label(_category_names[category], 11, UITheme.ACCENT))
+			for entry: Dictionary in group:
+				box.add_child(_quest_row(entry))
 
 	var done: int = QuestManager.get_completed_count()
 	if done > 0:
 		box.add_child(HSeparator.new())
 		box.add_child(UITheme.make_label("Completed: %d" % done, 10, UITheme.PROMPT))
 	return box
+
+## One quest entry: a title row with a Track button, then per-objective progress
+## (or a turn-in prompt).
+func _quest_row(entry: Dictionary) -> Control:
+	var quest: Quest = entry["quest"]
+	var progress: Array = entry["progress"]
+	var ready: bool = entry["ready"]
+
+	var row := VBoxContainer.new()
+	row.add_theme_constant_override("separation", 0)
+
+	var header := HBoxContainer.new()
+	header.add_theme_constant_override("separation", 6)
+	var title := UITheme.make_label(quest.title, 10, UITheme.TEXT)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	title.tooltip_text = quest.description
+	header.add_child(title)
+
+	var tracked: bool = QuestManager.get_tracked_id() == quest.id
+	var track_btn := Button.new()
+	track_btn.text = "Tracking" if tracked else "Track"
+	track_btn.disabled = tracked
+	track_btn.add_theme_font_size_override("font_size", 9)
+	track_btn.pressed.connect(_on_track_pressed.bind(quest.id))
+	header.add_child(track_btn)
+	row.add_child(header)
+
+	if ready:
+		var prompt: String = "   Ready — turn in to %s" % String(quest.giver_id) if quest.giver_id != &"" else "   Ready to turn in!"
+		row.add_child(UITheme.make_label(prompt, 9, UITheme.GOLD))
+	else:
+		var objectives: Array = quest.get_objectives()
+		for i in range(objectives.size()):
+			var obj: QuestObjective = objectives[i]
+			var current: int = int(progress[i]) if i < progress.size() else 0
+			row.add_child(UITheme.make_label("   • %s  %d/%d" % [obj.label(), current, obj.required_count], 9, UITheme.PROMPT))
+	return row
+
+func _on_track_pressed(quest_id: StringName) -> void:
+	QuestManager.set_tracked(quest_id)
 
 # --- Social tab -------------------------------------------------------------
 

@@ -136,6 +136,14 @@ func _build_main_menu() -> Dictionary:
 
 	choices.append({"text": "Talk", "effect": _do_talk, "then": _talk_lines(hearts)})
 
+	# Turn in any quests this NPC gave that are now ready to hand in.
+	for quest: Quest in QuestManager.get_turn_in_quests(data.id):
+		choices.append({
+			"text": "Turn in: %s" % quest.title,
+			"effect": _turn_in.bind(quest),
+			"then": [{"text": "Quest complete — thank you."}],
+		})
+
 	for topic: Dictionary in data.topics:
 		if _topic_available(topic, hearts):
 			choices.append({
@@ -180,6 +188,9 @@ func _build_gift_menu() -> Dictionary:
 
 func _do_talk() -> void:
 	Relationships.try_talk(data.id)
+
+func _turn_in(quest: Quest) -> void:
+	QuestManager.turn_in(quest.id)
 
 func _apply_topic(topic: Dictionary) -> void:
 	var affinity: int = int(topic.get("affinity", 0))

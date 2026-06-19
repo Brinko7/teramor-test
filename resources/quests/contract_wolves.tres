@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"contract_wolves"
+category = 1
 title = "Wolves at the Treeline"
 description = "Wolves have been harrying the herders' flocks. Put down 3 of them."
 objective = 0
