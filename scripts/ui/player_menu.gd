@@ -15,14 +15,22 @@ extends CanvasLayer
 ##   Quests    — active quests with objective progress, plus a completed count.
 ##   Social    — NPCs met and their heart totals.
 
-enum Tab { INVENTORY, CHARACTER, QUESTS, SOCIAL, MAP }
+enum Tab { INVENTORY, CHARACTER, SKILLS, QUESTS, SOCIAL, MAP }
 
 const TAB_NAMES := {
 	Tab.INVENTORY: "Inventory",
 	Tab.CHARACTER: "Character",
+	Tab.SKILLS: "Skills",
 	Tab.QUESTS: "Quests",
 	Tab.SOCIAL: "Social",
 	Tab.MAP: "Map",
+}
+
+## Skill-tree branch -> heading. A var (keys are another class's enum).
+var _branch_names := {
+	SkillNode.Branch.WARFARE: "Warfare",
+	SkillNode.Branch.MARKSMANSHIP: "Marksmanship",
+	SkillNode.Branch.ELEMENTALISM: "Elementalism",
 }
 
 ## Bag grid width and slot pixel size (kept compact for the 480x270 viewport).
@@ -141,6 +149,7 @@ func _connect_sources() -> void:
 		[_inventory.changed, _r0],
 		[_equipment.changed, _r0],
 		[_stats.stats_changed, _r0],
+		[_stats.skills_changed, _r0],
 		[QuestManager.quest_started, _r1],
 		[QuestManager.quest_progressed, _r1],
 		[QuestManager.quest_ready, _r1],
@@ -216,7 +225,7 @@ func _build_shell() -> void:
 func _rebuild_tab_bar() -> void:
 	for child: Node in _tab_bar.get_children():
 		child.queue_free()
-	for tab: int in [Tab.INVENTORY, Tab.CHARACTER, Tab.QUESTS, Tab.SOCIAL, Tab.MAP]:
+	for tab: int in [Tab.INVENTORY, Tab.CHARACTER, Tab.SKILLS, Tab.QUESTS, Tab.SOCIAL, Tab.MAP]:
 		var btn := Button.new()
 		btn.text = TAB_NAMES[tab]
 		btn.add_theme_font_size_override("font_size", 10)
@@ -237,6 +246,8 @@ func _refresh() -> void:
 			_content.add_child(_build_inventory())
 		Tab.CHARACTER:
 			_content.add_child(_build_character())
+		Tab.SKILLS:
+			_content.add_child(_build_skills())
 		Tab.QUESTS:
 			_content.add_child(_build_quests())
 		Tab.SOCIAL:
@@ -402,9 +413,85 @@ func _build_character() -> Control:
 	var defense: int = _stats.defense_power() + _equipment.total_defense()
 	box.add_child(UITheme.make_label("Max HP   %d" % _stats.max_hp, 11, UITheme.TEXT))
 	box.add_child(UITheme.make_label("Attack   %d" % atk, 11, UITheme.TEXT))
+	box.add_child(UITheme.make_label("Ranged   %d" % _stats.ranged_power(), 11, UITheme.TEXT))
 	box.add_child(UITheme.make_label("Defense  %d" % defense, 11, UITheme.TEXT))
 	box.add_child(UITheme.make_label("Spell    %d" % _stats.spell_power(), 11, UITheme.TEXT))
 	return box
+
+# --- Skills tab -------------------------------------------------------------
+
+func _build_skills() -> Control:
+	var scroll := ScrollContainer.new()
+	scroll.custom_minimum_size = Vector2(380, 190)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 3)
+	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	scroll.add_child(box)
+
+	box.add_child(UITheme.make_label(
+		"Attribute Points: %d      Skill Points: %d" % [_stats.attribute_points, _stats.skill_points],
+		11, UITheme.GOLD))
+
+	# Attributes with a [+] each.
+	_attr_row(box, "Might  (melee)", "might", _stats.might)
+	_attr_row(box, "Finesse  (ranged)", "finesse", _stats.finesse)
+	_attr_row(box, "Vitality  (health)", "vitality", _stats.vitality)
+	_attr_row(box, "Attunement  (spell)", "attunement", _stats.attunement)
+
+	# Skill tree, grouped by branch.
+	for branch: int in [SkillNode.Branch.WARFARE, SkillNode.Branch.MARKSMANSHIP, SkillNode.Branch.ELEMENTALISM]:
+		var nodes: Array = Skills.nodes_in_branch(branch)
+		if nodes.is_empty():
+			continue
+		box.add_child(HSeparator.new())
+		box.add_child(UITheme.make_label(_branch_names[branch], 11, UITheme.ACCENT))
+		for node: SkillNode in nodes:
+			box.add_child(_skill_row(node))
+	return scroll
+
+func _attr_row(box: VBoxContainer, label: String, attr: StringName, value: int) -> void:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	var name_label := UITheme.make_label("%s: %d" % [label, value], 10, UITheme.TEXT)
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(name_label)
+	var btn := Button.new()
+	btn.text = "+"
+	btn.custom_minimum_size = Vector2(22, 0)
+	btn.disabled = _stats.attribute_points <= 0
+	btn.pressed.connect(_on_spend_attribute.bind(attr))
+	row.add_child(btn)
+	box.add_child(row)
+
+func _skill_row(node: SkillNode) -> Control:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+
+	var learned: bool = _stats.is_learned(node.id)
+	var color: Color = UITheme.ACCENT if learned else UITheme.TEXT
+	var name_label := UITheme.make_label("%s  (%d)" % [node.display_name, node.cost], 10, color)
+	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	name_label.tooltip_text = node.description
+	row.add_child(name_label)
+
+	if learned:
+		row.add_child(UITheme.make_label("learned", 9, UITheme.PROMPT))
+	elif _stats.can_learn(node.id):
+		var btn := Button.new()
+		btn.text = "Learn"
+		btn.add_theme_font_size_override("font_size", 9)
+		btn.pressed.connect(_on_learn_pressed.bind(node.id))
+		row.add_child(btn)
+	else:
+		row.add_child(UITheme.make_label(_stats.locked_reason(node.id), 9, UITheme.MUTED))
+	return row
+
+func _on_spend_attribute(attr: StringName) -> void:
+	_stats.spend_attribute(attr)
+
+func _on_learn_pressed(node_id: StringName) -> void:
+	_stats.learn_skill(node_id)
 
 # --- Quests tab -------------------------------------------------------------
 

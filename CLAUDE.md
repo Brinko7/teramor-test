@@ -113,6 +113,27 @@ weapon/shield with their posing/swing/recoil — lives in
 `scripts/components/player_visuals.gd` (`class_name PlayerVisuals`), created in
 `_ready()` and fed state each frame (body frame, aim, block flag).
 
+### Progression & skills
+`Stats` (`scripts/stats.gd`, child of the player) is the progression authority:
+level/XP, four allocatable **attributes** (Might→melee, Finesse→ranged,
+Vitality→HP, Attunement→spell), and the set of **learned skill nodes**. Derived
+combat stats = base growth + attributes + the summed passives of learned nodes.
+A level-up grants attribute and skill points (`stats_changed` for XP/level,
+`skills_changed` for build changes).
+
+Skill nodes are `SkillNode` resources (`scripts/skill_node.gd`) under
+`resources/skills/`, loaded by the **Skills** autoload catalog. A node lives in a
+branch (Warfare / Marksmanship / Elementalism), may require other nodes + a level,
+and either grants passive bonuses, unlocks an elemental ability
+(`unlock_ability_id`), or both. Add a skill by authoring a `.tres`.
+
+Elemental abilities are **earned, not given**: the player scene's authored
+`AbilityCaster.hotbar` is treated as the ability *catalog*, and
+`AbilityCaster.set_unlocked(ids)` rebuilds the castable bar from the abilities
+that learned skill nodes unlock. `player.gd` resyncs this (and the health pool) on
+`skills_changed`. Ranged damage now flows through `Stats.ranged_power()`. The
+player menu's **Skills** tab spends points and learns nodes.
+
 ### Quests
 A `Quest` (`scripts/quest.gd`) has a `category` (Main / Contract / Rescue / Task)
 and a list of `QuestObjective`s (`scripts/quest_objective.gd`) — KILL, COLLECT or

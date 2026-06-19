@@ -1,15 +1,17 @@
 extends Node
 class_name AbilityCaster
 
-## The player's spellbook + hotbar. Holds up to a few AbilityData in `hotbar`
-## (authored in the editor) and casts them by slot, gated on cooldown and the
-## sibling Mana component. Spawns the right effect for each ability's behavior.
-## Adding a spell = author an AbilityData .tres and drop it in a slot.
+## The player's spellbook + hotbar. The authored `hotbar` array is treated as the
+## full catalog of elemental abilities; which of them are actually castable is
+## driven by the skill tree via set_unlocked(). Casts by slot, gated on cooldown
+## and the sibling Mana component. Adding a spell = author an AbilityData .tres,
+## drop it in the catalog, and point a SkillNode's unlock_ability_id at it.
 
 const PROJECTILE_SCENE := preload("res://scenes/entities/ability_projectile.tscn")
 const NOVA_SCENE := preload("res://scenes/entities/ability_nova.tscn")
 
-## Ordered hotbar; slot i is cast with the ability_{i+1} input action.
+## Authored in the editor: the catalog of all elemental abilities the player can
+## ever learn. The active hotbar is rebuilt from this by set_unlocked().
 @export var hotbar: Array[AbilityData] = []
 
 ## Emitted whenever a cast succeeds (for FX/SFX hooks).
@@ -18,13 +20,33 @@ signal ability_cast(slot: int, ability: AbilityData)
 signal cooldowns_changed
 
 var _cooldowns: Array[float] = []
+## id -> AbilityData and the authored order, captured from the catalog at _ready.
+var _catalog: Dictionary = {}
+var _catalog_order: Array[StringName] = []
 
 @onready var _mana: Mana = get_parent().get_node_or_null("Mana")
 @onready var _stats: Stats = get_parent().get_node_or_null("Stats")
 
 func _ready() -> void:
+	for ability in hotbar:
+		if ability != null:
+			_catalog[ability.id] = ability
+			_catalog_order.append(ability.id)
+	# Nothing is castable until the skill tree unlocks it.
+	hotbar.clear()
+	_cooldowns.clear()
+
+## Rebuild the active hotbar from the catalog for the given unlocked ability ids,
+## preserving the authored order so slots stay stable.
+func set_unlocked(ids: Array) -> void:
+	var bar: Array[AbilityData] = []
+	for cid in _catalog_order:
+		if ids.has(cid) and _catalog.has(cid):
+			bar.append(_catalog[cid])
+	hotbar = bar
 	_cooldowns.resize(hotbar.size())
 	_cooldowns.fill(0.0)
+	cooldowns_changed.emit()
 
 func _process(delta: float) -> void:
 	var changed: bool = false

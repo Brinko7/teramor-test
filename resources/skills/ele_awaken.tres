@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SkillNode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skill_node.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ele_awaken"
+display_name = "First Awakening"
+description = "The blood of Tera stirs. Unlock Fireball and gain +1 spell power."
+branch = 2
+cost = 1
+required_level = 1
+spell_flat = 1
+unlock_ability_id = &"fireball"
