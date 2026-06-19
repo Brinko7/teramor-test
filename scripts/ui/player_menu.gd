@@ -15,13 +15,14 @@ extends CanvasLayer
 ##   Quests    — active quests with objective progress, plus a completed count.
 ##   Social    — NPCs met and their heart totals.
 
-enum Tab { INVENTORY, CHARACTER, QUESTS, SOCIAL }
+enum Tab { INVENTORY, CHARACTER, QUESTS, SOCIAL, MAP }
 
 const TAB_NAMES := {
 	Tab.INVENTORY: "Inventory",
 	Tab.CHARACTER: "Character",
 	Tab.QUESTS: "Quests",
 	Tab.SOCIAL: "Social",
+	Tab.MAP: "Map",
 }
 
 ## Bag grid width and slot pixel size (kept compact for the 480x270 viewport).
@@ -148,6 +149,8 @@ func _connect_sources() -> void:
 		[Relationships.points_changed, _r2],
 		[Relationships.hearts_changed, _r2],
 		[Relationships.npc_met, _r2],
+		[WorldMap.location_discovered, _r1],
+		[WorldMap.current_changed, _r1],
 	]
 	if _health != null:
 		_bindings.append([_health.health_changed, _r2])
@@ -213,7 +216,7 @@ func _build_shell() -> void:
 func _rebuild_tab_bar() -> void:
 	for child: Node in _tab_bar.get_children():
 		child.queue_free()
-	for tab: int in [Tab.INVENTORY, Tab.CHARACTER, Tab.QUESTS, Tab.SOCIAL]:
+	for tab: int in [Tab.INVENTORY, Tab.CHARACTER, Tab.QUESTS, Tab.SOCIAL, Tab.MAP]:
 		var btn := Button.new()
 		btn.text = TAB_NAMES[tab]
 		btn.add_theme_font_size_override("font_size", 10)
@@ -238,6 +241,8 @@ func _refresh() -> void:
 			_content.add_child(_build_quests())
 		Tab.SOCIAL:
 			_content.add_child(_build_social())
+		Tab.MAP:
+			_content.add_child(_build_map())
 
 # --- Inventory tab ----------------------------------------------------------
 
@@ -483,3 +488,40 @@ func _build_social() -> Control:
 		var bar: String = "%s%s" % ["♥".repeat(hearts), "♡".repeat(Relationships.MAX_HEARTS - hearts)]
 		box.add_child(UITheme.make_label("%s   %s" % [String(npc["name"]), bar], 11, UITheme.TEXT))
 	return box
+
+# --- Map tab ----------------------------------------------------------------
+
+func _build_map() -> Control:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 4)
+	box.custom_minimum_size = Vector2(240, 0)
+
+	var current: StringName = WorldMap.get_current()
+	var here: WorldLocation = WorldMap.get_location(current)
+	box.add_child(UITheme.make_label("Location: %s" % (here.display_name if here != null else "The Wilds"), 11, UITheme.ACCENT))
+	box.add_child(HSeparator.new())
+
+	# No fast travel mid-encounter — cross to the exit instead.
+	if current == &"":
+		box.add_child(UITheme.make_label("You can't fast travel from the wilds.", 10, UITheme.MUTED))
+		return box
+
+	var options: Array = WorldMap.get_travel_options()
+	if options.is_empty():
+		box.add_child(UITheme.make_label("Nowhere discovered to travel yet.", 10, UITheme.MUTED))
+		return box
+
+	box.add_child(UITheme.make_label("Fast travel to:", 10, UITheme.TEXT))
+	for loc: WorldLocation in options:
+		var btn := Button.new()
+		btn.text = "%s   (Tier %d)" % [loc.display_name, loc.tier]
+		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+		btn.add_theme_font_size_override("font_size", 10)
+		btn.tooltip_text = loc.blurb
+		btn.pressed.connect(_on_travel_pressed.bind(loc.id))
+		box.add_child(btn)
+	return box
+
+func _on_travel_pressed(location_id: StringName) -> void:
+	_close()  # unpause before the scene transition
+	TravelManager.fast_travel(location_id)

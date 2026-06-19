@@ -5,6 +5,9 @@ extends Node2D
 @export var map_size: Vector2i = Vector2i(640, 480)
 
 func _ready() -> void:
+	# Tag this scene as the player's current world location for the map/fast travel.
+	WorldMap.discover(&"settlement_camp")
+	WorldMap.set_current(&"settlement_camp")
 	var cam := get_node_or_null("Entities/Player/Camera2D") as Camera2D
 	if cam == null:
 		var p := get_tree().get_first_node_in_group("player")

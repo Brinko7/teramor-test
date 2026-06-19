@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/biome_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"deepwood"
+display_name = "The Deepwood"
+ground_texture_path = "res://assets/placeholder/grass.png"
+ground_tint = Color(0.6, 0.74, 0.55, 1)
+enemy_paths = PackedStringArray("res://scenes/entities/enemy_wolf.tscn", "res://scenes/entities/enemy.tscn", "res://scenes/entities/enemy_archer.tscn", "res://scenes/entities/enemy_brute.tscn")
+enemy_weights = PackedFloat32Array(4, 3, 2, 1)
+prop_paths = PackedStringArray("res://scenes/entities/props/tree.tscn", "res://scenes/entities/props/bush.tscn", "res://scenes/entities/props/rock.tscn", "res://scenes/entities/props/flower.tscn")
+border_path = "res://scenes/entities/props/tree.tscn"
+loot_paths = PackedStringArray("res://resources/items/herb.tres", "res://resources/items/wood.tres", "res://resources/items/health_potion.tres")
+base_tier = 2
+min_enemies = 3
+max_enemies = 5
+min_props = 20
+max_props = 32

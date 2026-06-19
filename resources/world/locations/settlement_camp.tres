@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WorldLocation" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/world_location.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"settlement_camp"
+display_name = "Children of Tera Camp"
+blurb = "Your camp on the edge of the wilds, home to the Children of Tera."
+scene_path = "res://scenes/world/settlement.tscn"
+spawn_point = "from_road"
+tier = 0
+connections = PackedStringArray("cleaves_landing")
+discovered_by_default = true
+travel_biome_path = "res://resources/world/biomes/roadside.tres"

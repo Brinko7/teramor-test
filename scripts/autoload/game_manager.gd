@@ -36,6 +36,7 @@ func enter_world() -> void:
 	TimeManager.reset()
 	FarmManager.reset()
 	StorageManager.reset()
+	WorldMap.reset()
 	Story.start_new_game()
 	get_tree().change_scene_to_file(WORLD)
 

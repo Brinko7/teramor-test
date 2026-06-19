@@ -19,6 +19,9 @@ const TILE := 16
 var _terrain: TileMapLayer = null
 
 func _ready() -> void:
+	# Tag this scene as the player's current world location for the map/fast travel.
+	WorldMap.discover(&"cleaves_landing")
+	WorldMap.set_current(&"cleaves_landing")
 	_terrain = get_node_or_null("Terrain") as TileMapLayer
 	if _terrain != null:
 		_paint_streets()

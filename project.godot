@@ -29,6 +29,8 @@ SaveManager="*res://scripts/autoload/save_manager.gd"
 QuestManager="*res://scripts/autoload/quest_manager.gd"
 FarmManager="*res://scripts/autoload/farm_manager.gd"
 StorageManager="*res://scripts/autoload/storage_manager.gd"
+WorldMap="*res://scripts/autoload/world_map.gd"
+TravelManager="*res://scripts/autoload/travel_manager.gd"
 UIManager="*res://scripts/autoload/ui_manager.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 

@@ -135,6 +135,30 @@ on-screen `quest_tracker.gd` HUD (UIManager-owned) shows it during gameplay, and
 the menu's Quests tab has a Track button per quest. Quest progress saves
 per-objective; `load_state` also reads the old single-int format.
 
+### World, travel & procedural areas
+Named places are `WorldLocation` resources (`scripts/world/world_location.gd`)
+under `resources/world/locations/`, loaded by the **WorldMap** autoload, which
+tracks which are discovered and where the player currently is (persistent). Tag a
+hand-built scene as a location by calling `WorldMap.discover/set_current` in its
+root `_ready` (see `settlement.gd`, `town_terrain.gd`).
+
+**TravelManager** (autoload) moves the player around:
+- `fast_travel(id)` (from the menu's Map tab) rolls a tier-based encounter chance.
+  On a hit it stages a generated ambush and the player must cross to the far exit
+  to continue; otherwise they `arrive` directly. No fast travel mid-encounter.
+- `enter_area(biome, tier, return_to)` (an `ExploreZone` at a town edge) drops the
+  player into an explorable wild area.
+
+Generated areas use one scene, `scenes/world/procedural_area.tscn`
+(`scripts/world/procedural_area.gd`), driven by a **`BiomeData`** resource
+(`resources/world/biomes/`) and a difficulty **tier**. The generator reads the
+staged request from `TravelManager.consume_pending()`, paints the ground, scatters
+props, spawns tier-scaled enemies (`Enemy.apply_tier`), and wires exit "gates"
+(triggered by the player's position): a one-way *Continue* for encounters, or
+*Return* / *Deeper* (tier+1) for excursions. Add a biome or a place by authoring a
+`.tres` — scenes/items inside `BiomeData` are referenced by path, so no code
+change is needed.
+
 ## Conventions
 
 - **Decouple via `Events`** rather than direct node references where practical.
