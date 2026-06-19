@@ -37,6 +37,12 @@ class_name BiomeData
 @export var min_props: int = 16
 @export var max_props: int = 28
 
+## Harvestable resource item paths (ore/stone/crystal/herbs) and how many gather
+## nodes to scatter. Empty = no nodes (e.g. a road encounter).
+@export var gather_paths: PackedStringArray = PackedStringArray()
+@export var min_gather: int = 0
+@export var max_gather: int = 0
+
 ## Weighted random enemy path, skipping any whose scene is missing. Returns "" if
 ## none are available.
 func pick_enemy_path(rng: RandomNumberGenerator) -> String:

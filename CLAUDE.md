@@ -209,6 +209,13 @@ root `_ready` (see `settlement.gd`, `town_terrain.gd`).
 - `enter_area(biome, tier, return_to)` (an `ExploreZone` at a town edge) drops the
   player into an explorable wild area.
 
+Biomes can also seed **gather nodes** (`scripts/gather_node.gd`) — ore/stone/
+crystal veins you interact with to harvest, scattered from a biome's
+`gather_paths`. The `cave` biome (the Stone Folk Undervault, reached via a camp
+ExploreZone) yields materials that feed forge recipes (`forge_iron_sword`, etc.),
+closing the gather → craft → fight loop. Recipes are `Recipe` .tres referencing
+ingredients by item id.
+
 Generated areas use one scene, `scenes/world/procedural_area.tscn`
 (`scripts/world/procedural_area.gd`), driven by a **`BiomeData`** resource
 (`resources/world/biomes/`) and a difficulty **tier**. The generator reads the
