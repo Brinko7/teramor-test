@@ -199,6 +199,9 @@ func _apply_topic(topic: Dictionary) -> void:
 	var set_flag: String = String(topic.get("set_flag", ""))
 	if set_flag != "":
 		Story.set_flag(StringName(set_flag))
+	var story_beat: String = String(topic.get("story_beat", ""))
+	if story_beat != "":
+		Story.beat(StringName(story_beat))
 	var quest_path: String = String(topic.get("start_quest", ""))
 	if quest_path != "":
 		var quest := load(quest_path) as Quest

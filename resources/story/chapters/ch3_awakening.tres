@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="StoryChapter" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/story_chapter.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ch3_awakening"
+title = "Chapter 3: First Awakening"
+summary = "The Children of Tera take you in. They believe the blood of Tera runs in you — and that the wilds will wake it."
+quest_path = "res://resources/quests/q_awakening.tres"
+stage = 2
+intro_toast = "The Children of Tera: \"Step into the Deepwood. Let it wake what sleeps in you.\""
+completion_toast = "Power stirs within you. (+1 skill point — open the Skills tab)"
+set_flags = PackedStringArray("awakened")
+grant_skill_points = 1
+next_chapter = &""

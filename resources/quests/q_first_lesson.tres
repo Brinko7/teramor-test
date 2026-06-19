@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Quest" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/quest.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"q_first_lesson"
+category = 0
+title = "The Last Lesson"
+description = "Your father's final lesson before his contract: prove you can defend yourself. Defeat 2 foes."
+objective = 0
+target_id = &""
+required_count = 2
+reward_xp = 20

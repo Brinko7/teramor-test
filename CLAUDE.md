@@ -134,6 +134,27 @@ that learned skill nodes unlock. `player.gd` resyncs this (and the health pool) 
 `skills_changed`. Ranged damage now flows through `Stats.ranged_power()`. The
 player menu's **Skills** tab spends points and learns nodes.
 
+### Story / main questline
+The **Story** autoload is both a flag/`stage` bag and the main-line **director**. It
+loads `StoryChapter` resources (`scripts/story_chapter.gd`) from
+`resources/story/chapters/`; a new game starts `FIRST_CHAPTER`. Each chapter
+starts its `quest_path` and shows an intro banner; when that quest completes Story
+applies the chapter's `set_flags`, grants `grant_skill_points`, shows a completion
+banner, and starts `next_chapter`. Add/repace beats by authoring `.tres` — no code.
+
+**Beats** advance STORY quest objectives. `Story.beat(id)` calls
+`QuestManager.advance_story(id)` and records a `beat_<id>` flag. Triggers wired in
+Story: discovering a location fires `visit_<location_id>`, entering a wild area
+fires `enter_wilds` (via `TravelManager.area_entered`), and an NPC dialogue topic
+can fire one via its `story_beat` key. Because fast travel is gated on discovery,
+the opening naturally routes the player out to discover Cleeve's Landing.
+
+Banners are shown via `UIManager.notify(title, subtitle)` (the UIManager-owned
+`notification_banner`, also reusable for level-ups/awakenings).
+
+`Story` is registered **after** QuestManager/WorldMap/TravelManager in the autoload
+order because it connects to their signals in `_ready`.
+
 ### Quests
 A `Quest` (`scripts/quest.gd`) has a `category` (Main / Contract / Rescue / Task)
 and a list of `QuestObjective`s (`scripts/quest_objective.gd`) — KILL, COLLECT or

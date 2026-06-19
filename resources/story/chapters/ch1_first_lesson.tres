@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="StoryChapter" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/story_chapter.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ch1_first_lesson"
+title = "Chapter 1: The Last Lesson"
+summary = "Your father Elkar, a proper ranger, drills you on the edge of the wilds before his next contract."
+quest_path = "res://resources/quests/q_first_lesson.tres"
+stage = 0
+intro_toast = "Elkar: \"Show me you can hold your own — put down two of them.\""
+completion_toast = "Days pass, and Elkar never returns from his contract in Cleeve's Landing."
+set_flags = PackedStringArray("father_missing")
+grant_skill_points = 0
+next_chapter = &"ch2_missing_father"
