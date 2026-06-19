@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Quest" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/quest.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"contract_brutes"
+title = "The Brute of Hollow Glen"
+description = "A pair of brutes has made the glen a death trap. Bring them down."
+objective = 0
+target_id = &"brute"
+required_count = 2
+reward_xp = 45
+reward_coin = 60
+repeatable = true

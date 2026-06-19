@@ -1,0 +1,60 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="1_grass"]
+[ext_resource type="TileSet" path="res://assets/tilesets/terrain.tres" id="2_tileset"]
+[ext_resource type="Script" path="res://scripts/road_generator.gd" id="3_gen"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="4_player"]
+[ext_resource type="PackedScene" path="res://scenes/entities/transition_zone.tscn" id="5_tz"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="6_clock"]
+[ext_resource type="Script" path="res://scripts/day_night.gd" id="7_daynight"]
+
+[sub_resource type="RectangleShape2D" id="edge_shape"]
+size = Vector2(24, 96)
+
+[node name="Road" type="Node2D"]
+script = ExtResource("3_gen")
+
+[node name="Ground" type="Sprite2D" parent="."]
+texture_repeat = 2
+centered = false
+texture = ExtResource("1_grass")
+region_enabled = true
+region_rect = Rect2(0, 0, 960, 320)
+
+[node name="Terrain" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_tileset")
+
+[node name="Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Player" parent="Entities" instance=ExtResource("4_player")]
+position = Vector2(60, 160)
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="from_settlement" type="Marker2D" parent="Spawns" groups=["spawn"]]
+position = Vector2(60, 160)
+
+[node name="from_town" type="Marker2D" parent="Spawns" groups=["spawn"]]
+position = Vector2(900, 160)
+
+[node name="ExitToSettlement" parent="." instance=ExtResource("5_tz")]
+position = Vector2(8, 160)
+target_scene = "res://scenes/world/settlement.tscn"
+target_spawn = "from_road"
+
+[node name="CollisionShape2D" parent="ExitToSettlement" index="0"]
+shape = SubResource("edge_shape")
+
+[node name="ExitToTown" parent="." instance=ExtResource("5_tz")]
+position = Vector2(952, 160)
+target_scene = "res://scenes/world/town.tscn"
+target_spawn = "from_road"
+
+[node name="CollisionShape2D" parent="ExitToTown" index="0"]
+shape = SubResource("edge_shape")
+
+[node name="DayNight" type="CanvasModulate" parent="."]
+script = ExtResource("7_daynight")
+
+[node name="ClockHUD" parent="." instance=ExtResource("6_clock")]

@@ -1,0 +1,416 @@
+extends CharacterBody2D
+
+## Top-down ranger player. Body sprite sheet is a 4x4 grid (cols = walk frames,
+## rows = facing: 0=down, 1=up, 2=left, 3=right). Combat is mouse-driven: the
+## player aims at the cursor, left-click attacks/fires, right-click raises a
+## shield (if one is equipped). Equipped gear is drawn on the body.
+
+@export var speed: float = 70.0
+@export var anim_fps: float = 8.0
+
+## --- Combat tunables (fallback when no weapon is equipped) ---
+@export var attack_power: int = 4
+@export var attack_duration: float = 0.15
+@export var attack_cooldown: float = 0.35
+@export var invuln_time: float = 0.5
+
+const ARROW_SCENE := preload("res://scenes/entities/arrow.tscn")
+
+## Starting kit, set in the player scene. The weapon is auto-equipped; the
+## rest land in the bag.
+@export var starting_weapon: WeaponItem
+@export var starting_items: Array[Item] = []
+
+const ROW_DOWN := 0
+const ROW_UP := 1
+const ROW_LEFT := 2
+const ROW_RIGHT := 3
+## Column order of the 4-frame walk cycle.
+const WALK_FRAMES := [0, 1, 0, 2]
+
+## How far the melee hitbox sits from the player along the aim direction.
+const HITBOX_REACH := 14.0
+
+## Sideways gap between the main hand (weapon) and off hand (shield), measured
+## perpendicular to the aim direction so the two never overlap.
+const HAND_SEPARATION := 5.0
+## Anchor for both hands in local space (roughly chest height).
+const HAND_ANCHOR := Vector2(0, -22)
+## Held-item draw order relative to the body sprite (z 0): in front for most
+## aims, behind the player when aiming north so the gear reads as held on the
+## far side of the body instead of laid over it. The pivots sit before the body
+## in the scene tree, so at equal z (0) they draw behind it while staying above
+## the ground; bumping to HAND_Z_FRONT lifts them in front.
+const HAND_Z_FRONT := 5
+const HAND_Z_BEHIND := 0
+
+@onready var sprite: Sprite2D = $Sprite2D
+@onready var outfit_sprite: Sprite2D = $Outfit
+@onready var hair_sprite: Sprite2D = $Hair
+@onready var gear_layers: Dictionary = {
+	ArmorItem.ArmorSlot.FEET: $GearFeet,
+	ArmorItem.ArmorSlot.LEGS: $GearLegs,
+	ArmorItem.ArmorSlot.BODY: $GearBody,
+	ArmorItem.ArmorSlot.HEAD: $GearHead,
+}
+@onready var weapon_pivot: Node2D = $WeaponPivot
+@onready var weapon_sprite: Sprite2D = $WeaponPivot/WeaponSprite
+@onready var shield_pivot: Node2D = $ShieldPivot
+@onready var shield_sprite: Sprite2D = $ShieldPivot/ShieldSprite
+@onready var health: Health = $Health
+@onready var interact_probe: Area2D = $InteractProbe
+@onready var hitbox: Area2D = $Hitbox
+@onready var hitbox_shape: CollisionShape2D = $Hitbox/CollisionShape2D
+@onready var inventory: Inventory = $Inventory
+@onready var equipment: Equipment = $Equipment
+@onready var stats: Stats = $Stats
+@onready var mana: Mana = get_node_or_null("Mana")
+@onready var ability_caster: AbilityCaster = get_node_or_null("AbilityCaster")
+
+var _facing_row: int = ROW_DOWN
+var _aim: Vector2 = Vector2.DOWN
+var _anim_time: float = 0.0
+var _attack_timer: float = 0.0
+var _cooldown_timer: float = 0.0
+var _invuln_timer: float = 0.0
+var _blocking: bool = false
+var _swinging: bool = false
+var _hit_enemies: Array = []
+var _swing_tween: Tween
+## Scene-placed start position, used as the respawn point after death.
+var _home_position: Vector2 = Vector2.ZERO
+
+func _ready() -> void:
+	add_to_group("player")
+	add_to_group("persistent")
+	hitbox.monitoring = false
+	hitbox_shape.disabled = true
+	equipment.changed.connect(_refresh_gear_visuals)
+	# Progression wiring: earn XP from kills, scale Health to leveled max HP.
+	Events.enemy_killed.connect(_on_enemy_killed)
+	Events.player_leveled_up.connect(_on_player_leveled_up)
+	health.died.connect(_on_died)
+	health.max_health = stats.max_hp
+	health.health = stats.max_hp
+	_home_position = global_position
+	PlayerProfile.changed.connect(_apply_appearance)
+	_apply_appearance()
+	_grant_starting_kit()
+	_refresh_gear_visuals()
+
+## Paints the paper-doll from the chosen identity: skin tints the body sprite,
+## the hair style swaps its texture and the hair colour tints it.
+func _apply_appearance() -> void:
+	sprite.modulate = PlayerProfile.skin_tone
+	hair_sprite.texture = PlayerProfile.hair_texture()
+	hair_sprite.modulate = PlayerProfile.hair_color
+
+func _grant_starting_kit() -> void:
+	if starting_weapon != null:
+		equipment.equip_weapon(starting_weapon)
+	for it in starting_items:
+		if it == null:
+			continue
+		# Auto-equip armor into any empty slot; everything else goes in the bag.
+		if it is ArmorItem and equipment.get_armor((it as ArmorItem).armor_slot) == null:
+			equipment.equip_armor(it as ArmorItem)
+		else:
+			inventory.add_item(it, 1)
+
+func _physics_process(delta: float) -> void:
+	if health.is_dead():
+		velocity = Vector2.ZERO
+		return
+	_attack_timer = maxf(0.0, _attack_timer - delta)
+	_cooldown_timer = maxf(0.0, _cooldown_timer - delta)
+	_invuln_timer = maxf(0.0, _invuln_timer - delta)
+
+	_update_aim()
+
+	# Only the melee path enables the hitbox; ranged attacks never do, so gate
+	# the scan on monitoring to avoid querying a disabled area.
+	if hitbox.monitoring:
+		if _attack_timer > 0.0:
+			_scan_hitbox()
+		else:
+			_end_attack()
+
+	_blocking = Input.is_action_pressed("attack_secondary") and equipment.get_shield() != null
+
+	if _primary_pressed() and _cooldown_timer <= 0.0 and not _blocking and not Dialogue.is_active():
+		_start_attack()
+
+	_try_cast_abilities()
+
+	_movement(delta)
+	_update_gear_pose()
+
+## Casts elemental abilities from the hotbar on the number-key actions. Aimed at
+## the cursor like ranged weapons; gated on dialogue. The AbilityCaster itself
+## enforces mana and cooldown.
+func _try_cast_abilities() -> void:
+	if ability_caster == null or Dialogue.is_active():
+		return
+	var slots: int = mini(ability_caster.slot_count(), 4)
+	for slot in range(slots):
+		if Input.is_action_just_pressed("ability_%d" % (slot + 1)):
+			ability_caster.cast(slot, global_position + Vector2(0, -10), _aim)
+
+func _primary_pressed() -> bool:
+	return Input.is_action_just_pressed("attack_primary") or Input.is_action_just_pressed("attack")
+
+func _update_aim() -> void:
+	var to_mouse: Vector2 = get_global_mouse_position() - global_position
+	if to_mouse.length() > 1.0:
+		_aim = to_mouse.normalized()
+
+func _unhandled_input(event: InputEvent) -> void:
+	# Interact is event-driven (not polled) so the dialogue box can consume the
+	# closing key press via set_input_as_handled(), preventing an instant reopen.
+	if event.is_action_pressed("interact") and not Dialogue.is_active():
+		_try_interact()
+
+func _movement(delta: float) -> void:
+	var input := Vector2(
+		Input.get_axis("move_left", "move_right"),
+		Input.get_axis("move_up", "move_down")
+	)
+	if input.length() > 1.0:
+		input = input.normalized()
+
+	velocity = input * speed
+	move_and_slide()
+
+	# Face where you're moving; when standing still, face the cursor.
+	_update_facing(input if input != Vector2.ZERO else _aim)
+	_update_animation(delta, input.length() > 0.01)
+
+func _update_facing(dir: Vector2) -> void:
+	if dir == Vector2.ZERO:
+		return
+	if abs(dir.x) > abs(dir.y):
+		_facing_row = ROW_RIGHT if dir.x > 0.0 else ROW_LEFT
+	else:
+		_facing_row = ROW_DOWN if dir.y > 0.0 else ROW_UP
+
+func _update_animation(delta: float, moving: bool) -> void:
+	if moving:
+		_anim_time += delta * anim_fps
+	else:
+		_anim_time = 0.0
+	var col: int = WALK_FRAMES[int(_anim_time) % WALK_FRAMES.size()] if moving else 0
+	sprite.frame = _facing_row * sprite.hframes + col
+	outfit_sprite.frame = sprite.frame
+	hair_sprite.frame = sprite.frame
+	for layer in gear_layers.values():
+		var gear: Sprite2D = layer
+		if gear.visible:
+			gear.frame = sprite.frame
+
+# --- Equipped-gear visuals --------------------------------------------------
+
+func _refresh_gear_visuals() -> void:
+	var weapon: WeaponItem = _current_weapon()
+	if weapon != null and weapon.held_texture() != null:
+		weapon_sprite.texture = weapon.held_texture()
+		weapon_sprite.position.x = weapon.hold_distance
+		weapon_sprite.visible = true
+	else:
+		weapon_sprite.visible = false
+
+	var shield: ArmorItem = equipment.get_shield()
+	if shield != null and shield.hold_texture != null:
+		shield_sprite.texture = shield.hold_texture
+		shield_sprite.visible = true
+	else:
+		shield_sprite.visible = false
+
+	# Worn paper-doll layers (feet/legs/body/head). The off-hand slot is drawn
+	# as a held item above, not as a body overlay, so it is skipped here.
+	for slot in gear_layers:
+		var layer: Sprite2D = gear_layers[slot]
+		var piece: ArmorItem = equipment.get_armor(slot)
+		if piece != null and piece.overlay_sheet != null:
+			layer.texture = piece.overlay_sheet
+			layer.frame = sprite.frame
+			layer.visible = true
+		else:
+			layer.visible = false
+
+## Positions the held weapon/shield each frame so they point at the cursor and
+## sit in front of or behind the body depending on aim.
+func _update_gear_pose() -> void:
+	interact_probe.position = _aim * 10.0
+
+	var aim_angle: float = _aim.angle()
+	# Perpendicular to the aim: weapon rides the main hand on one side, shield
+	# the off hand on the other, so they no longer stack on top of each other.
+	var perp: Vector2 = Vector2(-_aim.y, _aim.x)
+
+	# Facing north the held items sit on the far side of the body, so render them
+	# behind the player sprite. Any other aim keeps them in front, where they
+	# stay readable.
+	var hand_z: int = HAND_Z_BEHIND if _aim.y < -0.35 else HAND_Z_FRONT
+	weapon_pivot.z_index = hand_z
+	shield_pivot.z_index = hand_z
+
+	if weapon_sprite.visible and not _swinging:
+		weapon_pivot.position = HAND_ANCHOR + perp * HAND_SEPARATION
+		weapon_pivot.rotation = aim_angle
+		weapon_sprite.flip_v = _aim.x < 0.0
+
+	if shield_sprite.visible:
+		shield_pivot.position = HAND_ANCHOR - perp * HAND_SEPARATION
+		shield_pivot.rotation = aim_angle
+		shield_sprite.flip_v = _aim.x < 0.0
+		shield_sprite.position.x = 13.0 if _blocking else 8.0
+
+# --- Combat / interaction ---------------------------------------------------
+
+func _try_interact() -> void:
+	var nearest: Area2D = null
+	var nearest_d := INF
+	for area in interact_probe.get_overlapping_areas():
+		if not area.is_in_group("interactable"):
+			continue
+		var d := global_position.distance_squared_to(area.global_position)
+		if d < nearest_d:
+			nearest_d = d
+			nearest = area
+	if nearest != null and nearest.has_method("interact"):
+		nearest.interact(self)
+
+## Resolves the active weapon, or null for bare-handed.
+func _current_weapon() -> WeaponItem:
+	return equipment.get_weapon() if equipment != null else null
+
+func _start_attack() -> void:
+	var weapon: WeaponItem = _current_weapon()
+	_attack_timer = weapon.attack_duration if weapon != null else attack_duration
+	_cooldown_timer = weapon.attack_cooldown if weapon != null else attack_cooldown
+
+	if weapon != null and weapon.is_ranged():
+		_fire_projectile(weapon)
+		_recoil()
+		return
+
+	_hit_enemies.clear()
+	hitbox.position = _aim * HITBOX_REACH
+	hitbox.monitoring = true
+	hitbox_shape.disabled = false
+	_swing_melee(weapon)
+
+func _swing_melee(weapon: WeaponItem) -> void:
+	if not weapon_sprite.visible:
+		return
+	var arc: float = weapon.swing_arc if weapon != null else 1.1
+	var dur: float = weapon.attack_duration if weapon != null else attack_duration
+	var base: float = _aim.angle()
+	_swinging = true
+	weapon_pivot.rotation = base - arc
+	weapon_sprite.flip_v = _aim.x < 0.0
+	if _swing_tween != null and _swing_tween.is_valid():
+		_swing_tween.kill()
+	_swing_tween = create_tween()
+	_swing_tween.tween_property(weapon_pivot, "rotation", base + arc, dur)
+	_swing_tween.tween_callback(func() -> void: _swinging = false)
+
+func _recoil() -> void:
+	weapon_sprite.flip_v = _aim.x < 0.0
+	weapon_pivot.rotation = _aim.angle()
+	var rest_x: float = weapon_sprite.position.x
+	var tw := create_tween()
+	tw.tween_property(weapon_sprite, "position:x", rest_x - 4.0, 0.05)
+	tw.tween_property(weapon_sprite, "position:x", rest_x, 0.12)
+
+func _fire_projectile(weapon: WeaponItem) -> void:
+	var arrow := ARROW_SCENE.instantiate() as Projectile
+	arrow.global_position = global_position + _aim * 8.0 + Vector2(0, -10)
+	arrow.setup(_aim, weapon.damage, weapon.projectile_speed, weapon.range)
+	get_parent().add_child(arrow)
+
+func _end_attack() -> void:
+	hitbox.monitoring = false
+	hitbox_shape.disabled = true
+	_hit_enemies.clear()
+
+func _scan_hitbox() -> void:
+	for body in hitbox.get_overlapping_bodies():
+		_apply_hit(body)
+	for area in hitbox.get_overlapping_areas():
+		_apply_hit(area.get_parent())
+
+func _apply_hit(target) -> void:
+	if target == null or target in _hit_enemies:
+		return
+	if target.is_in_group("enemy") and target.has_method("take_damage"):
+		var weapon: WeaponItem = _current_weapon()
+		var weapon_dmg: int = weapon.damage if weapon != null else attack_power
+		# Base damage scales with level; the weapon contributes a flat bonus.
+		var dmg: int = stats.attack_power() + weapon_dmg
+		_hit_enemies.append(target)
+		target.take_damage(dmg)
+
+func take_damage(amount: int) -> void:
+	if _invuln_timer > 0.0:
+		return
+	_invuln_timer = invuln_time
+	# Mitigation = leveled defense + worn armor defense (+ shield block if raised).
+	var reduction: int = stats.defense_power()
+	reduction += equipment.total_defense() if equipment != null else 0
+	if _blocking:
+		var shield: ArmorItem = equipment.get_shield()
+		if shield != null:
+			reduction += shield.block
+	health.take_damage(maxi(1, amount - reduction))
+	_hit_flash()
+
+func _hit_flash() -> void:
+	modulate = Color(1.0, 0.4, 0.4)
+	var tw := create_tween()
+	tw.tween_property(self, "modulate", Color.WHITE, invuln_time)
+
+# --- Progression ------------------------------------------------------------
+
+func _on_enemy_killed(_enemy_id: StringName, xp_reward: int, _position: Vector2) -> void:
+	stats.add_xp(xp_reward)
+
+func _on_player_leveled_up(_new_level: int) -> void:
+	# Grow the Health pool to the new max and refill on level-up.
+	health.max_health = stats.max_hp
+	health.heal(stats.max_hp)
+
+# --- Death / respawn --------------------------------------------------------
+
+func _on_died() -> void:
+	_end_attack()
+	modulate = Color(0.5, 0.5, 0.5)
+	GameManager.player_died()
+
+## Revives the player at the camp spawn with full (leveled) health. Death costs
+## a slice of progress toward the current level rather than a hard XP/level loss.
+func revive() -> void:
+	health.max_health = stats.max_hp
+	health.revive(stats.max_hp)
+	stats.apply_death_penalty()
+	_invuln_timer = invuln_time
+	modulate = Color.WHITE
+	global_position = _home_position
+
+# --- Persistence (SaveManager "persistent" contract) ------------------------
+
+func get_save_id() -> String:
+	return "player"
+
+func save_state() -> Dictionary:
+	return {
+		"x": global_position.x,
+		"y": global_position.y,
+		"health": health.health,
+	}
+
+func load_state(data: Dictionary) -> void:
+	global_position = Vector2(float(data.get("x", global_position.x)), float(data.get("y", global_position.y)))
+	health.max_health = stats.max_hp
+	health.health = clampi(int(data.get("health", health.health)), 0, health.max_health)
+	health.health_changed.emit(health.health, health.max_health)

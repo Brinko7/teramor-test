@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/ability_stone.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"stone_nova"
+display_name = "Stone Nova"
+description = "Slam the earth, erupting jagged rock that strikes all nearby enemies."
+icon = ExtResource("2_icon")
+element = 2
+behavior = 1
+mana_cost = 12
+cooldown = 3.0
+power = 12
+radius = 52.0
+tint = Color(0.72, 0.56, 0.36, 1)
+status_kind = 0
+status_power = 0
+status_duration = 0.0
+status_magnitude = 1.0

@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="WeaponItem" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/weapon_item.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/bow_short.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"short_bow"
+name = "Short Bow"
+description = "A ranger's first companion. Looses swift arrows."
+icon = ExtResource("2_icon")
+max_stack = 1
+value = 12
+weapon_class = 1
+damage = 4
+attack_duration = 0.1
+attack_cooldown = 0.5
+range = 180.0
+projectile_speed = 240.0

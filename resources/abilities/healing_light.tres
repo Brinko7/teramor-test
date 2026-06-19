@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="AbilityData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/ability_heal.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"healing_light"
+display_name = "Healing Light"
+description = "Channel radiant light to mend your own wounds."
+icon = ExtResource("2_icon")
+element = 3
+behavior = 2
+mana_cost = 10
+cooldown = 5.0
+power = 16
+tint = Color(0.7, 1, 0.78, 1)
+status_kind = 0
+status_power = 0
+status_duration = 0.0
+status_magnitude = 1.0

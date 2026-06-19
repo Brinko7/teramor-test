@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/placeholder/signpost.png" id="1_tex"]
+
+[node name="Signpost" type="Node2D"]
+y_sort_enabled = true
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = false
+offset = Vector2(-8, -32)
+texture = ExtResource("1_tex")

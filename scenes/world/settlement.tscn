@@ -1,0 +1,334 @@
+[gd_scene load_steps=35 format=3]
+
+[ext_resource type="Script" path="res://scripts/settlement.gd" id="0_settlement"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="23_clock"]
+[ext_resource type="Script" path="res://scripts/day_night.gd" id="24_daynight"]
+[ext_resource type="PackedScene" path="res://scenes/entities/npc.tscn" id="14_npc"]
+[ext_resource type="PackedScene" path="res://scenes/ui/health_bar.tscn" id="15_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_coins.tscn" id="16_coins"]
+[ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="28_manabar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="29_hotbar"]
+[ext_resource type="PackedScene" path="res://scenes/entities/transition_zone.tscn" id="17_tz"]
+[ext_resource type="PackedScene" path="res://scenes/entities/item_pickup.tscn" id="18_pickup"]
+[ext_resource type="Resource" path="res://resources/items/wood.tres" id="19_wood"]
+[ext_resource type="Resource" path="res://resources/items/health_potion.tres" id="20_potion"]
+[ext_resource type="Resource" path="res://resources/npcs/mara.tres" id="21_mara"]
+[ext_resource type="Resource" path="res://resources/npcs/elder_maelon.tres" id="22_maelon"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="1_grass"]
+[ext_resource type="TileSet" path="res://assets/tilesets/terrain.tres" id="2_tileset"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/cabin.tscn" id="4_cabin"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/tent.tscn" id="5_tent"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/tree.tscn" id="6_tree"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/campfire.tscn" id="7_fire"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/barrel.tscn" id="8_barrel"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/crate.tscn" id="9_crate"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/fence.tscn" id="10_fence"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/bush.tscn" id="11_bush"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/flower.tscn" id="12_flower"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/rock.tscn" id="13_rock"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/bed.tscn" id="25_bed"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/farm_plot.tscn" id="26_plot"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/chest.tscn" id="27_chest"]
+
+[sub_resource type="RectangleShape2D" id="wall_h"]
+size = Vector2(640, 16)
+
+[sub_resource type="RectangleShape2D" id="wall_v"]
+size = Vector2(16, 480)
+
+[sub_resource type="RectangleShape2D" id="wall_v_seg"]
+size = Vector2(16, 200)
+
+[sub_resource type="RectangleShape2D" id="exit_shape"]
+size = Vector2(28, 64)
+
+[node name="Settlement" type="Node2D"]
+script = ExtResource("0_settlement")
+
+[node name="Ground" type="Sprite2D" parent="."]
+texture_repeat = 2
+centered = false
+texture = ExtResource("1_grass")
+region_enabled = true
+region_rect = Rect2(0, 0, 640, 480)
+
+[node name="Terrain" type="TileMapLayer" parent="."]
+tile_set = ExtResource("2_tileset")
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="WallTop" type="CollisionShape2D" parent="Walls"]
+position = Vector2(320, 8)
+shape = SubResource("wall_h")
+
+[node name="WallBottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(320, 472)
+shape = SubResource("wall_h")
+
+[node name="WallLeft" type="CollisionShape2D" parent="Walls"]
+position = Vector2(8, 240)
+shape = SubResource("wall_v")
+
+[node name="WallRightTop" type="CollisionShape2D" parent="Walls"]
+position = Vector2(632, 116)
+shape = SubResource("wall_v_seg")
+
+[node name="WallRightBottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(632, 364)
+shape = SubResource("wall_v_seg")
+
+[node name="Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Cabin" parent="Entities" instance=ExtResource("4_cabin")]
+position = Vector2(150, 165)
+
+[node name="Fence1" parent="Entities" instance=ExtResource("10_fence")]
+position = Vector2(104, 210)
+
+[node name="Fence2" parent="Entities" instance=ExtResource("10_fence")]
+position = Vector2(120, 210)
+
+[node name="Fence3" parent="Entities" instance=ExtResource("10_fence")]
+position = Vector2(136, 210)
+
+[node name="Flower1" parent="Entities" instance=ExtResource("12_flower")]
+position = Vector2(112, 196)
+
+[node name="Flower2" parent="Entities" instance=ExtResource("12_flower")]
+position = Vector2(128, 196)
+
+[node name="Chest" parent="Entities" instance=ExtResource("27_chest")]
+position = Vector2(96, 296)
+
+[node name="FarmPlot00" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(112, 296)
+plot_id = "settlement_0_0"
+
+[node name="FarmPlot10" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(128, 296)
+plot_id = "settlement_1_0"
+
+[node name="FarmPlot20" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(144, 296)
+plot_id = "settlement_2_0"
+
+[node name="FarmPlot30" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(160, 296)
+plot_id = "settlement_3_0"
+
+[node name="FarmPlot40" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(176, 296)
+plot_id = "settlement_4_0"
+
+[node name="FarmPlot01" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(112, 312)
+plot_id = "settlement_0_1"
+
+[node name="FarmPlot11" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(128, 312)
+plot_id = "settlement_1_1"
+
+[node name="FarmPlot21" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(144, 312)
+plot_id = "settlement_2_1"
+
+[node name="FarmPlot31" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(160, 312)
+plot_id = "settlement_3_1"
+
+[node name="FarmPlot41" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(176, 312)
+plot_id = "settlement_4_1"
+
+[node name="FarmPlot02" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(112, 328)
+plot_id = "settlement_0_2"
+
+[node name="FarmPlot12" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(128, 328)
+plot_id = "settlement_1_2"
+
+[node name="FarmPlot22" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(144, 328)
+plot_id = "settlement_2_2"
+
+[node name="FarmPlot32" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(160, 328)
+plot_id = "settlement_3_2"
+
+[node name="FarmPlot42" parent="Entities" instance=ExtResource("26_plot")]
+position = Vector2(176, 328)
+plot_id = "settlement_4_2"
+
+[node name="Bed" parent="Entities" instance=ExtResource("25_bed")]
+position = Vector2(205, 170)
+
+[node name="Tent1" parent="Entities" instance=ExtResource("5_tent")]
+position = Vector2(360, 170)
+
+[node name="Tent2" parent="Entities" instance=ExtResource("5_tent")]
+position = Vector2(440, 200)
+
+[node name="Tent3" parent="Entities" instance=ExtResource("5_tent")]
+position = Vector2(300, 215)
+
+[node name="Campfire" parent="Entities" instance=ExtResource("7_fire")]
+position = Vector2(360, 295)
+
+[node name="Barrel1" parent="Entities" instance=ExtResource("8_barrel")]
+position = Vector2(336, 300)
+
+[node name="Barrel2" parent="Entities" instance=ExtResource("8_barrel")]
+position = Vector2(388, 302)
+
+[node name="Crate1" parent="Entities" instance=ExtResource("9_crate")]
+position = Vector2(362, 322)
+
+[node name="Bush1" parent="Entities" instance=ExtResource("11_bush")]
+position = Vector2(220, 260)
+
+[node name="Bush2" parent="Entities" instance=ExtResource("11_bush")]
+position = Vector2(480, 310)
+
+[node name="Bush3" parent="Entities" instance=ExtResource("11_bush")]
+position = Vector2(205, 360)
+
+[node name="Rock1" parent="Entities" instance=ExtResource("13_rock")]
+position = Vector2(515, 245)
+
+[node name="Rock2" parent="Entities" instance=ExtResource("13_rock")]
+position = Vector2(130, 360)
+
+[node name="TreeT1" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(45, 55)
+
+[node name="TreeT2" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(120, 50)
+
+[node name="TreeT3" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(200, 52)
+
+[node name="TreeT4" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(285, 48)
+
+[node name="TreeT5" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(370, 52)
+
+[node name="TreeT6" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(455, 50)
+
+[node name="TreeT7" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(540, 54)
+
+[node name="TreeT8" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(605, 58)
+
+[node name="TreeL1" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(30, 130)
+
+[node name="TreeL2" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(28, 210)
+
+[node name="TreeL3" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(32, 300)
+
+[node name="TreeL4" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(30, 400)
+
+[node name="TreeR1" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(610, 140)
+
+[node name="TreeR2" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(612, 220)
+
+[node name="TreeR3" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(608, 310)
+
+[node name="TreeR4" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(610, 405)
+
+[node name="TreeB1" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(60, 460)
+
+[node name="TreeB2" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(150, 462)
+
+[node name="TreeB3" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(490, 460)
+
+[node name="TreeB4" parent="Entities" instance=ExtResource("6_tree")]
+position = Vector2(580, 462)
+
+[node name="Mara" parent="Entities" instance=ExtResource("14_npc")]
+position = Vector2(285, 270)
+data = ExtResource("21_mara")
+home_waypoint = "mara_home"
+schedule = {
+0: "mara_post",
+1: "mara_post",
+2: "mara_home",
+3: "mara_home"
+}
+
+[node name="ElderMaelon" parent="Entities" instance=ExtResource("14_npc")]
+position = Vector2(180, 220)
+data = ExtResource("22_maelon")
+home_waypoint = "maelon_home"
+schedule = {
+0: "maelon_home",
+1: "maelon_fire",
+2: "maelon_fire",
+3: "maelon_home"
+}
+
+[node name="Player" parent="Entities" instance=ExtResource("3_player")]
+position = Vector2(320, 380)
+
+[node name="WoodPickup" parent="Entities" instance=ExtResource("18_pickup")]
+position = Vector2(290, 360)
+item = ExtResource("19_wood")
+count = 3
+
+[node name="PotionPickup" parent="Entities" instance=ExtResource("18_pickup")]
+position = Vector2(350, 360)
+item = ExtResource("20_potion")
+
+[node name="ExitToRoad" parent="Entities" instance=ExtResource("17_tz")]
+position = Vector2(624, 240)
+target_scene = "res://scenes/world/road.tscn"
+target_spawn = "from_settlement"
+
+[node name="CollisionShape2D" parent="Entities/ExitToRoad" index="0"]
+shape = SubResource("exit_shape")
+
+[node name="from_road" type="Marker2D" parent="Entities" groups=["spawn"]]
+position = Vector2(596, 240)
+
+[node name="Waypoints" type="Node2D" parent="."]
+
+[node name="mara_post" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(318, 330)
+
+[node name="mara_home" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(270, 238)
+
+[node name="maelon_fire" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(408, 288)
+
+[node name="maelon_home" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(185, 232)
+
+[node name="DayNight" type="CanvasModulate" parent="."]
+script = ExtResource("24_daynight")
+
+[node name="HUD" parent="." instance=ExtResource("15_hud")]
+
+[node name="CoinHUD" parent="." instance=ExtResource("16_coins")]
+
+[node name="ClockHUD" parent="." instance=ExtResource("23_clock")]
+
+[node name="ManaBar" parent="." instance=ExtResource("28_manabar")]
+
+[node name="AbilityHotbar" parent="." instance=ExtResource("29_hotbar")]

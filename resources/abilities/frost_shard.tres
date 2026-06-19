@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AbilityData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/ability_frost.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"frost_shard"
+display_name = "Frost Shard"
+description = "Loose a splinter of ice that chills foes, slowing them briefly."
+icon = ExtResource("2_icon")
+element = 1
+behavior = 0
+mana_cost = 5
+cooldown = 1.2
+power = 7
+projectile_speed = 240.0
+cast_range = 180.0
+tint = Color(0.5, 0.8, 1, 1)
+status_kind = 2
+status_power = 0
+status_duration = 2.5
+status_magnitude = 0.5

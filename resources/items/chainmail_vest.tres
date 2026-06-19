@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ArmorItem" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/armor_item.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/chainmail_vest.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/vest_overlay.png" id="3_overlay"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"chainmail_vest"
+name = "Chainmail Vest"
+description = "Interlocking rings. Heavier, but it saves lives."
+icon = ExtResource("2_icon")
+max_stack = 1
+value = 75
+armor_slot = 1
+defense = 4
+overlay_sheet = ExtResource("3_overlay")

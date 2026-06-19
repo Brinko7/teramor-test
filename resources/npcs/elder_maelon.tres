@@ -1,0 +1,40 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"elder_maelon"
+display_name = "Elder Maelon"
+title = "Keeper of the Grove"
+tint = Color(0.85, 0.88, 0.95, 1)
+met_line = "Ah. The wind carried word you'd come at last. Elkar's blood, returned to us."
+greeting = "Be welcome, child of Tera."
+farewell = "May the roots hold you."
+talk_lines = {
+0: PackedStringArray("The Great Tree withers, and few even notice. You will, in time.", "I have kept this grove since before your father drew breath."),
+2: PackedStringArray("There is old strength in you, child. It stirs. I have watched it.", "The Children of Tera are not soldiers. We are gardeners of a dying world."),
+4: PackedStringArray("Your father sat where you stand now, asking the very same questions.", "Patience. The Tree shows its wounds only to those who learn to listen.")
+}
+loved_gifts = Array[StringName]([&"herb"])
+liked_gifts = Array[StringName]([&"health_potion"])
+disliked_gifts = Array[StringName]([&"wood"])
+loved_line = "Herbs of the grove... you have a healer's eye. The Tree thanks you through me."
+liked_line = "A %s. Thoughtful. The old ways teach us to accept what is freely given."
+disliked_line = "Cut %s? We do not take from the living wood here, child. But I understand the intent."
+neutral_line = "You honor an old man with this %s. Thank you."
+topics = Array[Dictionary]([{
+"label": "Ask about my father",
+"lines": PackedStringArray("Elkar came to me before he left. He had found it — the heart-root of the Great Tree, deep in the Deepwood.", "The Tree is sick, Zayn. Something festers at its core. Your father went to look upon the wound with his own eyes.", "But the Deepwood does not surrender what it takes. The Withered walk there now — things that were once men.", "If Elkar still lives, he is beyond the thornwall. You are not ready to follow. Not yet. But you will be."),
+"require_flag": "father_missing",
+"set_flag": "elder_briefed",
+"affinity": 20
+}, {
+"label": "Tell me of the Children of Tera",
+"lines": PackedStringArray("We are the last who remember what Tera was — before the blight, before the kingdoms turned their backs.", "We tend the Great Tree, the root of all living things. When it dies, so dies the world. Slowly. Then all at once.", "Your father was one of us. So, I think, are you — whether you have chosen it yet or no.")
+}, {
+"label": "What are these... gifts I feel?",
+"lines": PackedStringArray("So. It has begun.", "The blood of Tera runs strong in a rare few. It wakes as embers — a warmth in the palm, a chill carried on anger.", "Fire. Frost. The breath of the storm. Your father carried it. Now it stirs in you.", "Come to me when the embers burn too hot to hold, child. I will teach you to wield them, not fear them."),
+"require_hearts": 2,
+"set_flag": "elder_gifts_hinted"
+}])

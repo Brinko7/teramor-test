@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SeedItem" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/seed_item.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/wheat_seeds.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/crops/wheat.tres" id="3_crop"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wheat_seeds"
+name = "Wheat Seeds"
+description = "Sow on tilled, watered soil. Slower to grow, but a generous yield."
+icon = ExtResource("2_icon")
+max_stack = 99
+value = 4
+crop = ExtResource("3_crop")

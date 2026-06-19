@@ -1,0 +1,47 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemy_brute.gd" id="1_brute"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/enemies/enemy_brute.png" id="2_sheet"]
+[ext_resource type="Script" path="res://scripts/health.gd" id="3_health"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_feet"]
+size = Vector2(14, 8)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_touch"]
+size = Vector2(20, 18)
+
+[node name="EnemyBrute" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_brute")
+speed = 28.0
+detect_range = 130.0
+touch_damage = 6
+touch_cooldown = 1.2
+xp_reward = 18
+enemy_id = &"brute"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = false
+offset = Vector2(-12, -40)
+scale = Vector2(1.25, 1.25)
+texture = ExtResource("2_sheet")
+hframes = 4
+vframes = 4
+frame = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -3)
+shape = SubResource("RectangleShape2D_feet")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("3_health")
+max_health = 16
+
+[node name="TouchBox" type="Area2D" parent="."]
+position = Vector2(0, -10)
+collision_layer = 16
+collision_mask = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TouchBox"]
+shape = SubResource("RectangleShape2D_touch")

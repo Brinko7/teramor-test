@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Quest" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/quest.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"find_elkar"
+title = "The Missing Father"
+description = "Your father Elkar walked into the Deepwood and never came back. Learn what happened to him."
+objective = 2
+target_id = &"elkar"
+required_count = 1
+reward_xp = 0
+reward_item = null
+reward_item_count = 1

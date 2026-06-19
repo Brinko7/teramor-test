@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Quest" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/quest.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"contract_wolves"
+title = "Wolves at the Treeline"
+description = "Wolves have been harrying the herders' flocks. Put down 3 of them."
+objective = 0
+target_id = &"wolf"
+required_count = 3
+reward_xp = 20
+reward_coin = 30
+repeatable = true

@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Quest" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/quest.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"stockpile_wood"
+title = "Winter Stores"
+description = "The camp needs firewood before the cold sets in. Gather 10 wood."
+objective = 1
+target_id = &"wood"
+required_count = 10
+reward_xp = 20
+reward_item = null
+reward_item_count = 1

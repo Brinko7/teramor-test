@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Quest" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quest.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/items/health_potion.tres" id="2_reward"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"slay_bandits"
+title = "Cull the Bandits"
+description = "The forest paths aren't safe. Slay 5 foes to thin their numbers."
+objective = 0
+target_id = &""
+required_count = 5
+reward_xp = 50
+reward_item = ExtResource("2_reward")
+reward_item_count = 2

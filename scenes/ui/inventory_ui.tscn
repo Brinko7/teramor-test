@@ -1,0 +1,72 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/autoload/inventory_ui.gd" id="1_inv_ui"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.164706, 0.12549, 0.094118, 0.964706)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.482353, 0.337255, 0.188235, 1)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+
+[sub_resource type="LabelSettings" id="LabelSettings_title"]
+font_size = 12
+font_color = Color(0.368627, 0.588235, 0.282353, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_equip"]
+font_size = 9
+font_color = Color(0.913725, 0.886275, 0.831373, 1)
+
+[node name="InventoryUI" type="CanvasLayer"]
+layer = 90
+script = ExtResource("1_inv_ui")
+
+[node name="Panel" type="PanelContainer" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 6
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="Title" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "Inventory"
+label_settings = SubResource("LabelSettings_title")
+
+[node name="Grid" type="GridContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+columns = 6
+
+[node name="Sep" type="HSeparator" parent="Panel/Margin/VBox"]
+layout_mode = 2
+
+[node name="EquipLabel" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+text = "Weapon: (none)    Defense: 0"
+label_settings = SubResource("LabelSettings_equip")
+
+[node name="Prompt" type="Label" parent="Panel/Margin/VBox"]
+layout_mode = 2
+horizontal_alignment = 2
+text = "[I] Close"
+label_settings = SubResource("LabelSettings_equip")

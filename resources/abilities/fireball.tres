@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AbilityData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/ability_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/ability_fire.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"fireball"
+display_name = "Fireball"
+description = "Hurl a bolt of flame that scorches the target and sets it ablaze."
+icon = ExtResource("2_icon")
+element = 0
+behavior = 0
+mana_cost = 6
+cooldown = 1.0
+power = 9
+projectile_speed = 220.0
+cast_range = 170.0
+tint = Color(1, 0.55, 0.22, 1)
+status_kind = 1
+status_power = 2
+status_duration = 3.0
+status_magnitude = 1.0

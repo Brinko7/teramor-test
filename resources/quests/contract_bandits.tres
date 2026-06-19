@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="Quest" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/quest.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"contract_bandits"
+title = "Toll of the Road"
+description = "Bandits are shaking down travelers on the south road. Cut down 4 of them."
+objective = 0
+target_id = &"bandit"
+required_count = 4
+reward_xp = 30
+reward_coin = 45
+repeatable = true

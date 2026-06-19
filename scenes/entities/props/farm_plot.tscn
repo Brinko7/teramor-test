@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/farm_plot.gd" id="1_plot"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/soil_untilled.png" id="2_soil"]
+
+[sub_resource type="RectangleShape2D" id="shape"]
+size = Vector2(18, 18)
+
+[node name="FarmPlot" type="Area2D" groups=["interactable"]]
+y_sort_enabled = true
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("1_plot")
+
+[node name="Soil" type="Sprite2D" parent="."]
+texture = ExtResource("2_soil")
+
+[node name="Crop" type="Sprite2D" parent="."]
+visible = false
+offset = Vector2(0, -5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("shape")

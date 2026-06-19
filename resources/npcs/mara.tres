@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"mara"
+display_name = "Mara"
+title = "Camp Quartermaster"
+tint = Color(1, 1, 1, 1)
+met_line = "You must be Elkar's child. Zayn, was it? Your father spoke of you often — couldn't get him to stop, honestly."
+greeting = "Good to see you, ranger."
+farewell = "Mind the wilds out there."
+talk_lines = {
+0: PackedStringArray("The camp's been on edge since your father vanished.", "We make do, but the Deepwood's been... wrong, lately. The animals feel it too."),
+2: PackedStringArray("You've got Elkar's eyes, you know. And his stubbornness.", "Folk are starting to trust you. That's worth more than coin out here."),
+4: PackedStringArray("I saved you the warm spot by the fire. Don't tell the others.", "Whatever took your father — you'll find the truth of it. I believe that."),
+6: PackedStringArray("You feel like family now, Zayn. The camp's lucky to have you.", "When all this is over, I'll cook you a proper feast. That's a promise.")
+}
+loved_gifts = Array[StringName]([&"herb"])
+liked_gifts = Array[StringName]([&"health_potion", &"wood"])
+disliked_gifts = Array[StringName]([&"rusty_sword"])
+loved_line = "Fresh herbs! You wonderful soul — these go straight in the pot."
+liked_line = "A %s? That's useful around camp. Thank you, ranger."
+disliked_line = "A %s? ...I'll find some use for it. Thanks, I suppose."
+neutral_line = "For me? Kind of you, Zayn."
+topics = Array[Dictionary]([{
+"label": "How are things at camp?",
+"lines": PackedStringArray("Tents are holding, bellies are full. Can't ask for much more out here.", "Folk keep their chins up. We're survivors, the lot of us.")
+}, {
+"label": "About my father...",
+"lines": PackedStringArray("Elkar walked into the Deepwood thirteen days back. Said he'd found something that mattered.", "He never came home, Zayn. I'm sorry. But if anyone could outlast that place, it's your father.", "Go speak with Elder Maelon. That old man knows more than he lets on — he always does."),
+"require_flag": "father_missing",
+"set_flag": "mara_consoled",
+"affinity": 15
+}])

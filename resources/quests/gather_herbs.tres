@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="Quest" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/quest.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/items/rusty_sword.tres" id="2_reward"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"gather_herbs"
+title = "Brewer's Request"
+description = "The healer needs herbs for her tonics. Gather 6 herbs."
+objective = 1
+target_id = &"herb"
+required_count = 6
+reward_xp = 30
+reward_item = ExtResource("2_reward")
+reward_item_count = 1
