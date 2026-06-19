@@ -54,7 +54,9 @@ func get_objectives() -> Array:
 		return objectives
 	var o := QuestObjective.new()
 	# Objective and QuestObjective.Kind share the same int values (KILL/COLLECT/STORY).
-	o.kind = objective
+	# Convert through int: GDScript treats the two named enums as distinct types and
+	# rejects a direct enum-to-enum assignment, but int -> enum is allowed.
+	o.kind = int(objective)
 	o.target_id = target_id
 	o.required_count = required_count
 	return [o]
