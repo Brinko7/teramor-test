@@ -113,6 +113,23 @@ weapon/shield with their posing/swing/recoil — lives in
 `scripts/components/player_visuals.gd` (`class_name PlayerVisuals`), created in
 `_ready()` and fed state each frame (body frame, aim, block flag).
 
+### Combat feel (juice)
+Hits are sold by the **CombatFX** autoload, driven entirely off the `Events` bus so
+combat code stays simple — it just reports outcomes:
+- Entities that take damage emit `Events.damage_dealt(position, amount, to_enemy)`;
+  CombatFX pops a floating `damage_number`, requests an `Events.screen_shake`, and
+  on `to_enemy` does a brief **hit-stop** (a micro `Engine.time_scale` freeze
+  restored by an `ignore_time_scale` timer).
+- `Events.enemy_killed` adds a bigger shake, a longer freeze, and a CPUParticles2D
+  **death burst**.
+- The player camera carries `components/camera_shake.gd`, which listens for
+  `screen_shake` and jolts its `offset`.
+- **Knockback**: `Enemy.take_damage(amount, knockback)` takes an optional impulse
+  that decays in `_physics_process`; melee/projectiles/nova pass a direction.
+- The player adds a forward **lunge** on melee swings (`_lunge`).
+Tune feel via the constants in `combat_fx.gd`, `camera_shake.gd`, and the player's
+`MELEE_KNOCKBACK`/`LUNGE_*`.
+
 ### Progression & skills
 `Stats` (`scripts/stats.gd`, child of the player) is the progression authority:
 level/XP, four allocatable **attributes** (Might→melee, Finesse→ranged,

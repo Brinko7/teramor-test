@@ -40,6 +40,9 @@ var _player: Node2D = null
 var _touch_timer: float = 0.0
 var _wander_dir: Vector2 = Vector2.ZERO
 var _wander_timer: float = 0.0
+## Decaying knockback velocity applied when struck.
+var _knockback: Vector2 = Vector2.ZERO
+const KNOCKBACK_DECAY := 700.0
 
 func _ready() -> void:
 	add_to_group("enemy")
@@ -52,8 +55,9 @@ func _physics_process(delta: float) -> void:
 
 	var input: Vector2 = _decide_input(delta)
 
-	velocity = input * speed
+	velocity = input * speed + _knockback
 	move_and_slide()
+	_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 
 	_update_facing(input)
 	_update_animation(delta, input.length() > 0.01)
@@ -125,9 +129,12 @@ func apply_tier(tier: int) -> void:
 	# Tint deeper-tier foes so they read as more dangerous.
 	modulate = modulate.lerp(Color(1.0, 0.6, 0.7), clampf(0.12 * steps, 0.0, 0.5))
 
-func take_damage(amount: int) -> void:
+func take_damage(amount: int, knockback: Vector2 = Vector2.ZERO) -> void:
 	health.take_damage(amount)
 	_flash()
+	Events.damage_dealt.emit(global_position, amount, true)
+	if knockback != Vector2.ZERO:
+		_knockback = knockback
 
 func _flash() -> void:
 	modulate = Color(1.0, 0.4, 0.4)
