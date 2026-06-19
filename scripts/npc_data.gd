@@ -44,6 +44,7 @@ class_name NpcData
 ##   forbid_flag      String   (optional) hidden once this Story flag is set
 ##   require_hearts   int      (optional) minimum hearts to offer
 ##   set_flag         String   (optional) Story flag set after the topic plays
+##   story_beat       String   (optional) Story beat fired (advances STORY quests)
 ##   affinity         int      (optional) friendship points granted (once, via set_flag)
 ##   start_quest      String   (optional) resource path of a Quest to start
 @export var topics: Array[Dictionary] = []

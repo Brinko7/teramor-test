@@ -26,4 +26,5 @@ func label() -> String:
 		Kind.COLLECT:
 			return "Collect %s" % String(target_id)
 		_:
-			return String(target_id) if target_id != &"" else "Story"
+			# STORY: humanize the beat id, e.g. &"visit_cleaves_landing" -> "Visit Cleaves Landing".
+			return String(target_id).capitalize() if target_id != &"" else "Story"
