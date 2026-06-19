@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillNode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skill_node.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"mark_vigor"
+display_name = "Hunter's Vigor"
+description = "+8 max HP and +2 ranged damage."
+branch = 1
+cost = 1
+required_level = 2
+requires = PackedStringArray("mark_aim")
+ranged_flat = 2
+hp_flat = 8

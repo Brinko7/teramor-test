@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SkillNode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skill_node.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ele_attune"
+display_name = "Deep Attunement"
+description = "+30% spell power as Tera's gift deepens."
+branch = 2
+cost = 2
+required_level = 4
+requires = PackedStringArray("ele_awaken")
+spell_pct = 0.3

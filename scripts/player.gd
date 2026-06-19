@@ -89,6 +89,8 @@ func _ready() -> void:
 	_apply_appearance()
 	_grant_starting_kit()
 	_visuals.refresh_gear()
+	stats.skills_changed.connect(_on_skills_changed)
+	_sync_abilities()
 
 ## Paints the paper-doll from the chosen identity: skin tints the body sprite,
 ## the hair style swaps its texture and the hair colour tints it.
@@ -240,7 +242,7 @@ func _start_attack() -> void:
 func _fire_projectile(weapon: WeaponItem) -> void:
 	var arrow := ARROW_SCENE.instantiate() as Projectile
 	arrow.global_position = global_position + _aim * 8.0 + Vector2(0, -10)
-	arrow.setup(_aim, weapon.damage, weapon.projectile_speed, weapon.range)
+	arrow.setup(_aim, weapon.damage + stats.ranged_power(), weapon.projectile_speed, weapon.range)
 	get_parent().add_child(arrow)
 
 func _end_attack() -> void:
@@ -293,6 +295,25 @@ func _on_player_leveled_up(_new_level: int) -> void:
 	# Grow the Health pool to the new max and refill on level-up.
 	health.max_health = stats.max_hp
 	health.heal(stats.max_hp)
+
+## Attributes/skills changed: grow the health pool (without a free heal) and
+## refresh which elemental abilities are castable.
+func _on_skills_changed() -> void:
+	health.max_health = stats.max_hp
+	health.health = mini(health.health, health.max_health)
+	health.health_changed.emit(health.health, health.max_health)
+	_sync_abilities()
+
+## Rebuild the ability hotbar from the abilities unlocked by learned skill nodes.
+func _sync_abilities() -> void:
+	if ability_caster == null:
+		return
+	var ids: Array = []
+	for node_id in stats.learned:
+		var node: SkillNode = Skills.get_node_data(node_id)
+		if node != null and node.is_ability():
+			ids.append(node.unlock_ability_id)
+	ability_caster.set_unlocked(ids)
 
 # --- Death / respawn --------------------------------------------------------
 

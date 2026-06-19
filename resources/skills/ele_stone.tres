@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="SkillNode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skill_node.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ele_stone"
+display_name = "Stonegift"
+description = "Unlock Stone Nova, shattering everything around you."
+branch = 2
+cost = 1
+required_level = 3
+requires = PackedStringArray("ele_awaken")
+unlock_ability_id = &"stone_nova"

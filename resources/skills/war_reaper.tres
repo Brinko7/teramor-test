@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="SkillNode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skill_node.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"war_reaper"
+display_name = "Reaper"
+description = "+25% melee damage and +2 flat. A whirlwind of steel."
+branch = 0
+cost = 2
+required_level = 3
+requires = PackedStringArray("war_strength")
+melee_flat = 2
+melee_pct = 0.25

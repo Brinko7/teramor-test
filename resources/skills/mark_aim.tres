@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="SkillNode" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/skill_node.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"mark_aim"
+display_name = "Steady Aim"
+description = "+3 ranged damage."
+branch = 1
+cost = 1
+required_level = 1
+ranged_flat = 3
