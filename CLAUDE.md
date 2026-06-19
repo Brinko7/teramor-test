@@ -43,28 +43,38 @@ Registered in `project.godot` under `[autoload]`:
   death → game-over → respawn loop, and the sleep/day-advance sequence.
 - **PlayerProfile** — chosen identity (skin/hair) from character creation.
 - **Story**, **Relationships**, **QuestManager** — narrative/social/quest state.
+  Relationships and QuestManager are **pure data managers**: they expose state +
+  signals, and the player menu renders them (no UI of their own).
 - **TimeManager** — in-game clock and day counter.
 - **Wallet** — gold balance.
 - **SceneManager** — fade transitions and player spawn placement.
 - **SaveManager** — generic group-based persistence (see below).
 - **FarmManager**, **StorageManager** — farm tiles and the shared camp stash.
-- **UIManager** — single owner of the overlay panels (dialogue, inventory,
+- **UIManager** — single owner of the overlay panels (dialogue, the player menu,
   crafting, shop, storage). See "UI" below.
 
 ### UI
 `UIManager` instantiates the overlay panels once at startup and parents them under
-itself, so there is **one** UI autoload instead of five separate ones. Reach a
-panel through its accessor:
+itself, so there is **one** UI autoload instead of several. Reach a panel through
+its accessor:
 
 ```gdscript
 UIManager.dialogue.start_conversation(intro, menu_provider, speaker)
 UIManager.shop.open(stock, shop_name)
 UIManager.storage.open()
+UIManager.menu.open(tab)   # the unified tabbed player menu
 ```
 
-Each panel is still a `CanvasLayer` that processes while the tree is paused and
-handles its own toggle input — `UIManager` just owns it. The self-toggling panels
-(inventory `I`, crafting `C`) need no external calls.
+Each panel is a `CanvasLayer` that processes while the tree is paused and handles
+its own toggle input — `UIManager` just owns it.
+
+**Player menu** (`scripts/ui/player_menu.gd`) is the unified, Stardew/Kynseed-style
+tabbed overlay and the home for inventory, equipped gear, character stats, quests
+and social. Open with `Tab`; the legacy keys jump to a tab (`I` Inventory,
+`J` Quests, `L` Social) and toggle shut if already on it. It replaced the old
+standalone inventory / quest-journal / relationships panels. Add a new tab by
+extending the `Tab` enum and adding a `_build_*` method. Crafting (`C`) is still
+its own panel for now and is a natural future tab.
 
 **Styling.** `scripts/ui/ui_theme.gd` (`class_name UITheme`) is the single source
 of truth for the UI palette (brown panels, parchment text, gold/green accents) and
