@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="Quest" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/quest.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"q_awakening"
+category = 0
+title = "Into the Deepwood"
+description = "The Children of Tera believe your power will wake among the old trees. Venture into the Deepwood."
+objective = 2
+target_id = &"enter_wilds"
+required_count = 1
+reward_xp = 30

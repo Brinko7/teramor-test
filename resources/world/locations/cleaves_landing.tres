@@ -11,5 +11,5 @@ scene_path = "res://scenes/world/town.tscn"
 spawn_point = "from_road"
 tier = 1
 connections = PackedStringArray("settlement_camp")
-discovered_by_default = true
+discovered_by_default = false
 travel_biome_path = "res://resources/world/biomes/roadside.tres"

@@ -15,6 +15,10 @@ extends Node
 
 const PROCEDURAL_SCENE := "res://scenes/world/procedural_area.tscn"
 
+## Emitted when the player drops into a generated wild area (encounter or
+## excursion). The Story director listens to fire the "enter the wilds" beat.
+signal area_entered(biome_id: StringName)
+
 ## Staged area request, consumed by the next ProceduralArea to load. Shape:
 ##   { biome: BiomeData, tier: int, return_to: StringName, explore: bool }
 var _pending: Dictionary = {}
@@ -66,6 +70,7 @@ func arrive(location_id: StringName) -> void:
 func _stage(biome: BiomeData, tier: int, return_to: StringName, explore: bool) -> void:
 	_pending = {"biome": biome, "tier": maxi(1, tier), "return_to": return_to, "explore": explore}
 	WorldMap.set_current(&"")  # in the wilds, not at any named place
+	area_entered.emit(biome.id)
 	SceneManager.travel(PROCEDURAL_SCENE, "arrive")
 
 ## Hand the staged request to a loading ProceduralArea (and clear it).
