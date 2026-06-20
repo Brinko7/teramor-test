@@ -357,27 +357,32 @@ ingredients by item id.
 
 ### Cozy tools as verbs (the Stardew layer)
 Tools are **real verbs**, not menus: select a tool/seed on the item hotbar and press
-**F** (`use_item`) to act on the interactable you face (`player._faced_interactable`).
-`item_hotbar.use_active` drinks a consumable; anything else routes to
-`player._use_held_on_facing`, which dispatches by item type — a `ToolItem` calls the
-target's `use_tool(kind, player)`, a `SeedItem` calls `try_plant(crop, player)`. World
-objects opt in by implementing those:
+**F** (`use_item`). `item_hotbar.use_active` drinks a consumable; anything else routes
+to `player._use_held_on_facing`, which dispatches by item type — a `ToolItem` calls the
+target's `use_tool(kind, player)`, a `SeedItem` calls `try_plant(crop, player)`.
+**Targeting is by proximity, not the mouse** (`player._nearest_tool_target`, within
+`TOOL_REACH`): stand on/next to the thing and use it — no precise aiming, the
+Stardew feel. (Interaction, E, still uses the mouse-aimed `interact_probe`.) Using a
+tool plays a visible swing (`PlayerVisuals.swing_tool` sweeps the tool's icon). World
+objects opt in by implementing the contract:
 - **FarmPlot** — **hoe** tills bare soil, a **seed** plants on tilled soil, the
   **watering can** waters a thirsty crop, and **F over a ripe crop** harvests it. (The
   old E-interact menu still works as a fallback.)
-- **GatherNode** — gains a `required_tool`: **pickaxe** for stone/ore/crystal veins,
-  **axe** for **wood**; herbs/forage stay hand-gathered (E). The area generator sets it
-  from `GATHER_TOOLS` (and seeds `wood` into forest biomes).
+- **ChoppableTree** (`scripts/tree.gd` on `props/tree.tscn`) — the actual trees you see;
+  the **axe** fells one for wood, then it topples and fades. The generator marks
+  **border** trees `choppable = false` so felling can't breach the area frame.
+- **GatherNode** — gains a `required_tool`: **pickaxe** for stone/ore/crystal veins
+  (herbs/forage stay hand-gathered with E). Set by the generator from `GATHER_TOOLS`.
 - **FishingSpot** (`scripts/fishing_spot.gd`, `scenes/entities/fishing_spot.tscn`) —
   dropped at every **pond** the generator paints; cast with the **fishing rod** (F) or
   interact (E) carrying one. A short cast resolves into a random fish from `catch_table`
   (`river_fish` / `lake_bass`).
 
 All of it reports `Events.tool_used(kind, position)` so **AudioManager** plays the
-matching synthesized sound (`dig`/`water`/`gather`/`chop`/`cast`) and the player nudges
-into a small swing — gameplay never touches the audio/VFX systems. New tool/fish art is
-baked by `tools/gen_tools.py`; the starting kit hands the player all five tools. Full
-keybinds live in `docs/CONTROLS.md`. Headless coverage: `tools/validate_tools.gd`.
+matching synthesized sound (`dig`/`water`/`gather`/`chop`/`cast`) — gameplay never
+touches the audio/VFX systems. New tool/fish art is baked by `tools/gen_tools.py`; the
+starting kit hands the player all five tools. Full keybinds live in `docs/CONTROLS.md`.
+Headless coverage: `tools/validate_tools.gd`.
 **Still to come:** befriendable camp members who tend the farm for you.
 
 Generated areas use one scene, `scenes/world/procedural_area.tscn`
