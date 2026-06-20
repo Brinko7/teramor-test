@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="HeartEvent" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/heart_event.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wrenna_4"
+npc_id = &"wrenna"
+hearts = 4
+speaker = "Wrenna"
+lines = PackedStringArray("You've earned a truth most never get from me, Zayn. Sit a moment.", "My mother was of the Glade. Elven-blood — the kind the crown in Terakin hunts and cages. I've hidden it my whole life. One wrong word and they'd take me too.", "But you... you walk into the cursed places and come back, and you never once asked what I was. Only what I needed.", "So I'll tell you what the woods told me: your father's trail doesn't end in the Deepwood. It turns west. Toward the Glade. Toward my mother's people.", "When you're ready to walk that road — I'll walk it with you. The woods and I owe you that much.")
+set_flag = &"wrenna_heart_4"
+reward_item = "res://resources/items/wild_mushroom.tres"
+reward_count = 5

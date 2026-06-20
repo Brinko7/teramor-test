@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/encounter_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"vast_colossus"
+display_name = "The Withered Colossus"
+enemy_paths = PackedStringArray("res://scenes/entities/enemy_vast_colossus.tscn", "res://scenes/entities/enemy_vast_hound.tscn", "res://scenes/entities/enemy_vast_hound.tscn")
+enemy_offsets = PackedVector2Array(0, 0, -56, 30, 56, 30)
+loot_cache = true
+loot_offset = Vector2(0, -44)
+min_tier = 6
+weight = 0.6
+radius = 150.0

@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3]
+[gd_scene load_steps=42 format=3]
 
 [ext_resource type="Script" path="res://scripts/settlement.gd" id="0_settlement"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="23_clock"]
@@ -19,6 +19,8 @@
 [ext_resource type="Resource" path="res://resources/npcs/elder_maelon.tres" id="22_maelon"]
 [ext_resource type="Resource" path="res://resources/npcs/bram.tres" id="36_bram"]
 [ext_resource type="Resource" path="res://resources/npcs/wrenna.tres" id="37_wrenna"]
+[ext_resource type="Resource" path="res://resources/npcs/pell.tres" id="38_pell"]
+[ext_resource type="Resource" path="res://resources/npcs/hadrin.tres" id="39_hadrin"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="1_grass"]
 [ext_resource type="TileSet" path="res://assets/tilesets/terrain.tres" id="2_tileset"]
 [ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="3_player"]
@@ -320,6 +322,28 @@ schedule = {
 3: "wrenna_home"
 }
 
+[node name="Pell" parent="Entities" instance=ExtResource("14_npc")]
+position = Vector2(388, 282)
+data = ExtResource("38_pell")
+home_waypoint = "pell_home"
+schedule = {
+0: "pell_fire",
+1: "pell_fire",
+2: "pell_fire",
+3: "pell_home"
+}
+
+[node name="Hadrin" parent="Entities" instance=ExtResource("14_npc")]
+position = Vector2(500, 360)
+data = ExtResource("39_hadrin")
+home_waypoint = "hadrin_home"
+schedule = {
+0: "hadrin_wood",
+1: "hadrin_wood",
+2: "hadrin_home",
+3: "hadrin_home"
+}
+
 [node name="Player" parent="Entities" instance=ExtResource("3_player")]
 position = Vector2(320, 380)
 
@@ -405,6 +429,18 @@ position = Vector2(540, 250)
 
 [node name="wrenna_home" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
 position = Vector2(446, 184)
+
+[node name="pell_fire" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(388, 282)
+
+[node name="pell_home" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(330, 196)
+
+[node name="hadrin_wood" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(520, 360)
+
+[node name="hadrin_home" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(474, 196)
 
 [node name="DayNight" type="CanvasModulate" parent="."]
 script = ExtResource("24_daynight")

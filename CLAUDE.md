@@ -431,21 +431,47 @@ the wilds — the bridge from the relationship layer to the farming layer.
 - **CampManager** (autoload, pure data manager like FarmManager) owns the roster
   (`{npc_id: {name, role, active}}`) and runs the chores. It listens on
   `TimeManager.day_changed`, and **because it's registered after FarmManager**, its
-  handler fires *after* FarmManager has matured the watered crops — so a
-  **farmhand** harvests what just ripened (into `StorageManager.stash`) and
-  re-waters every remaining crop for the next night (`PLOTS_PER_FARMHAND` each),
-  while a **forager** deposits a nightly haul of wild goods (`FORAGE_TABLE`). That
+  handler fires *after* FarmManager has matured the watered crops. Four **roles**:
+  a **farmhand** harvests what just ripened (into `StorageManager.stash`) and
+  re-waters every remaining crop for the next night; a **forager** brings wild goods
+  (`FORAGE_TABLE`); a **woodcutter** stocks building materials (`MATERIAL_TABLE`);
+  a **cook** turns stash produce into Camp Stew (a healing meal). That farmhand
   ordering *is* the "they keep your crops growing while you're away" loop. Each dawn
   it emits `chores_reported` and pops a `UIManager.notify` summary.
-- **The player menu's Camp tab** (`player_menu._build_camp`) renders the roster
-  (name + role), a per-member **Working/Resting** toggle (`set_active`), and last
-  night's report. Resting members skip chores.
+- **The camp economy.** What the workers bring in funds **camp upgrades**
+  (`CampUpgrade` `.tres` in `resources/camp/upgrades/`, loaded like the Skills
+  catalog): spend stash goods (`CampManager.purchase`) to raise the **recruit cap**
+  (`recruit_slots`), let each farmhand work more rows (`plots_per_farmhand`), or
+  boost gather yields (`yield`). A new upgrade is "author one `.tres`" as long as its
+  `effect` is one CampManager's accessors read. So the loop is gather → build →
+  recruit more → gather more, and a few tents grow into a settlement.
+- **The player menu's Camp tab** (`player_menu._build_camp`) shows the roster
+  (name + role) with a **Working/Resting** toggle, the **recruit count vs cap**, the
+  **Improvements** store (Buy buttons gated on affordability), and last night's
+  report. Resting members skip chores.
 - **Add a recruit** by authoring an `NpcData` `.tres` with the recruit fields and a
-  `recruit_role` CampManager understands (`&"farmhand"` / `&"forager"`), then drop
-  the NPC into a scene. Bram (farmhand) and Wrenna (forager) live in the camp
-  (`settlement.tscn`) as the first two. Add a **new role** by extending the `match`
-  in `CampManager._on_day_changed`. Headless coverage: `tools/validate_camp.gd`.
-- CampManager is persistent (SaveManager contract) and reset on new game.
+  `recruit_role` CampManager understands (`&"farmhand"`/`&"forager"`/`&"woodcutter"`/
+  `&"cook"`), then drop the NPC into a scene. Bram (farmhand), Wrenna (forager), Pell
+  (cook) and Hadrin (woodcutter) live in the camp (`settlement.tscn`). Add a **new
+  role** by extending the `match` in `CampManager._on_day_changed`. Headless
+  coverage: `tools/validate_camp.gd`.
+- CampManager is persistent (SaveManager contract — roster + owned upgrades) and
+  reset on new game.
+
+### Heart events (the social → story payoff)
+Rising friendship pays off in **authored cutscenes**. A `HeartEvent` resource
+(`scripts/heart_event.gd`, `.tres` under `resources/heart_events/`) names an
+`npc_id` + `hearts` threshold, the `lines` to play, and optional rewards (a Story
+`set_flag`, a keepsake deposited to the stash). **HeartEventManager** (autoload,
+persistent) loads the catalog and listens on `Relationships.hearts_changed`. Because
+the threshold is usually crossed *inside* a conversation (a gift, small talk), the
+event is **queued and played once the current dialogue closes** (via the dialogue's
+`finished` signal), never interrupting it — `_try_play` no-ops while
+`UIManager.dialogue.is_active()`. Rewards apply the moment the event is eligible
+(`check_and_apply`, split out so it's testable without the UI). Each event is
+one-shot (a `_seen` set, saved). Bram's and Wrenna's 4-heart events are the first
+two — author a `.tres` to add more. Headless coverage:
+`tools/validate_heart_events.gd`.
 
 Generated areas use one scene, `scenes/world/procedural_area.tscn`
 (`scripts/world/procedural_area.gd`), driven by a **`BiomeData`** resource
@@ -478,6 +504,20 @@ threats: the baseline **Withered** (`enemy_withered`), a fast swarming **Vast Ho
 the `cursed_wilds` / `vast_edge` biomes plus the `withered_horde` and `vast_pack`
 encounters; each drops a crystal (the hulk a potion too). Distinct silhouettes are
 placeholder retints/reuses for now — bespoke Vast art is a follow-up.
+
+**The boss.** `BossEnemy` (`scripts/boss_enemy.gd`, a thin `Enemy` subclass) is the
+skill-check the curve builds toward — the **Withered Colossus**
+(`enemy_vast_colossus.tscn`). It keeps the base wind-up→strike rhythm but adds
+**health-gated phases** (`phase_thresholds`): each threshold it crosses it sharpens
+wind-ups, shortens recovery, speeds up, and a `UIManager.notify` banner announces the
+turn. From phase 2 it gains a telegraphed **ground slam** — a long, readable wind-up
+(roll out of it) then radial damage + a screen jolt — reusing the same hostile-in-
+radius pattern as the melee strike so faction rules still apply. It overrides
+`apply_tier` for a gentler HP curve (bosses are already big). It ships as the rare,
+`min_tier`-6, low-weight `vast_colossus` encounter in the two Cursed-Wilds biomes, and
+**always** drops its trophy, the unique **Blightbane** blade (`loot_chance = 1.0`).
+Author another boss by putting `BossEnemy` on a scene and tuning the exports. Headless
+coverage: `tools/validate_boss.gd`.
 
 **Talkable NPCs** (`scripts/npc.gd`, an `Area2D`) drive the social loop and, when
 given a `schedule` + `home_waypoint`, walk a daily route between `npc_waypoint`

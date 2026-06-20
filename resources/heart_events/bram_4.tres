@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="HeartEvent" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/heart_event.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"bram_4"
+npc_id = &"bram"
+hearts = 4
+speaker = "Bram"
+lines = PackedStringArray("Zayn — wait. Got something to say and I'll only say it once.", "That farm I lost, back east? Wasn't soldiers took it. Was me. Planted too late, too proud to ask for help, and the frost took the lot. Folk went hungry on account of my stubbornness.", "So when you ask me to tend these rows — that's not a small thing to me. That's a second chance I didn't reckon I'd get.", "Here. My father's old hand-trowel. Carried it from the ashes. I want it working ground again, and I want it to be yours.", "...Anyway. Enough of that. Those turnips won't water themselves.")
+set_flag = &"bram_heart_4"
+reward_item = "res://resources/items/herb.tres"
+reward_count = 5

@@ -631,7 +631,7 @@ func _build_camp() -> Control:
 	box.custom_minimum_size = Vector2(240, 0)
 
 	var roster: Array = CampManager.get_roster()
-	box.add_child(UITheme.make_label("The Camp", 12, UITheme.GOLD))
+	box.add_child(UITheme.make_label("The Camp  (%d / %d)" % [CampManager.count(), CampManager.get_recruit_cap()], 12, UITheme.GOLD))
 	if roster.is_empty():
 		box.add_child(UITheme.make_label("No one's signed on yet. Befriend the camp folk and ask them to lend a hand.", 10, UITheme.MUTED))
 	else:
@@ -649,6 +649,26 @@ func _build_camp() -> Control:
 			row.add_child(btn)
 			box.add_child(row)
 
+	# Improvements: spend stash goods to grow the camp.
+	box.add_child(HSeparator.new())
+	box.add_child(UITheme.make_label("Improvements", 11, UITheme.ACCENT))
+	for up: CampUpgrade in CampManager.get_upgrades():
+		var owned: bool = CampManager.is_owned(up.id)
+		if owned:
+			box.add_child(UITheme.make_label("  ✓ %s" % up.display_name, 10, UITheme.MUTED))
+			continue
+		var row := HBoxContainer.new()
+		row.add_theme_constant_override("separation", 6)
+		var btn := Button.new()
+		btn.text = up.display_name
+		btn.add_theme_font_size_override("font_size", 9)
+		btn.disabled = not CampManager.can_afford(up.id)
+		btn.tooltip_text = "%s\nCost: %s" % [up.description, up.cost_text()]
+		btn.pressed.connect(_on_camp_buy.bind(up.id))
+		row.add_child(btn)
+		row.add_child(UITheme.make_label(up.cost_text(), 9, UITheme.MUTED))
+		box.add_child(row)
+
 	box.add_child(HSeparator.new())
 	box.add_child(UITheme.make_label("Last night", 11, UITheme.ACCENT))
 	var report: Array = CampManager.get_last_report()
@@ -661,6 +681,10 @@ func _build_camp() -> Control:
 
 func _on_camp_toggle(npc_id: StringName, active: bool) -> void:
 	CampManager.set_active(npc_id, active)
+	_refresh()
+
+func _on_camp_buy(upgrade_id: StringName) -> void:
+	CampManager.purchase(upgrade_id)
 	_refresh()
 
 # --- Map tab ----------------------------------------------------------------
