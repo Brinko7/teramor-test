@@ -199,6 +199,15 @@ func _build_main_menu() -> Dictionary:
 				"then": _lines_from(topic.get("lines", [])),
 			})
 
+	# Recruit-to-camp: once befriended enough, offer to enlist them. The choice
+	# vanishes the moment they're on the roster (CampManager owns the state).
+	if data.recruitable and hearts >= data.recruit_hearts and not CampManager.is_recruited(data.id):
+		choices.append({
+			"text": data.recruit_label,
+			"effect": _recruit,
+			"then": [{"text": data.recruit_accept}],
+		})
+
 	if not Relationships.has_gifted_today(data.id) and _has_giftables():
 		choices.append({"text": "Give a gift", "submenu": _build_gift_menu})
 	elif Relationships.has_gifted_today(data.id):
@@ -238,6 +247,9 @@ func _do_talk() -> void:
 
 func _turn_in(quest: Quest) -> void:
 	QuestManager.turn_in(quest.id)
+
+func _recruit() -> void:
+	CampManager.recruit(data.id, data.display_name, data.recruit_role)
 
 func _apply_topic(topic: Dictionary) -> void:
 	var affinity: int = int(topic.get("affinity", 0))

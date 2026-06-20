@@ -49,6 +49,18 @@ class_name NpcData
 ##   start_quest      String   (optional) resource path of a Quest to start
 @export var topics: Array[Dictionary] = []
 
+## --- Recruitment (camp folk who can be enlisted to tend the camp) ------------
+## When `recruitable`, a "lend a hand" choice appears in conversation once the
+## player has reached `recruit_hearts`. Choosing it enlists the NPC into the
+## CampManager roster under `recruit_role` (e.g. &"farmhand" / &"forager"), and
+## from then on they do their chores each dawn. See CLAUDE.md "Recruiting the camp".
+@export var recruitable: bool = false
+@export var recruit_role: StringName = &""
+@export var recruit_hearts: int = 2
+## Menu label for the recruit choice, and the line they say when they accept.
+@export var recruit_label: String = "Could you help out around camp?"
+@export_multiline var recruit_accept: String = "Aye — I'd be glad to pitch in. Just point me at the work."
+
 ## Returns the small-talk line set appropriate to the current heart count.
 func talk_lines_for_hearts(hearts: int) -> PackedStringArray:
 	var best_key: int = -1

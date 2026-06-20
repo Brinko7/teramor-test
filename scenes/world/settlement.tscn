@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3]
+[gd_scene load_steps=40 format=3]
 
 [ext_resource type="Script" path="res://scripts/settlement.gd" id="0_settlement"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="23_clock"]
@@ -17,6 +17,8 @@
 [ext_resource type="Resource" path="res://resources/items/health_potion.tres" id="20_potion"]
 [ext_resource type="Resource" path="res://resources/npcs/mara.tres" id="21_mara"]
 [ext_resource type="Resource" path="res://resources/npcs/elder_maelon.tres" id="22_maelon"]
+[ext_resource type="Resource" path="res://resources/npcs/bram.tres" id="36_bram"]
+[ext_resource type="Resource" path="res://resources/npcs/wrenna.tres" id="37_wrenna"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="1_grass"]
 [ext_resource type="TileSet" path="res://assets/tilesets/terrain.tres" id="2_tileset"]
 [ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="3_player"]
@@ -296,6 +298,28 @@ schedule = {
 3: "maelon_home"
 }
 
+[node name="Bram" parent="Entities" instance=ExtResource("14_npc")]
+position = Vector2(200, 300)
+data = ExtResource("36_bram")
+home_waypoint = "bram_home"
+schedule = {
+0: "bram_farm",
+1: "bram_farm",
+2: "bram_home",
+3: "bram_home"
+}
+
+[node name="Wrenna" parent="Entities" instance=ExtResource("14_npc")]
+position = Vector2(450, 230)
+data = ExtResource("37_wrenna")
+home_waypoint = "wrenna_home"
+schedule = {
+0: "wrenna_forage",
+1: "wrenna_forage",
+2: "wrenna_home",
+3: "wrenna_home"
+}
+
 [node name="Player" parent="Entities" instance=ExtResource("3_player")]
 position = Vector2(320, 380)
 
@@ -369,6 +393,18 @@ position = Vector2(408, 288)
 
 [node name="maelon_home" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
 position = Vector2(185, 232)
+
+[node name="bram_farm" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(150, 312)
+
+[node name="bram_home" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(296, 200)
+
+[node name="wrenna_forage" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(540, 250)
+
+[node name="wrenna_home" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(446, 184)
 
 [node name="DayNight" type="CanvasModulate" parent="."]
 script = ExtResource("24_daynight")

@@ -93,6 +93,11 @@ func harvest(plot_id: String) -> CropData:
 
 # --- Queries ----------------------------------------------------------------
 
+## Every plot that has any recorded state (planted, tilled, or watered at least
+## once). Used by CampManager so farmhands know which plots exist to tend.
+func get_plot_ids() -> Array:
+	return _plots.keys()
+
 func get_state(plot_id: String) -> Dictionary:
 	return _plots.get(plot_id, {})
 
