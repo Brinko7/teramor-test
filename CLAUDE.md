@@ -446,3 +446,33 @@ them anyway.
   is needed to add content.
 - **Code-built UI** routes colours and shared widgets through `UITheme`.
 - Tabs for indentation (`.editorconfig`).
+- **Warnings are errors.** The project compiles with warnings-as-errors, so keep
+  code warning-clean — notably, never `var x := <Variant>` (type it or drop the
+  `:=`).
+
+## Testing & CI
+
+The codebase leans hard on *content-as-data*, which has a sharp edge: a typo'd
+`res://` path **fails silently** (e.g. `BiomeData.pick_enemy_path` just skips a
+missing scene). The safety net is a headless validation suite, run on every
+PR/push by **`.github/workflows/ci.yml`** (downloads Godot 4.6, imports, runs the
+suite) and locally by **`tools/run_checks.sh`**:
+
+```
+GODOT=/path/to/Godot_v4.6 bash tools/run_checks.sh   # all checks must say RESULT: PASS
+```
+
+- **`tools/validate_content.gd`** is the lint that catches the broken-path /
+  duplicate-id class across *every* `.tres` by reflection — no per-type code, so new
+  resource types are covered for free. Run it after authoring content.
+- **`tools/validate_*.gd`** are per-system headless smoke tests (each a `SceneTree`
+  script printing `RESULT: PASS`/`FAIL`). Add one when you add a system.
+- **Writing a validator — avoid the frame-0 trap.** Autoload globals (`UIManager`,
+  etc.) and `class_name` references aren't registered when a `-s` script compiles.
+  So: **`load()` inside `_run` after `await process_frame`, never top-level
+  `preload`/`const`**; defer work via `_initialize() -> _run.call_deferred()`; and
+  identify nodes by **script path** (`get_script().resource_path.ends_with(...)`),
+  not `is SomeClassName`, or you force that script (and its autoload deps) to compile
+  too early and poison every instance.
+- **Web sessions:** `.claude/hooks/session-start.sh` fetches Godot + imports so the
+  suite is runnable in Claude Code on the web (no more shipping blind).
