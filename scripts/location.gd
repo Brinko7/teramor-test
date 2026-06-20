@@ -21,9 +21,26 @@ func _ready() -> void:
 	if location_id != &"":
 		# Honours a staged journey/fast-travel destination, else tags itself.
 		WorldMap.claim_arrival(location_id)
+	MusicManager.enter_zone(_music_zone())
 	_frame_ground()
 	_build_walls()
 	_clamp_camera()
+
+## Pick a music zone from this place's authored kind/region (camp/town/wild/cursed)
+## so each named location carries the mood of where it sits in the world.
+func _music_zone() -> StringName:
+	var loc := WorldMap.get_location(location_id)
+	if loc == null:
+		return &"town"
+	if loc.region == &"cursed_wilds":
+		return &"cursed"
+	match loc.kind:
+		&"camp":
+			return &"camp"
+		&"wild", &"frontier":
+			return &"wild"
+		_:
+			return &"town"
 
 func _frame_ground() -> void:
 	var g := get_node_or_null("Ground") as Sprite2D

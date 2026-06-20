@@ -140,6 +140,20 @@ func _ready() -> void:
 	_place_signage()
 	_send_to_minimap()
 	_clamp_camera()
+	MusicManager.enter_zone(_music_zone())
+
+## Map the staged biome to a music zone: the Cursed-Wilds biomes get the ominous
+## theme, the cave its own bed, everything else the lonely wild exploration theme.
+func _music_zone() -> StringName:
+	if _biome == null:
+		return &"wild"
+	match _biome.id:
+		&"cursed_wilds", &"vast_edge":
+			return &"cursed"
+		&"cave":
+			return &"cave"
+		_:
+			return &"wild"
 
 func _physics_process(_delta: float) -> void:
 	if _exiting or _gates.is_empty():

@@ -49,6 +49,8 @@ Registered in `project.godot` under `[autoload]`:
   day-of-season / year, all derived from the day). See "Seasons" below.
 - **SeasonManager** — announces the calendar: a banner on each new season and on
   authored festival days. Registered **after** UIManager (it drives the banner).
+- **MusicManager** — owns the Music/Ambience buses; crossfades looping tracks per
+  zone + day/night. See "Music & ambience" below.
 - **Wallet** — gold balance.
 - **SceneManager** — fade transitions and player spawn placement.
 - **SaveManager** — generic group-based persistence (see below).
@@ -236,9 +238,26 @@ tune a sound by editing its recipe in `bake_all()` and running
 
 The mixer is a **bus layout** (`resources/audio/default_bus_layout.tres`, set as
 `audio/buses/default_bus_layout`): Master → **Music / SFX / Ambience**, so the coming
-options sliders drive `AudioManager.set_bus_volume_linear(bus, 0..1)`. Music and
-per-biome ambient loops are the next audio slice (the buses are already waiting).
+options sliders drive `AudioManager.set_bus_volume_linear(bus, 0..1)`.
 Headless coverage: `tools/validate_audio.gd`.
+
+**Music & ambience (the soundscape's bed).** The **MusicManager** autoload owns the
+**Music** and **Ambience** buses the way AudioManager owns SFX — gameplay never
+touches it. It holds one looping layer per bus and **crossfades** (an A/B
+`AudioStreamPlayer` pair, ~1.4s) between tracks as the player moves between **zones**
+and as day turns to night. Each world scene just announces its mood in `_ready` —
+`MusicManager.enter_zone(zone)` (camp/town/wild/cursed/finale/interior/title/cave) —
+and re-entering the same zone is a no-op, so walking through a door never restarts the
+music. Zones map to a theme via `ZONE_MUSIC`; **outdoor** zones swap their ambience
+bed on `TimeManager.period_changed` (day birds ↔ night crickets). `procedural_area`
+derives its zone from the biome (the Cursed-Wilds biomes get the ominous theme, the
+cave its own bed); `LocationScene` derives its zone from the place's authored
+kind/region. Tracks are **bespoke audioforge loops** — `bake_music()`/`bake_ambience()`
+synth four themes + four beds (the same dependency-free math as the SFX), saved as
+seamless loops (`make_loop()` crossfade-wraps each so the seam is continuous; the WAV
+is set to `LOOP_FORWARD` at load) under `assets/audio/{music,ambience}/`. Regenerate
+or tune by editing the recipes and running `python3 tools/audioforge.py`. Headless
+coverage: `tools/validate_music.gd`.
 
 ### Progression & skills
 `Stats` (`scripts/stats.gd`, child of the player) is the progression authority:
