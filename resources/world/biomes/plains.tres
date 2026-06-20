@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/biome_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"plains"
+display_name = "The Plint Plains"
+ground_texture_path = "res://assets/placeholder/grass_dry.png"
+ground_tint = Color(1, 0.97, 0.78, 1)
+enemy_paths = PackedStringArray("res://scenes/entities/enemy.tscn", "res://scenes/entities/enemy_wolf.tscn", "res://scenes/entities/enemy_archer.tscn")
+enemy_weights = PackedFloat32Array(3, 2, 2)
+prop_paths = PackedStringArray("res://scenes/entities/props/bush.tscn", "res://scenes/entities/props/rock.tscn", "res://scenes/entities/props/tree.tscn")
+border_path = "res://scenes/entities/props/tree.tscn"
+loot_paths = PackedStringArray("res://resources/items/health_potion.tres", "res://resources/items/herb.tres", "res://resources/items/hunter_bow.tres")
+encounter_paths = PackedStringArray("res://resources/world/encounters/bandit_camp.tres", "res://resources/world/encounters/wolf_pack.tres", "res://resources/world/encounters/wild_clash.tres")
+min_encounters = 1
+max_encounters = 2
+base_tier = 2
+min_enemies = 0
+max_enemies = 2
+min_props = 14
+max_props = 24
+gather_paths = PackedStringArray("res://resources/items/herb.tres")
+min_gather = 1
+max_gather = 3
+wildlife_paths = PackedStringArray("res://scenes/entities/wildlife_deer.tscn", "res://scenes/entities/wildlife_rabbit.tscn")
+min_wildlife = 2
+max_wildlife = 4

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="WorldLocation" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/world_location.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"the_holdfast"
+display_name = "The Holdfast"
+blurb = "A sun-blasted desert prison where Terakin's men cage suspected hybrids before the long march to the capital. Somewhere a rescue begins here."
+scene_path = ""
+spawn_point = "spawn"
+tier = 4
+region = &"terakin"
+kind = &"frontier"
+rumored = true
+connections = PackedStringArray("terakin")
+discovered_by_default = false
+travel_biome_path = "res://resources/world/biomes/desert.tres"

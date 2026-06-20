@@ -331,6 +331,12 @@ biome_path = "res://resources/world/biomes/cave.tres"
 tier = 3
 return_location = &"settlement_camp"
 
+[node name="CursedWildsEntrance" parent="Entities" instance=ExtResource("30_explore")]
+position = Vector2(320, 388)
+biome_path = "res://resources/world/biomes/cursed_wilds.tres"
+tier = 5
+return_location = &"settlement_camp"
+
 [node name="DeepwoodSign" parent="Entities" instance=ExtResource("31_sign")]
 position = Vector2(158, 366)
 text = "The Deepwood
@@ -340,6 +346,11 @@ keep your blade close"
 position = Vector2(486, 366)
 text = "The Undervault
 mind the dark"
+
+[node name="CursedWildsSign" parent="Entities" instance=ExtResource("31_sign")]
+position = Vector2(356, 374)
+text = "The Cursed Wilds
+turn back if you value your life"
 
 [node name="RoadSign" parent="Entities" instance=ExtResource("31_sign")]
 position = Vector2(596, 214)

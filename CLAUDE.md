@@ -282,16 +282,41 @@ per-objective; `load_state` also reads the old single-int format.
 ### World, travel & procedural areas
 Named places are `WorldLocation` resources (`scripts/world/world_location.gd`)
 under `resources/world/locations/`, loaded by the **WorldMap** autoload, which
-tracks which are discovered and where the player currently is (persistent). Tag a
-hand-built scene as a location by calling `WorldMap.discover/set_current` in its
-root `_ready` (see `settlement.gd`, `town_terrain.gd`).
+tracks which are discovered and where the player currently is (persistent). Each
+location carries a `region` (kingdom), a `kind` (camp/town/capital/wild/frontier/
+landmark), and a `rumored` flag.
+
+**The world is three human kingdoms + a deep frontier**, adopting the GDD canon:
+- **The Hollenmark** (Third Kingdom, `region = &"hollenmark"`) — the forest-edge
+  home region: the **Children of Tera camp** hidden where the woods meet the wilds,
+  the border barony **Cleeve's Landing**, the capital **Hollen**, and **Mirefen**.
+- **Plint** (Second Kingdom, plains) — the Wizard King's grain capital, plus
+  **Kingsford** on the King's Path.
+- **Terakin** (First Kingdom, desert) — the hybrid-abducting crown, plus **The
+  Holdfast** (a desert prison — the first Rescue hook).
+- **The Cursed Wilds** frontier — **The Thornwall**, **The Elven Glade** (the
+  elves endure), and **The Great Tree** (Tera, the finale), as steep-tier goals.
+
+Most far places ship as **`rumored = true`**: named, greyed nodes on the map that
+sell the world's scale before their bespoke scenes exist (towns reuse
+`town.tscn` as a template for now). Tiers form the curve — camp/towns 0–2, the
+plains/desert 2–4, and a hard jump to **5–7 in the Cursed Wilds** (the threshold).
+Tag a hand-built scene as a location with `WorldMap.claim_arrival(fallback_id)` in
+its root `_ready` (see `settlement.gd`, `town_terrain.gd`); `claim_arrival` honours
+a **staged journey/fast-travel destination** so one scene can stand in for several
+map nodes, else uses its own id. The **Map tab** (`player_menu`) renders the world
+grouped by kingdom via `WorldMap.get_map_regions()`.
 
 **TravelManager** (autoload) moves the player around:
 - `fast_travel(id)` (from the menu's Map tab) rolls a tier-based encounter chance.
   On a hit it stages a generated ambush and the player must cross to the far exit
   to continue; otherwise they `arrive` directly. No fast travel mid-encounter.
-- `enter_area(biome, tier, return_to)` (an `ExploreZone` at a town edge) drops the
-  player into an explorable wild area.
+- `enter_area(biome, tier, return_to, explore)` — an `ExploreZone` at a town edge.
+  A normal zone is a there-and-back **excursion**; a zone with `journey_to` set is
+  a one-way **journey** (`explore = false`) whose single *Continue* gate *arrives at
+  and discovers* a named place — the way you cross a long wild stretch to reach the
+  next town/frontier. The camp's **Cursed Wilds entrance** drops you into the
+  tier-5 Vast frontier where the **Withered** (`monster` faction) roam.
 
 Biomes can also seed **gather nodes** (`scripts/gather_node.gd`) — ore/stone/
 crystal veins you interact with to harvest, scattered from a biome's

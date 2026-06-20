@@ -4,14 +4,15 @@
 
 [resource]
 script = ExtResource("1_script")
-id = &"settlement_camp"
-display_name = "Children of Tera Camp"
-blurb = "Your hidden camp where the forest meets the Cursed Wilds — home to the Children of Tera."
-scene_path = "res://scenes/world/settlement.tscn"
+id = &"mirefen"
+display_name = "Mirefen"
+blurb = "A damp little fen village of trappers and reed-cutters on the Hollenmark's southern marsh road."
+scene_path = "res://scenes/world/town.tscn"
 spawn_point = "from_road"
-tier = 0
+tier = 1
 region = &"hollenmark"
-kind = &"camp"
-connections = PackedStringArray("cleaves_landing")
-discovered_by_default = true
+kind = &"town"
+rumored = true
+connections = PackedStringArray("hollen")
+discovered_by_default = false
 travel_biome_path = "res://resources/world/biomes/roadside.tres"

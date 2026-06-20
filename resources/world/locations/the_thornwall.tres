@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="WorldLocation" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/world_location.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"the_thornwall"
+display_name = "The Thornwall"
+blurb = "A living wall of black thorns deep in the Cursed Wilds. Past it lie the worst horrors of the Vast — and the only road to the heart-root."
+scene_path = ""
+spawn_point = "spawn"
+tier = 6
+region = &"cursed_wilds"
+kind = &"landmark"
+rumored = true
+connections = PackedStringArray("elven_glade", "the_great_tree")
+discovered_by_default = false
+travel_biome_path = "res://resources/world/biomes/vast_edge.tres"

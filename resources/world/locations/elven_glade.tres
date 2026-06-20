@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="WorldLocation" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/world_location.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"elven_glade"
+display_name = "The Elven Glade"
+blurb = "A hidden wood-elf outpost in the deep wilds — the first proof the elves endure, and the threshold of the Elven Kingdom that guards the Great Tree."
+scene_path = ""
+spawn_point = "spawn"
+tier = 6
+region = &"cursed_wilds"
+kind = &"frontier"
+rumored = true
+connections = PackedStringArray("the_thornwall")
+discovered_by_default = false
+travel_biome_path = "res://resources/world/biomes/cursed_wilds.tres"
