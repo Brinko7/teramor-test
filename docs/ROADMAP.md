@@ -120,20 +120,59 @@ service of "this little camp, and these people, became mine."
    hunt toward the Glade).
 3. ~~**First real boss** in the Cursed Wilds.~~ ✅ **Done** — `BossEnemy` / the
    Withered Colossus (phases + ground slam + the Blightbane trophy).
-4. **Season layer** over TimeManager — the calendar that reframes the whole loop.
-   *(The next big one.)*
+4. ~~**Season layer** over TimeManager — the calendar that reframes the whole loop.~~
+   ✅ **Done** — a derived calendar (season / day-of-season / year) in `TimeManager`,
+   **seasonal crops** (`CropData.seasons`, planting gated + out-of-season pause), a
+   per-season **world tint** in `day_night.gd`, a date HUD, and **SeasonManager** with
+   season + festival banners (four festivals authored). `tools/validate_seasons.gd`.
+
+---
+
+## Pillar 8 — Look & feel / polish (the first-15-minutes pass)
+
+The depth is landing; now make it *feel* finished. These are the highest-leverage
+look-and-feel swings — most are felt by a first-time player in the opening minutes,
+and none depends on another landing first. Rough priority:
+
+1. **Music & ambience** — the single biggest feel gap. The Music/Ambience mixer buses
+   are wired and silent; a sparse, mournful score + per-biome ambient loops (wind,
+   birds, cave drips, the camp fire) lift the whole tone. Extend `audioforge.py` to
+   bake looping pads the way it bakes SFX — keeps the "all-ours pipeline" story.
+2. **Dialogue portraits** — conversations are text-only. Pixel portrait busts with a
+   couple of expression swaps turn the social/story layer memorable. `pixelforge` can
+   bake them on the grounded palette; `NpcData` already holds identity.
+3. **Options menu** — the volume sliders the buses expect, key rebinding,
+   fullscreen/vsync, assist/difficulty toggles. Table stakes for a shippable feel.
+4. **Weather + environmental particles** — rain, fog, drifting leaves, fireflies at
+   dusk, wind-sway shaders. Pairs with seasons; drive it off `TimeManager`/biome.
+5. **Post-processing pass** — a full-screen shader for subtle vignette + per-biome
+   colour grading + a touch of bloom on embers/magic/blight.
+6. **Arrival title cards + UI motion** — a brief "Cleeve's Landing — Hollenmark" card
+   over the fade; tween menu/banner opens through `UITheme`.
+7. **A light cutscene/camera system** — pan + letterbox + focus for story beats.
+
+### Experience & QoL (the "this feels shippable" layer)
+
+- **First-15-minutes onboarding** — contextual prompts the first time you farm/fight/
+  recruit. Juries feel the opening hardest.
+- **Inventory QoL** — sort, stack-split, shift-to-storage, a trash/drop slot.
+- **A Codex / almanac tab** — discovered crops, fish, monsters, people; the
+  completionist tail, as a `player_menu` tab.
+- **Boss health bar HUD** + status-effect icons on the HUD — combat readability.
 
 ### Now-open threads to pull next (in priority order)
 
-- **Seasons & festivals** (Pillar 5) — a season over `TimeManager`; seasonal crops +
-  a first festival day. The calendar players plan around.
+- **Music & ambience** (Pillar 8) — the next swing; the buses are waiting.
+- **Dialogue portraits** (Pillar 8 / Pillar 2) — makes every conversation land.
 - **Camp construction round 3** (Pillar 1) — visible camp tiers: swap props in
   `settlement.tscn` by upgrade level so the camp *looks* like it grew; a kitchen/forge
   building gating cook/smith roles.
+- **Festivals with content** (Pillar 5) — the banner days exist; give one an actual
+  event (a gathering, a stall, a minigame) so the calendar has a payoff.
 - **More heart-events & a romance track** (Pillar 2) — 6/8/10-heart beats; let
   Wrenna's Glade thread feed a Story chapter.
 - **Boss polish & a second boss** (Pillar 3) — a dedicated boss health bar (HUD),
   bespoke Colossus art, and a second pattern (a ranged/summon phase).
 
-Pick the pillar that excites *you* most; conviction reads on screen. Pillar 1's
-momentum is spent for now — **seasons** is the highest-leverage next swing.
+Pick the pillar that excites *you* most; conviction reads on screen. With the season
+layer in, **music & ambience** is the highest-leverage next swing.

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Festival" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/festival.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"harvest_home"
+display_name = "Harvest Home"
+season = &"autumn"
+day = 16
+title = "Harvest Home"
+subtitle = "The fields are in. The camp feasts on what the year gave."

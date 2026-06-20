@@ -67,10 +67,13 @@ func _build_menu() -> Dictionary:
 			status += " You need a hoe to work it."
 	elif not FarmManager.has_crop(plot_id):
 		status = "Tilled soil, ready to plant."
-		if not _seeds_in_bag(inv).is_empty():
-			choices.append({"text": "Plant seeds...", "submenu": _build_plant_menu})
-		else:
+		var seeds: Array = _seeds_in_bag(inv)
+		if seeds.is_empty():
 			status += " You have no seeds — buy some in town."
+		elif _in_season_seeds(seeds).is_empty():
+			status += " Nothing in your bag grows in %s." % TimeManager.get_season_name()
+		else:
+			choices.append({"text": "Plant seeds...", "submenu": _build_plant_menu})
 	else:
 		var crop := FarmManager.get_crop(plot_id)
 		if FarmManager.is_mature(plot_id):
@@ -83,7 +86,9 @@ func _build_menu() -> Dictionary:
 		else:
 			var day: int = FarmManager.get_days(plot_id)
 			status = "%s — growing (day %d of %d)." % [crop.display_name, day, crop.days_to_mature()]
-			if FarmManager.is_watered(plot_id):
+			if not _in_season(crop):
+				status += " Dormant out of season."
+			elif FarmManager.is_watered(plot_id):
 				status += " Watered for today."
 			elif _has_tool(inv, &"watering_can"):
 				choices.append({"text": "Water", "effect": _water})
@@ -96,14 +101,14 @@ func _build_menu() -> Dictionary:
 func _build_plant_menu() -> Dictionary:
 	var inv: Inventory = _bag()
 	var choices: Array = []
-	for seed: SeedItem in _seeds_in_bag(inv):
+	for seed: SeedItem in _in_season_seeds(_seeds_in_bag(inv)):
 		choices.append({
 			"text": "%s (%d)" % [seed.name, inv.count_of(seed.id)],
 			"effect": _plant.bind(seed),
 			"back": true,
 		})
 	choices.append({"text": "Back", "back": true})
-	return {"text": "Plant which seeds?", "choices": choices}
+	return {"text": "Plant which seeds in %s?" % TimeManager.get_season_name(), "choices": choices}
 
 # --- Tool / seed verbs (Stardew-style: face the plot, use the held item) -----
 
@@ -130,7 +135,7 @@ func use_tool(kind: StringName, player: Node) -> bool:
 ## Plant a crop from a held seed onto tilled, empty soil. Returns whether it planted
 ## (the caller consumes the seed).
 func try_plant(crop: CropData, _player_node: Node) -> bool:
-	if crop == null:
+	if crop == null or not _in_season(crop):
 		return false
 	if FarmManager.is_tilled(plot_id) and not FarmManager.has_crop(plot_id):
 		return FarmManager.plant(plot_id, crop)
@@ -170,6 +175,18 @@ func _has_tool(inv: Inventory, kind: StringName) -> bool:
 		if it is ToolItem and (it as ToolItem).tool_kind == kind:
 			return true
 	return false
+
+## Whether this crop grows in the current season (see CropData.grows_in).
+func _in_season(crop: CropData) -> bool:
+	return crop != null and crop.grows_in(TimeManager.get_season_id())
+
+## Filter a seed list down to the crops that grow in the current season.
+func _in_season_seeds(seeds: Array) -> Array:
+	var out: Array = []
+	for seed: SeedItem in seeds:
+		if seed.crop != null and _in_season(seed.crop):
+			out.append(seed)
+	return out
 
 func _seeds_in_bag(inv: Inventory) -> Array:
 	var out: Array = []

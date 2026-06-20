@@ -24,6 +24,15 @@ class_name CropData
 @export var regrows: bool = false
 @export var regrow_days: int = 2
 
+## Seasons this crop grows in, as TimeManager season ids
+## (&"spring"/&"summer"/&"autumn"/&"winter"). Empty = grows year-round. Out of
+## season it can't be planted, and a standing crop simply pauses (it never withers).
+@export var seasons: Array[StringName] = []
+
+## Whether this crop grows during the given season id (empty seasons = always).
+func grows_in(season: StringName) -> bool:
+	return seasons.is_empty() or seasons.has(season)
+
 ## Total days from planting to first harvest.
 func days_to_mature() -> int:
 	var total: int = 0

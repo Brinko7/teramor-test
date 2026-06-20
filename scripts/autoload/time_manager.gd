@@ -12,10 +12,22 @@ signal time_changed(minutes: int)
 signal hour_changed(hour: int)
 signal day_changed(day: int)
 signal period_changed(period: int)
+signal season_changed(season: int)
 signal exhausted()
 
 ## Coarse parts of the day, used for the day/night tint and NPC schedules.
 enum Period { MORNING, AFTERNOON, EVENING, NIGHT }
+
+## The calendar. Four seasons of DAYS_PER_SEASON days each make a year. Season,
+## day-of-season and year are *derived* from the running day counter (1-based),
+## so the calendar needs nothing new in the save file — the day already persists.
+enum Season { SPRING, SUMMER, AUTUMN, WINTER }
+const DAYS_PER_SEASON := 28
+const SEASONS_PER_YEAR := 4
+const DAYS_PER_YEAR := DAYS_PER_SEASON * SEASONS_PER_YEAR
+const SEASON_NAMES: Array[String] = ["Spring", "Summer", "Autumn", "Winter"]
+## Lower-case ids used by content (CropData.seasons, Festival.season).
+const SEASON_IDS: Array[StringName] = [&"spring", &"summer", &"autumn", &"winter"]
 
 ## A fresh day starts at 06:00; the player collapses at 02:00 (26:00) the next
 ## morning if still awake.
@@ -32,12 +44,14 @@ var _minutes: int = DAY_START
 var _day: int = 1
 var _accum: float = 0.0
 var _period: int = Period.MORNING
+var _season: int = Season.SPRING
 var _exhausted: bool = false
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 	add_to_group("persistent")
 	_period = _compute_period(_minutes)
+	_season = _compute_season(_day)
 
 func _process(delta: float) -> void:
 	# Only run the clock inside a gameplay scene (a player exists).
@@ -87,6 +101,50 @@ func get_period() -> int:
 func is_night() -> bool:
 	return _period == Period.NIGHT
 
+# --- Calendar (season / day-of-season / year, all derived from the day) ------
+
+func get_season() -> int:
+	return _compute_season(_day)
+
+## 1-based day within the current season (1..DAYS_PER_SEASON).
+func get_day_of_season() -> int:
+	return ((maxi(1, _day) - 1) % DAYS_PER_SEASON) + 1
+
+## 1-based year (day 1 is Year 1).
+func get_year() -> int:
+	return ((maxi(1, _day) - 1) / DAYS_PER_YEAR) + 1
+
+func get_season_name() -> String:
+	return season_name(get_season())
+
+func season_name(season: int) -> String:
+	return SEASON_NAMES[clampi(season, 0, SEASON_NAMES.size() - 1)]
+
+## Lower-case season id (content matches against this; see CropData/Festival).
+func season_id(season: int) -> StringName:
+	return SEASON_IDS[clampi(season, 0, SEASON_IDS.size() - 1)]
+
+func get_season_id() -> StringName:
+	return season_id(get_season())
+
+## "Spring 5" — gains ", Year 2" once past the first year.
+func format_date() -> String:
+	var label: String = "%s %d" % [get_season_name(), get_day_of_season()]
+	var yr: int = get_year()
+	if yr > 1:
+		label += ", Year %d" % yr
+	return label
+
+func _compute_season(day: int) -> int:
+	return ((maxi(1, day) - 1) / DAYS_PER_SEASON) % SEASONS_PER_YEAR
+
+## Re-derive the cached season from the day and announce a crossing.
+func _update_season() -> void:
+	var s: int = _compute_season(_day)
+	if s != _season:
+		_season = s
+		season_changed.emit(_season)
+
 ## "7:30 AM" style 12-hour clock string.
 func format_time() -> String:
 	var h24: int = (_minutes / 60) % 24
@@ -126,6 +184,7 @@ func sleep() -> void:
 	day_changed.emit(_day)
 	time_changed.emit(_minutes)
 	_update_period()
+	_update_season()
 
 ## Reset to Day 1, 06:00 for a brand-new game.
 func reset() -> void:
@@ -134,9 +193,11 @@ func reset() -> void:
 	_accum = 0.0
 	_exhausted = false
 	_period = _compute_period(_minutes)
+	_season = _compute_season(_day)
 	day_changed.emit(_day)
 	time_changed.emit(_minutes)
 	period_changed.emit(_period)
+	season_changed.emit(_season)
 
 # --- Persistence (SaveManager "persistent" contract) ------------------------
 
@@ -152,6 +213,8 @@ func load_state(data: Dictionary) -> void:
 	_accum = 0.0
 	_exhausted = _minutes >= DAY_END
 	_period = _compute_period(_minutes)
+	_season = _compute_season(_day)
 	day_changed.emit(_day)
 	time_changed.emit(_minutes)
 	period_changed.emit(_period)
+	season_changed.emit(_season)

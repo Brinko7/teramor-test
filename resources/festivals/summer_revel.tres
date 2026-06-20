@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Festival" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/festival.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"summer_revel"
+display_name = "Sunpeak Revel"
+season = &"summer"
+day = 13
+title = "Sunpeak Revel"
+subtitle = "Midsummer. Bonfires burn late at the height of the year."
