@@ -8,6 +8,7 @@ extends Node2D
 
 func _ready() -> void:
 	WorldMap.claim_arrival(&"the_great_tree")
+	MusicManager.enter_zone(&"finale")
 	var cam := get_node_or_null("Entities/Player/Camera2D") as Camera2D
 	if cam == null:
 		var p := get_tree().get_first_node_in_group("player")

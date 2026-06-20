@@ -134,10 +134,10 @@ The depth is landing; now make it *feel* finished. These are the highest-leverag
 look-and-feel swings — most are felt by a first-time player in the opening minutes,
 and none depends on another landing first. Rough priority:
 
-1. **Music & ambience** — the single biggest feel gap. The Music/Ambience mixer buses
-   are wired and silent; a sparse, mournful score + per-biome ambient loops (wind,
-   birds, cave drips, the camp fire) lift the whole tone. Extend `audioforge.py` to
-   bake looping pads the way it bakes SFX — keeps the "all-ours pipeline" story.
+1. ~~**Music & ambience** — the single biggest feel gap.~~ ✅ **Done** —
+   `MusicManager` crossfades looping themes per zone (camp/town/wild/cursed/finale)
+   and swaps day↔night ambience beds; `audioforge.py` bakes four themes + four beds
+   as seamless loops (still all-ours, no samples). `tools/validate_music.gd`.
 2. **Dialogue portraits** — conversations are text-only. Pixel portrait busts with a
    couple of expression swaps turn the social/story layer memorable. `pixelforge` can
    bake them on the grounded palette; `NpcData` already holds identity.
@@ -162,8 +162,8 @@ and none depends on another landing first. Rough priority:
 
 ### Now-open threads to pull next (in priority order)
 
-- **Music & ambience** (Pillar 8) — the next swing; the buses are waiting.
-- **Dialogue portraits** (Pillar 8 / Pillar 2) — makes every conversation land.
+- **Dialogue portraits** (Pillar 8 / Pillar 2) — the next swing; makes every
+  conversation land. `pixelforge` busts on the grounded palette, `NpcData` identity.
 - **Camp construction round 3** (Pillar 1) — visible camp tiers: swap props in
   `settlement.tscn` by upgrade level so the camp *looks* like it grew; a kitchen/forge
   building gating cook/smith roles.
@@ -175,4 +175,4 @@ and none depends on another landing first. Rough priority:
   bespoke Colossus art, and a second pattern (a ranged/summon phase).
 
 Pick the pillar that excites *you* most; conviction reads on screen. With the season
-layer in, **music & ambience** is the highest-leverage next swing.
+layer and the soundscape in, **dialogue portraits** are the highest-leverage next swing.

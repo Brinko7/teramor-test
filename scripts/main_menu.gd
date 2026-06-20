@@ -10,6 +10,7 @@ extends Control
 func _ready() -> void:
 	# Returning here from a paused game-over screen must leave the tree running.
 	get_tree().paused = false
+	MusicManager.enter_zone(&"title")
 	continue_button.disabled = not SaveManager.has_save()
 	# Focus a sensible default so keyboard/gamepad users can navigate the menu.
 	if continue_button.disabled:

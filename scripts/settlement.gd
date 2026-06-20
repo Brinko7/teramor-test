@@ -8,6 +8,7 @@ func _ready() -> void:
 	# Tag this scene as the player's current world location for the map/fast travel.
 	# claim_arrival honours a staged journey/fast-travel destination, else this id.
 	WorldMap.claim_arrival(&"settlement_camp")
+	MusicManager.enter_zone(&"camp")
 	var cam := get_node_or_null("Entities/Player/Camera2D") as Camera2D
 	if cam == null:
 		var p := get_tree().get_first_node_in_group("player")

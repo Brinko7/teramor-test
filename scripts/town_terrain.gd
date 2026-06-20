@@ -23,6 +23,7 @@ func _ready() -> void:
 	# claim_arrival honours a staged journey/fast-travel destination, else this id —
 	# so the same town scene can stand in for more than one place on the map.
 	WorldMap.claim_arrival(&"cleaves_landing")
+	MusicManager.enter_zone(&"town")
 	_terrain = get_node_or_null("Terrain") as TileMapLayer
 	if _terrain != null:
 		_paint_streets()
