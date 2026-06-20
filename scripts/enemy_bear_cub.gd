@@ -18,6 +18,11 @@ class_name EnemyBearCub
 var _flee_timer: float = 0.0
 var _threat: Node2D = null
 
+func _ready() -> void:
+	super._ready()
+	# A non-combatant: never winds up an attack, never deals contact damage.
+	melee_attacker = false
+
 func take_damage(amount: int, knockback: Vector2 = Vector2.ZERO, from_player: bool = false) -> void:
 	super.take_damage(amount, knockback, from_player)
 	_flee_timer = flee_duration
@@ -29,10 +34,6 @@ func _alarm_bears() -> void:
 		if other is EnemyBear and is_instance_valid(other):
 			if global_position.distance_to((other as EnemyBear).global_position) <= alarm_radius:
 				(other as EnemyBear).provoke()
-
-## Cubs are harmless — never deal contact damage.
-func _check_touch() -> void:
-	pass
 
 func _decide_input(delta: float) -> Vector2:
 	if _flee_timer > 0.0:

@@ -11,7 +11,19 @@ class_name Enemy
 @export var anim_fps: float = 6.0
 @export var detect_range: float = 80.0
 @export var touch_damage: int = 3
-@export var touch_cooldown: float = 1.0
+## Whether this enemy performs a telegraphed melee strike. False for kiters (the
+## archer) and non-combatants (wildlife, bear cub) — they never deal contact
+## damage. `touch_damage` is the strike's damage.
+@export var melee_attacker: bool = true
+## Telegraphed-attack timing. The enemy commits to a wind-up when a hostile comes
+## within `attack_range`, telegraphs for `windup_time`, then strikes any hostile
+## still inside `strike_range`, and can't attack again for `recover_time`. The
+## wind-up is the player's window to disengage or block — the rhythm of a fight.
+@export var attack_range: float = 20.0
+@export var strike_range: float = 24.0
+@export var windup_time: float = 0.4
+@export var strike_time: float = 0.12
+@export var recover_time: float = 0.55
 ## Experience granted to the player when this enemy dies.
 @export var xp_reward: int = 5
 ## Identifies the creature kind so monster contracts can target it (e.g. a
@@ -30,8 +42,17 @@ const PICKUP_SCENE := preload("res://scenes/entities/item_pickup.tscn")
 ## Preloaded so the global-class dependency resolves before this script
 ## compiles — avoids the editor's "DirUtil not declared" partial-reload error.
 const DIR_UTIL := preload("res://scripts/dir_util.gd")
+## Two-channel sprite feedback shader (warn-glow + white hit-flash); a per-instance
+## ShaderMaterial wraps it so each enemy flashes independently.
+const FLASH_SHADER := preload("res://assets/shaders/hit_flash.gdshader")
 
 const WALK_FRAMES := [0, 1, 0, 2]
+
+## Attack phases. READY = free to chase/attack; WINDUP/STRIKE lock movement so the
+## tell reads; RECOVER is the post-swing cooldown before READY again.
+enum AttackState { READY, WINDUP, STRIKE, RECOVER }
+## Forward pounce speed added on a strike, decaying like knockback for a weighty lunge.
+const STRIKE_LUNGE := 150.0
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var health: Health = $Health
@@ -44,34 +65,56 @@ var _anim_time: float = 0.0
 var _target: Node2D = null
 var _retarget_timer: float = 0.0
 const RETARGET_INTERVAL := 0.3
-var _touch_timer: float = 0.0
 var _wander_dir: Vector2 = Vector2.ZERO
 var _wander_timer: float = 0.0
 ## Decaying knockback velocity applied when struck.
 var _knockback: Vector2 = Vector2.ZERO
+## Decaying forward lunge applied during a strike (separate from knockback so a
+## strike-while-being-knocked-back reads as both).
+var _attack_lunge: Vector2 = Vector2.ZERO
 ## Whether the most recent hit came from the player — read on death so faction
 ## kills (enemy-vs-enemy) don't award the player XP, quest credit or death juice.
 var _last_hit_from_player: bool = false
 const KNOCKBACK_DECAY := 700.0
 
+## Telegraphed-attack state machine.
+var _atk_state: AttackState = AttackState.READY
+var _atk_timer: float = 0.0
+var _atk_dir: Vector2 = Vector2.DOWN
+## True once dead and playing the death beat — gates further hits and physics.
+var _dying: bool = false
+## Per-instance flash/telegraph material on the sprite.
+var _mat: ShaderMaterial
+## The active hurt-flinch scale tween, killed before re-starting so flinches don't fight.
+var _flinch_tween: Tween
+
 func _ready() -> void:
 	add_to_group("enemy")
+	# Per-instance material so warn-glow and hit-flash are independent per enemy.
+	_mat = ShaderMaterial.new()
+	_mat.shader = FLASH_SHADER
+	sprite.material = _mat
 	health.died.connect(_on_died)
 	_pick_wander()
 
 func _physics_process(delta: float) -> void:
-	_touch_timer = maxf(0.0, _touch_timer - delta)
+	if _dying:
+		return
 	_acquire_target(delta)
+	_update_attack(delta)
 
-	var input: Vector2 = _decide_input(delta)
+	# Movement is suppressed while winding up or striking so the tell reads and the
+	# attack commits to its direction; otherwise the subclass brain drives movement.
+	var locked: bool = _atk_state == AttackState.WINDUP or _atk_state == AttackState.STRIKE
+	var input: Vector2 = Vector2.ZERO if locked else _decide_input(delta)
 
-	velocity = input * speed + _knockback
+	velocity = input * speed + _knockback + _attack_lunge
 	move_and_slide()
 	_knockback = _knockback.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
+	_attack_lunge = _attack_lunge.move_toward(Vector2.ZERO, KNOCKBACK_DECAY * delta)
 
-	_update_facing(input)
+	_update_facing(_atk_dir if locked else input)
 	_update_animation(delta, input.length() > 0.01)
-	_check_touch()
 
 ## Returns the desired movement direction this frame. Base behavior: chase the
 ## current target within detect_range, otherwise wander. Overridable by subclasses.
@@ -137,16 +180,75 @@ func _pick_wander() -> void:
 	else:
 		_wander_dir = Vector2.from_angle(randf() * TAU)
 
-func _check_touch() -> void:
-	if _touch_timer > 0.0:
+## --- Telegraphed melee attack ----------------------------------------------
+## Drives READY -> WINDUP -> STRIKE -> RECOVER. Non-attackers (kiters, prey) skip
+## it entirely and so never deal contact damage. The wind-up shows a warm warn-glow
+## on the sprite plus a CombatFX telegraph ring; the strike paints a swing arc,
+## lunges forward, and damages any hostile still in range.
+func _update_attack(delta: float) -> void:
+	if not melee_attacker:
 		return
-	for body in touch_box.get_overlapping_bodies():
-		if body == self:
+	match _atk_state:
+		AttackState.READY:
+			if _target != null and is_instance_valid(_target) and _is_hostile_to(_target) \
+					and global_position.distance_to(_target.global_position) <= attack_range:
+				_begin_windup(_target)
+		AttackState.WINDUP:
+			_atk_timer -= delta
+			var p: float = 1.0 - clampf(_atk_timer / maxf(windup_time, 0.001), 0.0, 1.0)
+			_set_warn(p * 0.65)
+			if _atk_timer <= 0.0:
+				_do_strike()
+				_atk_state = AttackState.STRIKE
+				_atk_timer = strike_time
+		AttackState.STRIKE:
+			_atk_timer -= delta
+			if _atk_timer <= 0.0:
+				_atk_state = AttackState.RECOVER
+				_atk_timer = recover_time
+		AttackState.RECOVER:
+			_atk_timer -= delta
+			if _atk_timer <= 0.0:
+				_atk_state = AttackState.READY
+
+func _begin_windup(target: Node2D) -> void:
+	_atk_state = AttackState.WINDUP
+	_atk_timer = windup_time
+	_atk_dir = (target.global_position - global_position).normalized()
+	if _atk_dir == Vector2.ZERO:
+		_atk_dir = Vector2.from_angle(randf() * TAU)
+	Events.attack_windup.emit(global_position + Vector2(0, -8), _atk_dir, windup_time)
+
+func _do_strike() -> void:
+	_set_warn(0.0)
+	_attack_lunge = _atk_dir * STRIKE_LUNGE
+	Events.melee_swung.emit(global_position + _atk_dir * 10.0 + Vector2(0, -8), _atk_dir, false)
+	for victim in _strike_victims():
+		if victim.has_method("take_damage"):
+			# Single-arg call keeps the player (take_damage(amount)) and enemies
+			# (take_damage(amount, knockback, from_player)) on a common signature.
+			victim.take_damage(touch_damage)
+
+## Hostiles within strike_range when the blow lands (player and rival factions).
+func _strike_victims() -> Array:
+	var out: Array = []
+	var player := get_tree().get_first_node_in_group("player") as Node2D
+	if player != null and is_instance_valid(player) and Faction.hostile(faction, Faction.PLAYER):
+		if global_position.distance_to(player.global_position) <= strike_range:
+			out.append(player)
+	for other in get_tree().get_nodes_in_group("enemy"):
+		if other == self or not (other is Enemy) or not is_instance_valid(other):
 			continue
-		if _is_hostile_to(body) and body.has_method("take_damage"):
-			body.take_damage(touch_damage)
-			_touch_timer = touch_cooldown
-			return
+		if not Faction.hostile(faction, (other as Enemy).faction):
+			continue
+		if global_position.distance_to((other as Enemy).global_position) <= strike_range:
+			out.append(other)
+	return out
+
+## Drive the sprite's telegraph glow (0 = none) — no-op until the material exists.
+func _set_warn(amount: float) -> void:
+	if _mat != null:
+		_mat.set_shader_parameter("warn", amount)
 
 func _update_facing(input: Vector2) -> void:
 	if input == Vector2.ZERO:
@@ -177,24 +279,68 @@ func apply_tier(tier: int) -> void:
 	modulate = modulate.lerp(Color(1.0, 0.6, 0.7), clampf(0.12 * steps, 0.0, 0.5))
 
 func take_damage(amount: int, knockback: Vector2 = Vector2.ZERO, from_player: bool = false) -> void:
+	if _dying:
+		return
 	# Set before health.take_damage: a killing blow fires died -> _on_died
-	# synchronously, which reads this flag to attribute the kill.
+	# synchronously (flipping _dying), which reads this flag to attribute the kill.
 	_last_hit_from_player = from_player
 	health.take_damage(amount)
-	_flash()
+	# The number pops even for a lethal hit; the death beat owns the rest of the
+	# visuals, so flash/flinch only run when the enemy survives.
 	Events.damage_dealt.emit(global_position, amount, true, from_player)
 	if knockback != Vector2.ZERO:
 		_knockback = knockback
+	if _dying:
+		return
+	_flash()
+	_flinch()
 
+## A crisp white silhouette flash via the sprite shader (independent of the
+## warn-glow and the modulate tint), decaying fast.
 func _flash() -> void:
-	modulate = Color(1.0, 0.4, 0.4)
+	if _mat == null:
+		return
+	_mat.set_shader_parameter("flash", 1.0)
 	var tw := create_tween()
-	tw.tween_property(self, "modulate", Color.WHITE, 0.2)
+	tw.tween_method(func(v: float) -> void: _mat.set_shader_parameter("flash", v), 1.0, 0.0, 0.18)
+
+## A quick squash-and-recover on the sprite so a hit lands with weight.
+func _flinch() -> void:
+	if _flinch_tween != null and _flinch_tween.is_valid():
+		_flinch_tween.kill()
+	sprite.scale = Vector2(0.84, 1.16)
+	_flinch_tween = create_tween()
+	_flinch_tween.tween_property(sprite, "scale", Vector2.ONE, 0.18) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _on_died() -> void:
+	if _dying:
+		return
+	_dying = true
 	_drop_loot()
+	# Fire the kill now so XP, quest credit and the CombatFX burst land at the
+	# moment of death; the corpse then plays out its fade independently.
 	Events.enemy_killed.emit(enemy_id, xp_reward, global_position, _last_hit_from_player)
-	queue_free()
+	# Stop being a combatant: no more targeting, attacking, ticking or blocking.
+	remove_from_group("enemy")
+	_set_warn(0.0)
+	set_physics_process(false)
+	var body_col := get_node_or_null("CollisionShape2D")
+	if body_col != null:
+		body_col.set_deferred("disabled", true)
+	if touch_box != null:
+		touch_box.set_deferred("monitoring", false)
+	if _flinch_tween != null and _flinch_tween.is_valid():
+		_flinch_tween.kill()
+	# Death beat: collapse, topple and fade rather than a hard pop.
+	var topple: float = deg_to_rad(18.0) * (1.0 if randf() < 0.5 else -1.0)
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(self, "modulate:a", 0.0, 0.4)
+	tw.tween_property(sprite, "scale", Vector2(1.15, 0.72), 0.4) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(sprite, "rotation", topple, 0.4)
+	get_tree().create_timer(0.5).timeout.connect(queue_free)
 
 func _drop_loot() -> void:
 	var parent := get_parent()

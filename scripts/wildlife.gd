@@ -30,6 +30,9 @@ func _ready() -> void:
 	super._ready()
 	# Belt-and-suspenders: guarantee neutrality even if a scene forgets to set it.
 	faction = Faction.WILDLIFE
+	# Prey never strike — they only flee. (Without this, the floored player
+	# take_damage would turn even a 0-damage graze into a chip of damage.)
+	melee_attacker = false
 	_base_speed = speed
 
 ## Flee from the nearest threat; keep fleeing while spooked; otherwise graze.
