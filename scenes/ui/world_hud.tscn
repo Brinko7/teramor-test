@@ -1,0 +1,22 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/ui/health_bar.tscn" id="1_hp"]
+[ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="2_mana"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_coins.tscn" id="3_coins"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="4_clock"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="5_ability"]
+[ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="6_item"]
+
+[node name="WorldHUD" type="Node"]
+
+[node name="HealthBar" parent="." instance=ExtResource("1_hp")]
+
+[node name="ManaBar" parent="." instance=ExtResource("2_mana")]
+
+[node name="CoinHUD" parent="." instance=ExtResource("3_coins")]
+
+[node name="ClockHUD" parent="." instance=ExtResource("4_clock")]
+
+[node name="AbilityHotbar" parent="." instance=ExtResource("5_ability")]
+
+[node name="ItemHotbarHUD" parent="." instance=ExtResource("6_item")]

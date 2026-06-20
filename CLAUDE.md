@@ -348,14 +348,26 @@ landmark), and a `rumored` flag.
   elves endure), and **The Great Tree** (Tera, the finale), as steep-tier goals.
 
 Most far places ship as **`rumored = true`**: named, greyed nodes on the map that
-sell the world's scale before their bespoke scenes exist (towns reuse
-`town.tscn` as a template for now). Tiers form the curve — camp/towns 0–2, the
-plains/desert 2–4, and a hard jump to **5–7 in the Cursed Wilds** (the threshold).
-Tag a hand-built scene as a location with `WorldMap.claim_arrival(fallback_id)` in
-its root `_ready` (see `settlement.gd`, `town_terrain.gd`); `claim_arrival` honours
-a **staged journey/fast-travel destination** so one scene can stand in for several
-map nodes, else uses its own id. The **Map tab** (`player_menu`) renders the world
-grouped by kingdom via `WorldMap.get_map_regions()`.
+sell the world's scale. Tiers form the curve — camp/towns 0–2, the plains/desert
+2–4, and a hard jump to **5–7 in the Cursed Wilds** (the threshold).
+
+**Every named place has its own editable scene.** The camp (`settlement.tscn`),
+Cleeve's Landing (`town.tscn`) and the finale **Great Tree**
+(`scenes/world/the_great_tree.tscn`, `scripts/great_tree.gd`) are bespoke; the
+remaining eight live under `scenes/world/locations/<id>.tscn`, each built on the
+shared **`LocationScene`** root
+(`scripts/location.gd`) — set `location_id` + `map_size`, point `Ground` at a texture
+(tint via its modulate), and drop building/prop instances under `Entities`; the root
+claims its id on load, frames perimeter walls, sizes the ground and clamps the camera.
+The HUD stack is bundled as `scenes/ui/world_hud.tscn` (one node, not six). The eight
+starters were scaffolded by **`tools/gen_locations.py`** (regenerating overwrites — so
+hand-edit the `.tscn` in the editor after; the bespoke Great Tree is not scaffolded).
+Tag any other hand-built scene with
+`WorldMap.claim_arrival(fallback_id)` in its root `_ready` (see `settlement.gd`,
+`town_terrain.gd`); `claim_arrival` honours a **staged journey/fast-travel
+destination** so one scene can stand in for several map nodes, else uses its own id.
+The **Map tab** (`player_menu`) renders the world grouped by kingdom via
+`WorldMap.get_map_regions()`. Headless coverage: `tools/validate_locations.gd`.
 
 **TravelManager** (autoload) moves the player around:
 - `fast_travel(id)` (from the menu's Map tab) rolls a tier-based encounter chance.
