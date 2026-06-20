@@ -39,6 +39,7 @@ WorldMap="*res://scripts/autoload/world_map.gd"
 TravelManager="*res://scripts/autoload/travel_manager.gd"
 Story="*res://scripts/autoload/story.gd"
 UIManager="*res://scripts/autoload/ui_manager.gd"
+CampManager="*res://scripts/autoload/camp_manager.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]

@@ -15,7 +15,7 @@ extends CanvasLayer
 ##   Quests    — active quests with objective progress, plus a completed count.
 ##   Social    — NPCs met and their heart totals.
 
-enum Tab { INVENTORY, CHARACTER, SKILLS, QUESTS, SOCIAL, MAP }
+enum Tab { INVENTORY, CHARACTER, SKILLS, QUESTS, SOCIAL, CAMP, MAP }
 
 const TAB_NAMES := {
 	Tab.INVENTORY: "Inventory",
@@ -23,6 +23,7 @@ const TAB_NAMES := {
 	Tab.SKILLS: "Skills",
 	Tab.QUESTS: "Quests",
 	Tab.SOCIAL: "Social",
+	Tab.CAMP: "Camp",
 	Tab.MAP: "Map",
 }
 
@@ -225,7 +226,7 @@ func _build_shell() -> void:
 func _rebuild_tab_bar() -> void:
 	for child: Node in _tab_bar.get_children():
 		child.queue_free()
-	for tab: int in [Tab.INVENTORY, Tab.CHARACTER, Tab.SKILLS, Tab.QUESTS, Tab.SOCIAL, Tab.MAP]:
+	for tab: int in [Tab.INVENTORY, Tab.CHARACTER, Tab.SKILLS, Tab.QUESTS, Tab.SOCIAL, Tab.CAMP, Tab.MAP]:
 		var btn := Button.new()
 		btn.text = TAB_NAMES[tab]
 		btn.add_theme_font_size_override("font_size", 10)
@@ -252,6 +253,8 @@ func _refresh() -> void:
 			_content.add_child(_build_quests())
 		Tab.SOCIAL:
 			_content.add_child(_build_social())
+		Tab.CAMP:
+			_content.add_child(_build_camp())
 		Tab.MAP:
 			_content.add_child(_build_map())
 
@@ -616,6 +619,49 @@ func _build_social() -> Control:
 		var bar: String = "%s%s" % ["♥".repeat(hearts), "♡".repeat(Relationships.MAX_HEARTS - hearts)]
 		box.add_child(UITheme.make_label("%s   %s" % [String(npc["name"]), bar], 11, UITheme.TEXT))
 	return box
+
+# --- Camp tab ---------------------------------------------------------------
+
+## The recruited roster: who's enlisted, their role, a rest/work toggle, and a
+## report of what they brought in last night. Recruit camp folk by befriending
+## them (Social) and choosing "help out" in conversation.
+func _build_camp() -> Control:
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 5)
+	box.custom_minimum_size = Vector2(240, 0)
+
+	var roster: Array = CampManager.get_roster()
+	box.add_child(UITheme.make_label("The Camp", 12, UITheme.GOLD))
+	if roster.is_empty():
+		box.add_child(UITheme.make_label("No one's signed on yet. Befriend the camp folk and ask them to lend a hand.", 10, UITheme.MUTED))
+	else:
+		for member: Dictionary in roster:
+			var row := HBoxContainer.new()
+			row.add_theme_constant_override("separation", 6)
+			var role: String = String(member["role"]).capitalize()
+			var active: bool = bool(member["active"])
+			var tint: Color = UITheme.TEXT if active else UITheme.MUTED
+			row.add_child(UITheme.make_label("%s — %s" % [String(member["name"]), role], 11, tint))
+			var btn := Button.new()
+			btn.text = "Working" if active else "Resting"
+			btn.add_theme_font_size_override("font_size", 9)
+			btn.pressed.connect(_on_camp_toggle.bind(StringName(member["id"]), not active))
+			row.add_child(btn)
+			box.add_child(row)
+
+	box.add_child(HSeparator.new())
+	box.add_child(UITheme.make_label("Last night", 11, UITheme.ACCENT))
+	var report: Array = CampManager.get_last_report()
+	if report.is_empty():
+		box.add_child(UITheme.make_label("Nothing to report.", 10, UITheme.MUTED))
+	else:
+		for line: String in report:
+			box.add_child(UITheme.make_label("  %s" % line, 10, UITheme.TEXT))
+	return box
+
+func _on_camp_toggle(npc_id: StringName, active: bool) -> void:
+	CampManager.set_active(npc_id, active)
+	_refresh()
 
 # --- Map tab ----------------------------------------------------------------
 

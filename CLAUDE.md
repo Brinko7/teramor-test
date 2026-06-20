@@ -50,6 +50,9 @@ Registered in `project.godot` under `[autoload]`:
 - **SceneManager** — fade transitions and player spawn placement.
 - **SaveManager** — generic group-based persistence (see below).
 - **FarmManager**, **StorageManager** — farm tiles and the shared camp stash.
+- **CampManager** — the recruited-camp roster + the chores they do (see
+  "Recruiting the camp" below). Registered **after** FarmManager so its
+  day-advance runs second.
 - **UIManager** — single owner of the overlay panels (dialogue, the player menu,
   crafting, shop, storage). See "UI" below.
 
@@ -415,7 +418,34 @@ matching synthesized sound (`dig`/`water`/`gather`/`chop`/`cast`) — gameplay n
 touches the audio/VFX systems. New tool/fish art is baked by `tools/gen_tools.py`; the
 starting kit hands the player all five tools. Full keybinds live in `docs/CONTROLS.md`.
 Headless coverage: `tools/validate_tools.gd`.
-**Still to come:** befriendable camp members who tend the farm for you.
+
+### Recruiting the camp (the cozy-social → automation loop)
+Befriend a camp member, enlist them, and they tend the camp while you're off in
+the wilds — the bridge from the relationship layer to the farming layer.
+
+- **The gate is friendship.** An `NpcData` flagged `recruitable` (with a
+  `recruit_role` and `recruit_hearts`) surfaces a "lend a hand" choice in
+  conversation *once the player has reached `recruit_hearts`* — so you earn helpers
+  by talking/gifting (the Relationships loop), not by buying them. `npc.gd` adds the
+  choice in `_build_main_menu`; choosing it calls `CampManager.recruit`.
+- **CampManager** (autoload, pure data manager like FarmManager) owns the roster
+  (`{npc_id: {name, role, active}}`) and runs the chores. It listens on
+  `TimeManager.day_changed`, and **because it's registered after FarmManager**, its
+  handler fires *after* FarmManager has matured the watered crops — so a
+  **farmhand** harvests what just ripened (into `StorageManager.stash`) and
+  re-waters every remaining crop for the next night (`PLOTS_PER_FARMHAND` each),
+  while a **forager** deposits a nightly haul of wild goods (`FORAGE_TABLE`). That
+  ordering *is* the "they keep your crops growing while you're away" loop. Each dawn
+  it emits `chores_reported` and pops a `UIManager.notify` summary.
+- **The player menu's Camp tab** (`player_menu._build_camp`) renders the roster
+  (name + role), a per-member **Working/Resting** toggle (`set_active`), and last
+  night's report. Resting members skip chores.
+- **Add a recruit** by authoring an `NpcData` `.tres` with the recruit fields and a
+  `recruit_role` CampManager understands (`&"farmhand"` / `&"forager"`), then drop
+  the NPC into a scene. Bram (farmhand) and Wrenna (forager) live in the camp
+  (`settlement.tscn`) as the first two. Add a **new role** by extending the `match`
+  in `CampManager._on_day_changed`. Headless coverage: `tools/validate_camp.gd`.
+- CampManager is persistent (SaveManager contract) and reset on new game.
 
 Generated areas use one scene, `scenes/world/procedural_area.tscn`
 (`scripts/world/procedural_area.gd`), driven by a **`BiomeData`** resource

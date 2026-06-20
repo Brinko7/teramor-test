@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_druid.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wrenna"
+display_name = "Wrenna"
+title = "Camp Forager"
+sprite_texture = ExtResource("2_tex")
+tint = Color(0.82, 0.92, 0.8, 1)
+met_line = "Mind the basket — mushrooms. I'm Wrenna. The treeline feeds us more than the field does, if you know where to look. Most don't."
+greeting = "The woods were generous today. And you?"
+farewell = "Walk soft out there."
+talk_lines = {
+0: PackedStringArray("Herbs, mushrooms, deadfall for the fire — the wilds give, if you ask politely.", "I read the Deepwood like Mara reads a ledger. It's been... whispering, of late."),
+2: PackedStringArray("You move quiet for an armoured thing. I could almost make a forager of you.", "Bring me back anything strange you find growing out there. I want to see it."),
+4: PackedStringArray("There's an old elven trick to finding glade-herbs. Maybe I'll teach you, one day.", "You feel like the woods do, Zayn — old and patient and a little dangerous. I like that.")
+}
+loved_gifts = Array[StringName]([&"wild_mushroom", &"herb"])
+liked_gifts = Array[StringName]([&"crystal"])
+disliked_gifts = Array[StringName]([&"raw_meat"])
+loved_line = "Oh, a fine specimen! Straight to my basket. You have a forager's eye after all."
+liked_line = "A %s? Curious. I'll find a use for it. Thank you, Zayn."
+disliked_line = "A %s? ...I'll leave that to Bram's pot, I think. But thank you."
+neutral_line = "For me? How thoughtful."
+recruitable = true
+recruit_role = &"forager"
+recruit_hearts = 2
+recruit_label = "Would you forage for the camp while I'm away?"
+recruit_accept = "Gladly. I'll work the treeline each morning and leave the haul in the stash. The woods and I have an understanding."
+topics = Array[Dictionary]([{
+"label": "What's good to forage?",
+"lines": PackedStringArray("Herbs near the water, mushrooms in the shade, mind the red-capped ones.", "Half of what keeps this camp standing came out of the woods, not the field. Don't tell Bram.")
+}])
