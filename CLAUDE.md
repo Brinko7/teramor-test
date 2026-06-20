@@ -197,6 +197,28 @@ Tune feel via the constants in `combat_fx.gd`, `camera_shake.gd`, the `scripts/e
 scripts, the enemy attack exports, and the player's `MELEE_KNOCKBACK`/`LUNGE_*`.
 Headless coverage: `tools/validate_combat_feel.gd`.
 
+### Audio
+The **AudioManager** autoload turns gameplay into sound the same way CombatFX turns
+it into juice: it listens on the `Events` bus and plays SFX, so gameplay code never
+references it. Connected events: `damage_dealt` (hit), `enemy_killed` (death),
+`melee_swung` (swing), `step_puff` (footstep), `item_collected` (pickup),
+`item_crafted` (craft), `player_leveled_up` (sting). Combat SFX are **player-gated**
+exactly like the juice — a faction brawl off in the trees stays silent. A round-robin
+pool of `AudioStreamPlayer`s on the **SFX** bus avoids cutting off overlaps, and each
+shot gets a little random pitch so repeats don't machine-gun.
+
+SFX are **bespoke and ours**: `tools/audioforge.py` is a dependency-free synth (the
+audio twin of `pixelforge.py`) — stdlib `wave`+`struct`+`math`, no samples — that
+bakes `assets/audio/sfx/*.wav` from math on the grounded/muted palette. Regenerate or
+tune a sound by editing its recipe in `bake_all()` and running
+`python3 tools/audioforge.py`.
+
+The mixer is a **bus layout** (`resources/audio/default_bus_layout.tres`, set as
+`audio/buses/default_bus_layout`): Master → **Music / SFX / Ambience**, so the coming
+options sliders drive `AudioManager.set_bus_volume_linear(bus, 0..1)`. Music and
+per-biome ambient loops are the next audio slice (the buses are already waiting).
+Headless coverage: `tools/validate_audio.gd`.
+
 ### Progression & skills
 `Stats` (`scripts/stats.gd`, child of the player) is the progression authority:
 level/XP, four allocatable **attributes** (Might→melee, Finesse→ranged,
