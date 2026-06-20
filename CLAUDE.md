@@ -458,6 +458,21 @@ the wilds — the bridge from the relationship layer to the farming layer.
 - CampManager is persistent (SaveManager contract — roster + owned upgrades) and
   reset on new game.
 
+### Heart events (the social → story payoff)
+Rising friendship pays off in **authored cutscenes**. A `HeartEvent` resource
+(`scripts/heart_event.gd`, `.tres` under `resources/heart_events/`) names an
+`npc_id` + `hearts` threshold, the `lines` to play, and optional rewards (a Story
+`set_flag`, a keepsake deposited to the stash). **HeartEventManager** (autoload,
+persistent) loads the catalog and listens on `Relationships.hearts_changed`. Because
+the threshold is usually crossed *inside* a conversation (a gift, small talk), the
+event is **queued and played once the current dialogue closes** (via the dialogue's
+`finished` signal), never interrupting it — `_try_play` no-ops while
+`UIManager.dialogue.is_active()`. Rewards apply the moment the event is eligible
+(`check_and_apply`, split out so it's testable without the UI). Each event is
+one-shot (a `_seen` set, saved). Bram's and Wrenna's 4-heart events are the first
+two — author a `.tres` to add more. Headless coverage:
+`tools/validate_heart_events.gd`.
+
 Generated areas use one scene, `scenes/world/procedural_area.tscn`
 (`scripts/world/procedural_area.gd`), driven by a **`BiomeData`** resource
 (`resources/world/biomes/`) and a difficulty **tier**. The generator reads the
