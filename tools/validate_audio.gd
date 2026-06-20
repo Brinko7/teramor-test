@@ -12,6 +12,7 @@ const SFX_DIR := "res://assets/audio/sfx/"
 const EXPECTED_SFX := [
 	"step", "swing", "bow", "hit_enemy", "hit_player", "death",
 	"pickup", "craft", "gather", "levelup", "ui_click", "dodge",
+	"dig", "water", "chop", "cast",
 ]
 const EXPECTED_BUSES := ["Master", "Music", "SFX", "Ambience"]
 

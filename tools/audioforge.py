@@ -219,6 +219,29 @@ def bake_all() -> None:
 	dodge = [s * math.sin(math.pi * i / len(dodge)) ** 1.5 for i, s in enumerate(dodge)]
 	save_wav("dodge", gain(dodge, 0.8))
 
+	# Hoe dig: a soft earthy crunch into the soil.
+	save_wav("dig", mix(
+		env_exp(lowpass(noise(0.13, 0.9), 0.55), decay=30.0),
+		env_exp(tone(90.0, 0.10, 0.5), decay=34.0),
+	))
+
+	# Watering can: a gentle falling splash.
+	save_wav("water", mix(
+		env_exp(sweep(900.0, 380.0, 0.16, 0.45), decay=12.0),
+		env_exp(lowpass(noise(0.16, 0.5), 0.45), decay=16.0),
+	))
+
+	# Axe chop: a woody knock with a short crack.
+	save_wav("chop", mix(
+		env_exp(tone(185.0, 0.14, 0.9, "triangle"), decay=24.0),
+		env_exp(lowpass(noise(0.06, 0.7), 0.35), decay=48.0),
+	))
+
+	# Fishing cast: a light, breathy whoosh.
+	cast = lowpass(noise(0.22, 0.9), 0.72)
+	cast = [s * math.sin(math.pi * i / len(cast)) for i, s in enumerate(cast)]
+	save_wav("cast", gain(cast, 0.7))
+
 	# UI click: a tiny dry tick.
 	save_wav("ui_click", env_exp(tone(1500.0, 0.03, 0.5, "square"), decay=80.0))
 

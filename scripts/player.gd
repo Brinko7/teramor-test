@@ -223,7 +223,35 @@ func _drive_item_hotbar() -> void:
 	if Input.is_action_just_pressed("hotbar_prev"):
 		item_hotbar.cycle(-1)
 	if Input.is_action_just_pressed("use_item"):
-		item_hotbar.use_active(self)
+		# Consumables drink; otherwise a held tool/seed acts on what you face.
+		if not item_hotbar.use_active(self):
+			_use_held_on_facing()
+
+## A held tool or seed acts on the interactable the player is facing — till/water/
+## harvest a plot, mine/chop a vein, cast at a fishing spot, or plant a seed. The
+## quiet verbs of the cozy half, surfaced through the same F key.
+func _use_held_on_facing() -> void:
+	if item_hotbar == null:
+		return
+	var item: Item = item_hotbar.active_item()
+	if item is ToolItem:
+		_apply_tool((item as ToolItem).tool_kind)
+	elif item is SeedItem:
+		_plant_facing(item as SeedItem)
+
+func _apply_tool(kind: StringName) -> void:
+	var target := _faced_interactable()
+	if target != null and target.has_method("use_tool") and target.use_tool(kind, self):
+		_lunge = _aim * 36.0  # a small nudge into the swing
+		Events.tool_used.emit(kind, (target as Node2D).global_position)
+
+func _plant_facing(seed: SeedItem) -> void:
+	if seed.crop == null:
+		return
+	var target := _faced_interactable()
+	if target != null and target.has_method("try_plant") and target.try_plant(seed.crop, self):
+		inventory.consume_items(seed.id, 1)
+		Events.tool_used.emit(&"plant", (target as Node2D).global_position)
 
 func _primary_pressed() -> bool:
 	return Input.is_action_just_pressed("attack_primary") or Input.is_action_just_pressed("attack")
@@ -305,7 +333,9 @@ func _update_gear_pose() -> void:
 
 # --- Combat / interaction ---------------------------------------------------
 
-func _try_interact() -> void:
+## The nearest interactable in front of the player (the interact probe sits at the
+## aim direction), or null. Shared by interact (E) and tool/seed use (F).
+func _faced_interactable() -> Area2D:
 	var nearest: Area2D = null
 	var nearest_d := INF
 	for area in interact_probe.get_overlapping_areas():
@@ -315,6 +345,10 @@ func _try_interact() -> void:
 		if d < nearest_d:
 			nearest_d = d
 			nearest = area
+	return nearest
+
+func _try_interact() -> void:
+	var nearest := _faced_interactable()
 	if nearest != null and nearest.has_method("interact"):
 		nearest.interact(self)
 

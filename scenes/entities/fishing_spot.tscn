@@ -1,0 +1,17 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/fishing_spot.gd" id="1_spot"]
+[ext_resource type="Resource" path="res://resources/items/river_fish.tres" id="2_river"]
+[ext_resource type="Resource" path="res://resources/items/lake_bass.tres" id="3_bass"]
+
+[sub_resource type="CircleShape2D" id="shape"]
+radius = 14.0
+
+[node name="FishingSpot" type="Area2D" groups=["interactable"]]
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("1_spot")
+catch_table = Array[Resource]([ExtResource("2_river"), ExtResource("3_bass")])
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+shape = SubResource("shape")

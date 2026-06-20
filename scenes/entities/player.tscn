@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3]
+[gd_scene load_steps=33 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/components/camera_shake.gd" id="24_shake"]
@@ -17,6 +17,9 @@
 [ext_resource type="Resource" path="res://resources/items/wooden_shield.tres" id="11_shield"]
 [ext_resource type="Resource" path="res://resources/items/tools/hoe.tres" id="15_hoe"]
 [ext_resource type="Resource" path="res://resources/items/tools/watering_can.tres" id="16_can"]
+[ext_resource type="Resource" path="res://resources/items/tools/pickaxe.tres" id="15_pick"]
+[ext_resource type="Resource" path="res://resources/items/tools/axe.tres" id="15_axe"]
+[ext_resource type="Resource" path="res://resources/items/tools/fishing_rod.tres" id="15_rod"]
 [ext_resource type="Resource" path="res://resources/items/seeds/turnip_seeds.tres" id="17_tseed"]
 [ext_resource type="Script" path="res://scripts/mana.gd" id="18_mana"]
 [ext_resource type="Script" path="res://scripts/ability_caster.gd" id="19_caster"]
@@ -41,7 +44,7 @@ collision_layer = 2
 collision_mask = 1
 script = ExtResource("1_player")
 starting_weapon = ExtResource("6_sword")
-starting_items = Array[Resource]([ExtResource("7_bow"), ExtResource("8_vest"), ExtResource("11_shield"), ExtResource("9_potion"), ExtResource("9_potion"), ExtResource("10_herb"), ExtResource("15_hoe"), ExtResource("16_can"), ExtResource("17_tseed"), ExtResource("17_tseed"), ExtResource("17_tseed")])
+starting_items = Array[Resource]([ExtResource("7_bow"), ExtResource("8_vest"), ExtResource("11_shield"), ExtResource("9_potion"), ExtResource("9_potion"), ExtResource("10_herb"), ExtResource("15_hoe"), ExtResource("16_can"), ExtResource("15_pick"), ExtResource("15_axe"), ExtResource("15_rod"), ExtResource("17_tseed"), ExtResource("17_tseed"), ExtResource("17_tseed")])
 
 [node name="ShieldPivot" type="Node2D" parent="."]
 position = Vector2(0, -22)

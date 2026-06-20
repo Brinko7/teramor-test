@@ -34,6 +34,7 @@ func _ready() -> void:
 	Events.item_crafted.connect(_on_craft)
 	Events.player_leveled_up.connect(_on_level_up)
 	Events.player_dodged.connect(_on_dodge)
+	Events.tool_used.connect(_on_tool_used)
 
 # --- Playback ---------------------------------------------------------------
 
@@ -114,3 +115,15 @@ func _on_level_up(_new_level: int) -> void:
 
 func _on_dodge(_pos: Vector2) -> void:
 	play(&"dodge", -3.0, _wobble(0.05))
+
+## Maps a tool action to its sound. fishing_rod is silent here — the FishingSpot
+## emits its own `cast`, so the rod itself doesn't double up.
+const TOOL_SFX := {
+	&"hoe": &"dig", &"plant": &"dig", &"watering_can": &"water",
+	&"pickaxe": &"gather", &"axe": &"chop", &"cast": &"cast", &"reel": &"pickup",
+}
+
+func _on_tool_used(kind: StringName, _pos: Vector2) -> void:
+	var sfx: StringName = TOOL_SFX.get(kind, &"")
+	if sfx != &"":
+		play(sfx, -3.0, _wobble(0.06))
