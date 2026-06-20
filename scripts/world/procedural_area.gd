@@ -480,7 +480,11 @@ func _place_enemy(scene: PackedScene, pos: Vector2, loot: Array) -> void:
 	var enemy := scene.instantiate()
 	if enemy is Node2D:
 		(enemy as Node2D).position = pos
-	if not loot.is_empty():
+	# Keep an enemy's own thematic loot (wolf -> meat/hide, bandit -> their gear);
+	# only fall back to the biome pool for enemies that ship without a table, so
+	# drops read as logical rather than a generic biome grab-bag.
+	var own_loot = enemy.get("loot_table")
+	if not loot.is_empty() and (own_loot == null or (own_loot is Array and own_loot.is_empty())):
 		enemy.set("loot_table", loot)
 		enemy.set("loot_chance", 0.5)
 	_entities.add_child(enemy)
@@ -493,7 +497,15 @@ func _spawn_treasure() -> void:
 	var pool: Array = _build_loot()
 	if pool.is_empty():
 		return
-	var chests: int = clampi(_tier - 1, 1, 3) if _explore else (1 if _rng.randf() < 0.4 else 0)
+	# Chests are a real find, not litter: usually none-to-one, with a small chance
+	# of a second only deep in an excursion. Foraging (gather nodes) and the loot
+	# caches you earn by clearing an authored camp are the steady reward — a chest
+	# you stumble on in the open should feel rare.
+	var chests := 0
+	if _rng.randf() < (0.3 + 0.1 * float(_tier)):
+		chests = 1
+	if _explore and _tier >= 3 and _rng.randf() < 0.3:
+		chests += 1
 	for c in range(chests):
 		var pos := _free_point(EDGE + 24, 0.0)
 		if pos.x < 0.0:

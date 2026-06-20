@@ -29,7 +29,7 @@ size = Vector2(12, 224)
 size = Vector2(320, 12)
 
 [sub_resource type="RectangleShape2D" id="wall_h_top"]
-size = Vector2(135, 16)
+size = Vector2(170, 16)
 
 [sub_resource type="RectangleShape2D" id="hearth_col"]
 size = Vector2(48, 14)
@@ -170,13 +170,13 @@ texture = ExtResource("4_light")
 texture_scale = 0.8
 
 [node name="Player" parent="Entities" unique_id=1653051594 instance=ExtResource("11_player")]
-position = Vector2(160, 80)
+position = Vector2(160, 188)
 
 [node name="from_settlement" type="Marker2D" parent="Entities" unique_id=1258515284 groups=["spawn"]]
-position = Vector2(160, 80)
+position = Vector2(160, 188)
 
 [node name="ExitDoor" parent="Entities" unique_id=368845950 instance=ExtResource("12_tz")]
-position = Vector2(160, 46)
+position = Vector2(160, 208)
 target_scene = "res://scenes/world/settlement.tscn"
 target_spawn = "from_home"
 

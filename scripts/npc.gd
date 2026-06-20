@@ -44,10 +44,22 @@ const _WALK_FRAMES := [0, 1, 0, 2]
 const _ANIM_FPS := 6.0
 const _ARRIVE_DIST := 2.0
 
+## Idle wander. Once an NPC reaches its scheduled station it ambles gently around
+## that spot (a small radius, with pauses) instead of standing frozen — so the
+## town reads as lived-in rather than a row of statues. NPCs are Area2D (no
+## physics body), so this can never snag on a wall or prop.
+const _WANDER_RADIUS := 20.0
+const _WANDER_PAUSE_MIN := 1.5
+const _WANDER_PAUSE_MAX := 4.5
+const _STATION_PAUSE := 2.0   # settle a beat after arriving at a new station
+
 var _inventory: Inventory = null
 var _sprite: Sprite2D = null
 var _home_position: Vector2 = Vector2.ZERO
 var _target_position: Vector2 = Vector2.ZERO
+var _station_position: Vector2 = Vector2.ZERO   # the scheduled anchor to wander around
+var _wander_pause: float = 0.0
+var _rng := RandomNumberGenerator.new()
 var _facing_row: int = 0
 var _anim_time: float = 0.0
 
@@ -79,13 +91,19 @@ func _setup_schedule() -> void:
 	if not routed:
 		set_process(false)
 		return
-	# Snap to the spot appropriate for the current time, then walk from there.
-	_target_position = _resolve_target(TimeManager.get_period())
-	global_position = _target_position
+	_rng.randomize()
+	# Snap to the spot appropriate for the current time, then amble around it.
+	_station_position = _resolve_target(TimeManager.get_period())
+	global_position = _station_position
+	_target_position = _station_position
+	_wander_pause = _rng.randf_range(_STATION_PAUSE, _WANDER_PAUSE_MAX)
 	TimeManager.period_changed.connect(_on_period_changed)
 
 func _on_period_changed(period: int) -> void:
-	_target_position = _resolve_target(period)
+	# Head to the new station; settle a beat there before wandering again.
+	_station_position = _resolve_target(period)
+	_target_position = _station_position
+	_wander_pause = _STATION_PAUSE
 
 func _resolve_target(period: int) -> Vector2:
 	var point_name: String = String(schedule.get(period, home_waypoint))
@@ -105,6 +123,11 @@ func _process(delta: float) -> void:
 	var dist: float = to_target.length()
 	if dist <= _ARRIVE_DIST:
 		_animate(delta, false)
+		# Idle: pause, then amble to a fresh spot near the station so the NPC
+		# keeps milling instead of freezing on the marker.
+		_wander_pause -= delta
+		if _wander_pause <= 0.0:
+			_pick_wander()
 		return
 	var dir: Vector2 = to_target / dist
 	var step: float = walk_speed * delta
@@ -114,6 +137,13 @@ func _process(delta: float) -> void:
 		global_position += dir * step
 	_update_facing(dir)
 	_animate(delta, true)
+
+## Choose a new gentle amble target within a small radius of the current station,
+## then set the next idle pause.
+func _pick_wander() -> void:
+	var off := Vector2(_rng.randf_range(-1.0, 1.0), _rng.randf_range(-1.0, 1.0)) * _WANDER_RADIUS
+	_target_position = _station_position + off
+	_wander_pause = _rng.randf_range(_WANDER_PAUSE_MIN, _WANDER_PAUSE_MAX)
 
 func _update_facing(dir: Vector2) -> void:
 	_facing_row = DIR_UTIL.row_for(dir, _sprite.vframes)

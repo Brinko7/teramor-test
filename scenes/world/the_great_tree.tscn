@@ -1,0 +1,80 @@
+[gd_scene load_steps=14 format=3]
+
+[ext_resource type="Script" path="res://scripts/great_tree.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="2_grass"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/tree.png" id="3_tree"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="4_player"]
+[ext_resource type="PackedScene" path="res://scenes/entities/transition_zone.tscn" id="5_tz"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/signpost.tscn" id="6_sign"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/bush.tscn" id="7_bush"]
+[ext_resource type="PackedScene" path="res://scenes/ui/health_bar.tscn" id="8_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_coins.tscn" id="9_coins"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="10_clock"]
+[ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="11_mana"]
+[ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="12_itembar"]
+
+[sub_resource type="RectangleShape2D" id="edge"]
+size = Vector2(72, 22)
+
+[node name="GreatTree" type="Node2D"]
+script = ExtResource("1_script")
+map_size = Vector2i(640, 480)
+
+[node name="Ground" type="Sprite2D" parent="."]
+texture_repeat = 2
+centered = false
+texture = ExtResource("2_grass")
+region_enabled = true
+region_rect = Rect2(0, 0, 640, 480)
+modulate = Color(0.79, 0.86, 0.6, 1)
+
+[node name="Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="TeraTree" type="Sprite2D" parent="Entities"]
+position = Vector2(320, 330)
+centered = false
+offset = Vector2(-28, -92)
+scale = Vector2(3.6, 3.6)
+texture = ExtResource("3_tree")
+modulate = Color(0.86, 0.96, 0.8, 1)
+
+[node name="Bush1" parent="Entities" instance=ExtResource("7_bush")]
+position = Vector2(150, 360)
+
+[node name="Bush2" parent="Entities" instance=ExtResource("7_bush")]
+position = Vector2(500, 356)
+
+[node name="Bush3" parent="Entities" instance=ExtResource("7_bush")]
+position = Vector2(430, 418)
+
+[node name="Player" parent="Entities" instance=ExtResource("4_player")]
+position = Vector2(320, 430)
+
+[node name="Sign" parent="Entities" instance=ExtResource("6_sign")]
+position = Vector2(244, 432)
+text = "The Great Tree of Tera — the road's end, and its purpose."
+
+[node name="spawn" type="Marker2D" parent="Entities" groups=["spawn"]]
+position = Vector2(320, 430)
+
+[node name="ExitToCamp" parent="Entities" instance=ExtResource("5_tz")]
+position = Vector2(320, 472)
+target_scene = "res://scenes/world/settlement.tscn"
+target_spawn = "from_road"
+
+[node name="CollisionShape2D" parent="Entities/ExitToCamp" index="0"]
+shape = SubResource("edge")
+
+[node name="Ambient" type="CanvasModulate" parent="."]
+color = Color(0.92, 0.95, 0.86, 1)
+
+[node name="HUD" parent="." instance=ExtResource("8_hud")]
+
+[node name="CoinHUD" parent="." instance=ExtResource("9_coins")]
+
+[node name="ClockHUD" parent="." instance=ExtResource("10_clock")]
+
+[node name="ManaBar" parent="." instance=ExtResource("11_mana")]
+
+[node name="ItemHotbarHUD" parent="." instance=ExtResource("12_itembar")]

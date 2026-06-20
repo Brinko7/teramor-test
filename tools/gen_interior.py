@@ -21,7 +21,7 @@ ROOM_W, ROOM_H = 320, 224
 WALL_TOP = 44          # back-wall band: y 0..43
 WALL_SIDE = 12         # side-wall strips: x 0..11 and 308..319
 FLOOR_Y0 = WALL_TOP    # floor starts under the back wall
-DOOR_X0, DOOR_X1 = 147, 173   # back-wall doorway (exit)
+DOOR_X0, DOOR_X1 = 147, 173   # centre doorway opening (now the south/front exit)
 
 
 # --- shared painters --------------------------------------------------------
@@ -179,6 +179,24 @@ def hanging_tankards(c, x0, y):
 
 # --- the room backdrop ------------------------------------------------------
 
+def south_exit(c):
+    """A worn threshold + doormat at the bottom-centre: the way out (south). The
+    player enters here and the room opens upward, Stardew-style."""
+    x0, x1 = DOOR_X0, DOOR_X1
+    y1 = ROOM_H - 1
+    # doormat just inside the opening
+    c.rect(x0, y1 - 11, x1, y1 - 2, P.LEATHER[2])
+    c.hline(x0, x1, y1 - 11, shade(P.LEATHER[1], 1.1))
+    c.hline(x0, x1, y1 - 2, shade(P.LEATHER[4], 0.9))
+    # heavy frame posts flanking the doorway
+    c.rect(x0 - 4, y1 - 24, x0 - 1, y1, P.WOOD[4])
+    c.rect(x1 + 1, y1 - 24, x1 + 4, y1, P.WOOD[4])
+    c.vline(x0 - 1, y1 - 24, y1, shade(P.WOOD[2], 1.1))
+    c.vline(x1 + 1, y1 - 24, y1, shade(P.WOOD[2], 1.1))
+    # threshold shadow across the opening
+    c.rect_over(x0 - 1, y1 - 24, x1 + 1, y1 - 21, rgb(18, 14, 20, 120))
+
+
 def gen_room(name="cabin_room.png", decor="cabin"):
     c = Canvas(ROOM_W, ROOM_H)
     rnd = random.Random(41)
@@ -209,8 +227,7 @@ def gen_room(name="cabin_room.png", decor="cabin"):
         c.rect_over(WALL_SIDE + 1, y, ROOM_W - 2 - WALL_SIDE, y,
                     rgb(20, 16, 22, max(0, a)))
 
-    # features on the back wall (door + window are shared; decor varies)
-    plank_door(c, DOOR_X0, 4, DOOR_X1, WALL_TOP - 2)
+    # features on the back wall (window + decor; the door moved to the south wall)
     window(c, 38, 10, 70, 34)
     if decor == "shop":
         goods_shelf(c, 90, 16, 52)
@@ -227,6 +244,7 @@ def gen_room(name="cabin_room.png", decor="cabin"):
         c.rect(186, 8, 187, 30, shade(P.CLOTH[1], 1.1))
         c.line(191, 8, 191, 30, shade(P.CLOTH[3], 0.95))
 
+    south_exit(c)
     c.save(asset(name))
     return name
 

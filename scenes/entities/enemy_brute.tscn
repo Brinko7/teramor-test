@@ -1,8 +1,10 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy_brute.gd" id="1_brute"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/enemies/enemy_brute.png" id="2_sheet"]
 [ext_resource type="Script" path="res://scripts/health.gd" id="3_health"]
+[ext_resource type="Resource" path="res://resources/items/rusty_sword.tres" id="4_sword"]
+[ext_resource type="Resource" path="res://resources/items/leather_vest.tres" id="5_vest"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_feet"]
 size = Vector2(14, 8)
@@ -24,6 +26,8 @@ recover_time = 0.7
 xp_reward = 18
 enemy_id = &"brute"
 faction = &"bandit"
+loot_table = Array[Item]([ExtResource("4_sword"), ExtResource("5_vest")])
+loot_chance = 0.45
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 centered = false

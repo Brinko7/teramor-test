@@ -33,7 +33,7 @@ size = Vector2(12, 224)
 size = Vector2(320, 12)
 
 [sub_resource type="RectangleShape2D" id="wall_h_top"]
-size = Vector2(135, 16)
+size = Vector2(170, 16)
 
 [sub_resource type="RectangleShape2D" id="counter_col"]
 size = Vector2(98, 12)
@@ -123,13 +123,13 @@ texture = ExtResource("24_sign")
 hframes = 2
 
 [node name="Player" parent="Entities" instance=ExtResource("10_player")]
-position = Vector2(160, 82)
+position = Vector2(160, 188)
 
 [node name="from_town" type="Marker2D" parent="Entities" groups=["spawn"]]
-position = Vector2(160, 82)
+position = Vector2(160, 188)
 
 [node name="ExitDoor" parent="Entities" instance=ExtResource("7_tz")]
-position = Vector2(160, 48)
+position = Vector2(160, 208)
 target_scene = "res://scenes/world/town.tscn"
 target_spawn = "to_shop"
 

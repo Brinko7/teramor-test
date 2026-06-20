@@ -1,10 +1,9 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy_wolf.gd" id="1_wolf"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/enemies/enemy_wolf.png" id="2_sheet"]
 [ext_resource type="Script" path="res://scripts/health.gd" id="3_health"]
-[ext_resource type="Resource" path="res://resources/items/raw_meat.tres" id="4_meat"]
-[ext_resource type="Resource" path="res://resources/items/hide.tres" id="5_hide"]
+[ext_resource type="Resource" path="res://resources/items/crystal.tres" id="4_crystal"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_feet"]
 size = Vector2(10, 6)
@@ -12,23 +11,24 @@ size = Vector2(10, 6)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_touch"]
 size = Vector2(14, 14)
 
-[node name="EnemyWolf" type="CharacterBody2D" groups=["enemy"]]
+[node name="EnemyVastHound" type="CharacterBody2D" groups=["enemy"]]
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("1_wolf")
-speed = 95.0
-detect_range = 110.0
-touch_damage = 2
+speed = 108.0
+detect_range = 135.0
+touch_damage = 3
 attack_range = 18.0
-windup_time = 0.28
-recover_time = 0.4
-xp_reward = 3
-enemy_id = &"wolf"
-faction = &"beast"
-loot_table = Array[Item]([ExtResource("4_meat"), ExtResource("5_hide")])
-loot_chance = 0.55
+windup_time = 0.24
+recover_time = 0.36
+xp_reward = 7
+enemy_id = &"vast_hound"
+faction = &"monster"
+loot_table = Array[Item]([ExtResource("4_crystal")])
+loot_chance = 0.5
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+modulate = Color(0.62, 0.5, 0.85, 1)
 centered = false
 offset = Vector2(-12, -22)
 texture = ExtResource("2_sheet")
@@ -42,7 +42,7 @@ shape = SubResource("RectangleShape2D_feet")
 
 [node name="Health" type="Node" parent="."]
 script = ExtResource("3_health")
-max_health = 3
+max_health = 5
 
 [node name="TouchBox" type="Area2D" parent="."]
 position = Vector2(0, -8)

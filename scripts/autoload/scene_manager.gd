@@ -13,6 +13,12 @@ var _layer: CanvasLayer
 var _fade: ColorRect
 var _busy: bool = false
 
+## True while a scene swap is mid-flight and the player is being placed onto a
+## spawn marker. Transition zones ignore body_entered during this window, so a
+## return marker that sits inside a door zone can't bounce the player straight
+## back through the door (the "stuck, can't exit the building" soft-lock).
+var placing: bool = false
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_build_overlay()
@@ -52,6 +58,7 @@ func travel(target_scene: String, spawn_point: String = "") -> void:
 		push_warning("SceneManager.travel: missing scene '%s'" % target_scene)
 		return
 	_busy = true
+	placing = true
 
 	await fade_to_black()
 
@@ -70,6 +77,13 @@ func travel(target_scene: String, spawn_point: String = "") -> void:
 
 	_restore_player(carried)
 	_place_player(spawn_point)
+
+	# Let the new position register in physics so any spawn-overlap body_entered
+	# fires (and is ignored, since `placing` is still true) before we re-arm
+	# triggers. Without this window a return marker sitting in a door zone would
+	# bounce the player straight back through the door.
+	await get_tree().physics_frame
+	placing = false
 
 	await fade_from_black()
 	_busy = false

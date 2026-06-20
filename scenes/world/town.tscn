@@ -305,12 +305,12 @@ sprite_texture = ExtResource("51_townswoman")
 position = Vector2(520, 380)
 speaker_name = "Town Child"
 lines = PackedStringArray("Are you a real ranger? Like Elkar?", "He used to carve me little foxes. I hope he comes home.")
-home_waypoint = "home_s2"
+home_waypoint = "home_s1"
 schedule = {
-0: "home_s2",
+0: "home_s1",
 1: "market_s",
 2: "plaza_well",
-3: "home_s2"
+3: "home_s1"
 }
 sprite_texture = ExtResource("52_child")
 

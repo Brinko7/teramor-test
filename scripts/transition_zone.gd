@@ -1,10 +1,16 @@
 extends Area2D
-## Reusable AUTO-TRIGGER zone. When the player body enters, ask the
-## SceneManager autoload to travel to `target_scene`, placing the player on
-## the Marker2D named `target_spawn` in the destination scene.
+## Reusable AUTO-TRIGGER zone. When the player body enters, ask the SceneManager
+## autoload to travel to `target_scene`, placing the player on the Marker2D named
+## `target_spawn` in the destination scene.
 ##
-## Collision: layer=0, mask=bit2 (player body). Resize the child
-## CollisionShape2D per placement.
+## Triggers are ignored while SceneManager is mid-placement (`SceneManager.placing`),
+## so a return marker that happens to sit inside a door zone doesn't bounce the
+## player straight back through the door — the "stuck, can't exit the building"
+## soft-lock. The spawn-overlap fires `body_entered` once during placement (ignored
+## here); it won't fire again until the player steps out and walks back in.
+##
+## Collision: layer=0, mask=bit2 (player body). Resize the child CollisionShape2D
+## per placement.
 
 @export var target_scene: String = ""
 @export var target_spawn: String = ""
@@ -19,11 +25,14 @@ func _on_body_entered(body: Node) -> void:
 		return
 	if not body.is_in_group("player"):
 		return
+	var sm := get_node_or_null("/root/SceneManager")
+	# Ignore the overlap created by being spawned onto a marker mid-transition.
+	if sm != null and sm.get("placing"):
+		return
 	if target_scene.is_empty():
 		push_warning("transition_zone: no target_scene set")
 		return
 	_triggered = true
-	var sm := get_node_or_null("/root/SceneManager")
 	if sm != null and sm.has_method("travel"):
 		sm.travel(target_scene, target_spawn)
 	else:

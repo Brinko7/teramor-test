@@ -113,9 +113,13 @@ func _check(path: String, tag: String) -> void:
 				bucket[tgt_name] = []
 			bucket[tgt_name].append(nm)
 
-	# 4) no two NPCs share a waypoint in the same period (no stacking)
+	# 4) no two NPCs share a *public* waypoint in the same period (no daytime
+	#    blobbing). Homes are exempt: families share a house, so `home_*` markers
+	#    may hold more than one resident (e.g. a parent and child at night).
 	for p in range(4):
 		for wp in occupancy[p]:
+			if String(wp).begins_with("home_"):
+				continue
 			var who: Array = occupancy[p][wp]
 			if who.size() > 1:
 				_err("%s period %d: %d NPCs stack on '%s' (%s)" % [tag, p, who.size(), wp, ", ".join(who)])

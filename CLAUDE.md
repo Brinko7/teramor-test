@@ -111,6 +111,13 @@ so children (Stats, Equipment) load before the player node, whose `load_state`
 recomputes `_max_hp()` from the already-restored stats + gear. Position is *not*
 carried — `SceneManager._place_player` sets the spawn point after the restore.
 
+`travel()` also holds a `placing` flag across the swap so a return marker that
+happens to sit inside a door zone can't bounce the player straight back through it
+(transition zones ignore the spawn-overlap) — the fix for the stuck-in-building
+soft-lock. Interiors put their door on the **south** wall (you enter at the room's
+bottom and it opens upward). Coverage: the full per-scene HUD set is asserted by
+`tools/validate_hud.gd`, door/exit integrity by `tools/validate_transitions.gd`.
+
 When the **shape** of any saved state changes, bump `SAVE_VERSION` and add a step
 to `SaveManager._migrate()`. Pre-versioning files (a bare id→state dictionary with
 no `version` key) are read as version 0 and migrated forward. Keybinds: `F5` save,
@@ -282,10 +289,23 @@ bag slots by rarity.
 
 **Unique named weapons/armor** are just authored `.tres` with a high rarity and
 affixes (e.g. `emberbrand`, `windpiercer`, `wyrmscale_vest`). They drop from
-**treasure chests** (`scripts/treasure_chest.gd`) scattered by the area generator
-— more, fuller chests the deeper the tier — and from biome `loot_paths`, so
-braving the Cursed Wilds pays out. (Randomly-rolled per-instance affixes would
-need item duplication on drop; not done yet — affixes are authored for now.)
+**treasure chests** (`scripts/treasure_chest.gd`) — now a **rare find** the
+generator scatters sparingly (`_spawn_treasure`: usually none-to-one per area, a
+small chance of a second deep in an excursion; deeper tiers still stock fuller
+chests) plus the loot caches you earn by clearing an authored encounter, so loot
+feels earned rather than littered. (Randomly-rolled per-instance affixes would need
+item duplication on drop; not done yet — affixes are authored for now.)
+
+**Enemy drops are thematic, not a biome grab-bag.** Each combat enemy scene authors
+its own `loot_table` + `loot_chance` (wolf/bear → raw meat + hide; bandit/brute/
+archer → the gear they carry; Withered → a crystal shard; bear cub → nothing). The
+generator's `_place_enemy` **preserves an enemy's own table** and only falls back to
+the biome `loot_paths` pool for enemies that ship without one, so drops read as
+logical. `Enemy._drop_loot` rolls each entry independently against `loot_chance`.
+
+**Dropping items.** Right-clicking a bag slot in the player menu drops the whole
+stack as a recoverable world `ItemPickup` a step from the player (offset so it isn't
+re-collected on the spot) — a quick way to clear bag space.
 
 ### Quests
 A `Quest` (`scripts/quest.gd`) has a `category` (Main / Contract / Rescue / Task)
@@ -408,6 +428,21 @@ rival factions fight each other, not just the player. Those rival fights are
 no shake, hit-stop, XP, or quest credit (see **Combat feel** above) — so the world
 feels alive without hijacking the camera or padding the kill count. **`WILDLIFE` is
 neutral**: it fights no one and nothing faction-targets it.
+
+**The Vast** (the `MONSTER` faction — the Cursed-Wilds threshold) fields three
+threats: the baseline **Withered** (`enemy_withered`), a fast swarming **Vast Hound**
+(`enemy_vast_hound`, wolf brain + corrupted tint), and a slow elite **Vast Hulk**
+(`enemy_vast_hulk`, high HP/damage, scaled up). All are hostile to everything and seed
+the `cursed_wilds` / `vast_edge` biomes plus the `withered_horde` and `vast_pack`
+encounters; each drops a crystal (the hulk a potion too). Distinct silhouettes are
+placeholder retints/reuses for now — bespoke Vast art is a follow-up.
+
+**Talkable NPCs** (`scripts/npc.gd`, an `Area2D`) drive the social loop and, when
+given a `schedule` + `home_waypoint`, walk a daily route between `npc_waypoint`
+markers on `TimeManager.period_changed`. Between scheduled moves they now **idle-wander**
+gently around their current station (small radius, with pauses) so the town reads as
+lived-in rather than frozen. Families may share a `home_*` marker; daytime stations
+stay distinct. Headless: `tools/validate_schedules.gd`.
 
 Passive game (`scripts/wildlife.gd`, `class_name Wildlife extends Enemy` — deer,
 rabbit) is the huntable end of that table. It spawns on a **separate**

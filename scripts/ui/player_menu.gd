@@ -292,11 +292,12 @@ func _make_bag_slot(index: int) -> Button:
 		btn.icon = item.icon
 		var count: int = _inventory.get_count(index)
 		btn.text = str(count) if count > 1 else ""
-		btn.tooltip_text = _item_tooltip(item)
+		btn.tooltip_text = _item_tooltip(item) + "\n(Right-click to drop)"
 		# Tint non-common gear toward its rarity colour as a cue.
 		if item.rarity != Item.Rarity.COMMON:
 			btn.modulate = Color.WHITE.lerp(item.rarity_color(), 0.5)
 		btn.pressed.connect(_on_bag_slot.bind(index))
+		btn.gui_input.connect(_on_bag_slot_input.bind(index))
 	else:
 		btn.disabled = true
 	# The first ten bag slots are the 1–0 quick-use hotbar; mark the key.
@@ -357,6 +358,34 @@ func _on_bag_slot(index: int) -> void:
 	elif item is ConsumableItem:
 		if (item as ConsumableItem).use(_player):
 			_inventory.remove_at(index, 1)
+
+## Right-click a bag slot to drop its whole stack onto the ground by the player —
+## a recoverable way to clear space (walk back over it to pick it up again).
+func _on_bag_slot_input(event: InputEvent, index: int) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_RIGHT:
+		_drop_slot(index)
+
+func _drop_slot(index: int) -> void:
+	var item: Item = _inventory.get_item(index)
+	if item == null:
+		return
+	var count: int = _inventory.get_count(index)
+	_spawn_drop(item, count)
+	_inventory.remove_at(index, count)  # emits `changed`, which rebuilds the tab
+
+## Spawn a recoverable world pickup a short step from the player, offset so it is
+## not instantly re-collected while they are standing on the spot.
+func _spawn_drop(item: Item, count: int) -> void:
+	var player := get_tree().get_first_node_in_group("player") as Node2D
+	if player == null:
+		return
+	var parent := player.get_parent()
+	if parent == null:
+		return
+	var pickup := preload("res://scenes/entities/item_pickup.tscn").instantiate()
+	pickup.configure(item, count)
+	parent.add_child(pickup)
+	(pickup as Node2D).global_position = player.global_position + Vector2(randf_range(-6.0, 6.0), 30.0)
 
 func _on_unequip_weapon() -> void:
 	var weapon: WeaponItem = _equipment.get_weapon()

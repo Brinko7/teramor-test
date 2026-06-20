@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="1_grass"]
 [ext_resource type="TileSet" path="res://assets/tilesets/terrain.tres" id="2_tileset"]
@@ -7,6 +7,10 @@
 [ext_resource type="PackedScene" path="res://scenes/entities/transition_zone.tscn" id="5_tz"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="6_clock"]
 [ext_resource type="Script" path="res://scripts/day_night.gd" id="7_daynight"]
+[ext_resource type="PackedScene" path="res://scenes/ui/health_bar.tscn" id="8_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_coins.tscn" id="9_coins"]
+[ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="10_manabar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="11_itembar"]
 
 [sub_resource type="RectangleShape2D" id="edge_shape"]
 size = Vector2(24, 96)
@@ -58,3 +62,11 @@ shape = SubResource("edge_shape")
 script = ExtResource("7_daynight")
 
 [node name="ClockHUD" parent="." instance=ExtResource("6_clock")]
+
+[node name="HUD" parent="." instance=ExtResource("8_hud")]
+
+[node name="CoinHUD" parent="." instance=ExtResource("9_coins")]
+
+[node name="ManaBar" parent="." instance=ExtResource("10_manabar")]
+
+[node name="ItemHotbarHUD" parent="." instance=ExtResource("11_itembar")]

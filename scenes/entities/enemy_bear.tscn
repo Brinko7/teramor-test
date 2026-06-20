@@ -1,8 +1,10 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy_bear.gd" id="1_bear"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/enemies/enemy_bear.png" id="2_sheet"]
 [ext_resource type="Script" path="res://scripts/health.gd" id="3_health"]
+[ext_resource type="Resource" path="res://resources/items/raw_meat.tres" id="4_meat"]
+[ext_resource type="Resource" path="res://resources/items/hide.tres" id="5_hide"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_feet"]
 size = Vector2(16, 8)
@@ -22,6 +24,8 @@ windup_time = 0.5
 xp_reward = 22
 enemy_id = &"bear"
 faction = &"beast"
+loot_table = Array[Item]([ExtResource("4_meat"), ExtResource("5_hide")])
+loot_chance = 0.85
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 centered = false
