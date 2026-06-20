@@ -1,0 +1,149 @@
+[gd_scene load_steps=30 format=3]
+
+[ext_resource type="Script" path="res://scripts/interior.gd" id="1_interior"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/shop_room.png" id="2_room"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/counter.png" id="3_counter"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/rug.png" id="4_rug"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/cupboard.png" id="5_cup"]
+[ext_resource type="PackedScene" path="res://scenes/entities/merchant.tscn" id="6_merchant"]
+[ext_resource type="PackedScene" path="res://scenes/entities/transition_zone.tscn" id="7_tz"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/crate.tscn" id="8_crate"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/barrel.tscn" id="9_barrel"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="10_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/health_bar.tscn" id="11_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_coins.tscn" id="12_coins"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="13_clock"]
+[ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="14_mana"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="15_hotbar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="25_itembar"]
+[ext_resource type="Resource" path="res://resources/items/seeds/turnip_seeds.tres" id="16_tseed"]
+[ext_resource type="Resource" path="res://resources/items/seeds/wheat_seeds.tres" id="17_wseed"]
+[ext_resource type="Resource" path="res://resources/items/health_potion.tres" id="18_hpot"]
+[ext_resource type="Resource" path="res://resources/items/greater_potion.tres" id="19_gpot"]
+[ext_resource type="Resource" path="res://resources/items/iron_sword.tres" id="20_isword"]
+[ext_resource type="Resource" path="res://resources/items/hunter_bow.tres" id="21_bow"]
+[ext_resource type="Resource" path="res://resources/items/iron_shield.tres" id="22_ishield"]
+[ext_resource type="Resource" path="res://resources/items/chainmail_vest.tres" id="23_vest"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/shop_sign.png" id="24_sign"]
+
+[sub_resource type="RectangleShape2D" id="wall_v"]
+size = Vector2(12, 224)
+
+[sub_resource type="RectangleShape2D" id="wall_h_bottom"]
+size = Vector2(320, 12)
+
+[sub_resource type="RectangleShape2D" id="wall_h_top"]
+size = Vector2(135, 16)
+
+[sub_resource type="RectangleShape2D" id="counter_col"]
+size = Vector2(98, 12)
+
+[node name="ShopInterior" type="Node2D"]
+script = ExtResource("1_interior")
+
+[node name="Floor" type="Sprite2D" parent="."]
+texture = ExtResource("2_room")
+centered = false
+
+[node name="Rug" type="Sprite2D" parent="Floor"]
+position = Vector2(160, 140)
+texture = ExtResource("4_rug")
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="WallLeft" type="CollisionShape2D" parent="Walls"]
+position = Vector2(10, 112)
+shape = SubResource("wall_v")
+
+[node name="WallRight" type="CollisionShape2D" parent="Walls"]
+position = Vector2(310, 112)
+shape = SubResource("wall_v")
+
+[node name="WallBottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(160, 220)
+shape = SubResource("wall_h_bottom")
+
+[node name="WallTopLeft" type="CollisionShape2D" parent="Walls"]
+position = Vector2(80, 52)
+shape = SubResource("wall_h_top")
+
+[node name="WallTopRight" type="CollisionShape2D" parent="Walls"]
+position = Vector2(240, 52)
+shape = SubResource("wall_h_top")
+
+[node name="Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Counter" type="StaticBody2D" parent="Entities"]
+y_sort_enabled = true
+position = Vector2(160, 150)
+collision_layer = 1
+collision_mask = 0
+
+[node name="Sprite2D" type="Sprite2D" parent="Entities/Counter"]
+centered = false
+offset = Vector2(-54, -30)
+texture = ExtResource("3_counter")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Entities/Counter"]
+position = Vector2(0, -6)
+shape = SubResource("counter_col")
+
+[node name="Cupboard" type="Sprite2D" parent="Entities"]
+position = Vector2(44, 118)
+texture = ExtResource("5_cup")
+centered = false
+offset = Vector2(-15, -42)
+
+[node name="Crate1" parent="Entities" instance=ExtResource("8_crate")]
+position = Vector2(284, 120)
+
+[node name="Barrel1" parent="Entities" instance=ExtResource("9_barrel")]
+position = Vector2(282, 152)
+
+[node name="Barrel2" parent="Entities" instance=ExtResource("9_barrel")]
+position = Vector2(40, 196)
+
+[node name="Crate2" parent="Entities" instance=ExtResource("8_crate")]
+position = Vector2(282, 198)
+
+[node name="Merchant" parent="Entities" instance=ExtResource("6_merchant")]
+position = Vector2(160, 116)
+shop_name = "Cleeve's Trading Post"
+stock = Array[Item]([ExtResource("16_tseed"), ExtResource("17_wseed"), ExtResource("18_hpot"), ExtResource("19_gpot"), ExtResource("20_isword"), ExtResource("21_bow"), ExtResource("22_ishield"), ExtResource("23_vest")])
+open_hour = 8
+close_hour = 18
+status_sign_path = NodePath("../StatusSign")
+
+[node name="StatusSign" type="Sprite2D" parent="Entities"]
+position = Vector2(126, 151)
+centered = false
+offset = Vector2(-12, -18)
+texture = ExtResource("24_sign")
+hframes = 2
+
+[node name="Player" parent="Entities" instance=ExtResource("10_player")]
+position = Vector2(160, 82)
+
+[node name="from_town" type="Marker2D" parent="Entities" groups=["spawn"]]
+position = Vector2(160, 82)
+
+[node name="ExitDoor" parent="Entities" instance=ExtResource("7_tz")]
+position = Vector2(160, 48)
+target_scene = "res://scenes/world/town.tscn"
+target_spawn = "to_shop"
+
+[node name="Ambient" type="CanvasModulate" parent="."]
+color = Color(0.76, 0.71, 0.64, 1)
+
+[node name="HUD" parent="." instance=ExtResource("11_hud")]
+
+[node name="CoinHUD" parent="." instance=ExtResource("12_coins")]
+
+[node name="ClockHUD" parent="." instance=ExtResource("13_clock")]
+
+[node name="ManaBar" parent="." instance=ExtResource("14_mana")]
+
+[node name="AbilityHotbar" parent="." instance=ExtResource("15_hotbar")]
+
+[node name="ItemHotbarHUD" parent="." instance=ExtResource("25_itembar")]

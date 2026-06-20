@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/encounter_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"bandit_camp"
+display_name = "Bandit Camp"
+enemy_paths = PackedStringArray("res://scenes/entities/enemy.tscn", "res://scenes/entities/enemy_archer.tscn", "res://scenes/entities/enemy_brute.tscn")
+enemy_offsets = PackedVector2Array(-20, 24, 26, -16, 4, 34)
+prop_paths = PackedStringArray("res://scenes/entities/props/tent.tscn", "res://scenes/entities/props/tent.tscn", "res://scenes/entities/props/campfire.tscn")
+prop_offsets = PackedVector2Array(-44, -4, 40, -8, 0, 12)
+loot_cache = true
+loot_offset = Vector2(0, -18)
+min_tier = 1
+weight = 2.0
+radius = 120.0

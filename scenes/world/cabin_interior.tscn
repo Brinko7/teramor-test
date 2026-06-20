@@ -1,0 +1,196 @@
+[gd_scene format=3 uid="uid://c2a726n5ar6ej"]
+
+[ext_resource type="Script" uid="uid://cl5u5w1hsd0e4" path="res://scripts/interior.gd" id="1_interior"]
+[ext_resource type="Script" uid="uid://b64ojm5x7bu61" path="res://scripts/flicker_light.gd" id="2_flicker"]
+[ext_resource type="Texture2D" uid="uid://r1le87owfph5" path="res://assets/placeholder/cabin_room.png" id="3_room"]
+[ext_resource type="Texture2D" uid="uid://cnlvcf6sy7pht" path="res://assets/placeholder/light_soft.png" id="4_light"]
+[ext_resource type="Texture2D" uid="uid://c74dkgfotmckx" path="res://assets/placeholder/hearth.png" id="5_hearth"]
+[ext_resource type="Texture2D" uid="uid://c53qnpex7ynlb" path="res://assets/placeholder/table.png" id="6_table"]
+[ext_resource type="Texture2D" uid="uid://btwcwb01gfckl" path="res://assets/placeholder/chair.png" id="7_chair"]
+[ext_resource type="Texture2D" uid="uid://b8oq4bjrkfr1l" path="res://assets/placeholder/bookshelf.png" id="8_shelf"]
+[ext_resource type="Texture2D" uid="uid://dloospmes35gr" path="res://assets/placeholder/cupboard.png" id="9_cup"]
+[ext_resource type="Texture2D" uid="uid://uwv3uepb7u3x" path="res://assets/placeholder/rug.png" id="10_rug"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="11_player"]
+[ext_resource type="PackedScene" path="res://scenes/entities/transition_zone.tscn" id="12_tz"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/bed.tscn" id="13_bed"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/chest.tscn" id="14_chest"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/barrel.tscn" id="15_barrel"]
+[ext_resource type="PackedScene" path="res://scenes/ui/health_bar.tscn" id="16_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_coins.tscn" id="17_coins"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="18_clock"]
+[ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="19_mana"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="20_hotbar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="21_itembar"]
+
+[sub_resource type="RectangleShape2D" id="wall_v"]
+size = Vector2(12, 224)
+
+[sub_resource type="RectangleShape2D" id="wall_h_bottom"]
+size = Vector2(320, 12)
+
+[sub_resource type="RectangleShape2D" id="wall_h_top"]
+size = Vector2(135, 16)
+
+[sub_resource type="RectangleShape2D" id="hearth_col"]
+size = Vector2(48, 14)
+
+[sub_resource type="RectangleShape2D" id="table_col"]
+size = Vector2(40, 12)
+
+[sub_resource type="RectangleShape2D" id="shelf_col"]
+size = Vector2(34, 10)
+
+[sub_resource type="RectangleShape2D" id="cup_col"]
+size = Vector2(28, 10)
+
+[node name="CabinInterior" type="Node2D" unique_id=892752567]
+script = ExtResource("1_interior")
+
+[node name="Floor" type="Sprite2D" parent="." unique_id=1322843619]
+texture = ExtResource("3_room")
+centered = false
+
+[node name="Rug" type="Sprite2D" parent="Floor" unique_id=1538128977]
+position = Vector2(160, 150)
+texture = ExtResource("10_rug")
+
+[node name="Walls" type="StaticBody2D" parent="." unique_id=1528548013]
+
+[node name="WallLeft" type="CollisionShape2D" parent="Walls" unique_id=93235128]
+position = Vector2(10, 112)
+shape = SubResource("wall_v")
+
+[node name="WallRight" type="CollisionShape2D" parent="Walls" unique_id=537371792]
+position = Vector2(310, 112)
+shape = SubResource("wall_v")
+
+[node name="WallBottom" type="CollisionShape2D" parent="Walls" unique_id=1000289558]
+position = Vector2(160, 220)
+shape = SubResource("wall_h_bottom")
+
+[node name="WallTopLeft" type="CollisionShape2D" parent="Walls" unique_id=1820188240]
+position = Vector2(80, 52)
+shape = SubResource("wall_h_top")
+
+[node name="WallTopRight" type="CollisionShape2D" parent="Walls" unique_id=1780038643]
+position = Vector2(240, 52)
+shape = SubResource("wall_h_top")
+
+[node name="Entities" type="Node2D" parent="." unique_id=895131156]
+y_sort_enabled = true
+
+[node name="Hearth" type="StaticBody2D" parent="Entities" unique_id=1369798967]
+y_sort_enabled = true
+position = Vector2(272, 104)
+
+[node name="Sprite2D" type="Sprite2D" parent="Entities/Hearth" unique_id=1803842270]
+texture = ExtResource("5_hearth")
+centered = false
+offset = Vector2(-28, -58)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Entities/Hearth" unique_id=1989688091]
+position = Vector2(0, -7)
+shape = SubResource("hearth_col")
+
+[node name="Fire" type="PointLight2D" parent="Entities/Hearth" unique_id=1932171674]
+position = Vector2(-1, -18)
+color = Color(1, 0.74, 0.42, 1)
+energy = 1.3
+texture = ExtResource("4_light")
+texture_scale = 1.5
+script = ExtResource("2_flicker")
+base_energy = 1.35
+
+[node name="Bed" parent="Entities" unique_id=2101841778 instance=ExtResource("13_bed")]
+position = Vector2(32, 78)
+
+[node name="Chest" parent="Entities" unique_id=571413103 instance=ExtResource("14_chest")]
+position = Vector2(136, 51)
+
+[node name="Table" type="StaticBody2D" parent="Entities" unique_id=1458784452]
+y_sort_enabled = true
+position = Vector2(160, 152)
+
+[node name="Sprite2D" type="Sprite2D" parent="Entities/Table" unique_id=315597382]
+texture = ExtResource("6_table")
+centered = false
+offset = Vector2(-25, -30)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Entities/Table" unique_id=632262268]
+position = Vector2(0, -7)
+shape = SubResource("table_col")
+
+[node name="ChairBack" type="Sprite2D" parent="Entities" unique_id=214631871]
+position = Vector2(160, 134)
+texture = ExtResource("7_chair")
+centered = false
+offset = Vector2(-9, -26)
+
+[node name="ChairFront" type="Sprite2D" parent="Entities" unique_id=752800533]
+position = Vector2(160, 178)
+texture = ExtResource("7_chair")
+centered = false
+offset = Vector2(-9, -26)
+
+[node name="Bookshelf" type="StaticBody2D" parent="Entities" unique_id=383721655]
+y_sort_enabled = true
+position = Vector2(40, 206)
+
+[node name="Sprite2D" type="Sprite2D" parent="Entities/Bookshelf" unique_id=1340135385]
+texture = ExtResource("8_shelf")
+centered = false
+offset = Vector2(-18, -50)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Entities/Bookshelf" unique_id=247356706]
+position = Vector2(0, -5)
+shape = SubResource("shelf_col")
+
+[node name="Cupboard" type="StaticBody2D" parent="Entities" unique_id=1085035675]
+y_sort_enabled = true
+position = Vector2(286, 196)
+
+[node name="Sprite2D" type="Sprite2D" parent="Entities/Cupboard" unique_id=1425410897]
+texture = ExtResource("9_cup")
+centered = false
+offset = Vector2(-15, -42)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Entities/Cupboard" unique_id=1128255267]
+position = Vector2(0, -5)
+shape = SubResource("cup_col")
+
+[node name="Barrel" parent="Entities" unique_id=1540937757 instance=ExtResource("15_barrel")]
+position = Vector2(238, 200)
+
+[node name="WindowLight" type="PointLight2D" parent="Entities" unique_id=761644592]
+visible = false
+position = Vector2(54, 46)
+color = Color(0.6, 0.73, 0.92, 1)
+energy = 0.5
+texture = ExtResource("4_light")
+texture_scale = 0.8
+
+[node name="Player" parent="Entities" unique_id=1653051594 instance=ExtResource("11_player")]
+position = Vector2(160, 80)
+
+[node name="from_settlement" type="Marker2D" parent="Entities" unique_id=1258515284 groups=["spawn"]]
+position = Vector2(160, 80)
+
+[node name="ExitDoor" parent="Entities" unique_id=368845950 instance=ExtResource("12_tz")]
+position = Vector2(160, 46)
+target_scene = "res://scenes/world/settlement.tscn"
+target_spawn = "from_home"
+
+[node name="Ambient" type="CanvasModulate" parent="." unique_id=1657871719]
+color = Color(0.66, 0.6, 0.56, 1)
+
+[node name="HUD" parent="." unique_id=1572068274 instance=ExtResource("16_hud")]
+
+[node name="CoinHUD" parent="." unique_id=1939233044 instance=ExtResource("17_coins")]
+
+[node name="ClockHUD" parent="." unique_id=981254172 instance=ExtResource("18_clock")]
+
+[node name="ManaBar" parent="." unique_id=844041906 instance=ExtResource("19_mana")]
+
+[node name="AbilityHotbar" parent="." unique_id=1712093025 instance=ExtResource("20_hotbar")]
+
+[node name="ItemHotbarHUD" parent="." instance=ExtResource("21_itembar")]

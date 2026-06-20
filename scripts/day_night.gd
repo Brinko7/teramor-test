@@ -5,9 +5,14 @@ extends CanvasModulate
 ## night and clears back to daylight in the morning. Interpolates between key
 ## colours on every clock tick.
 
-const DAY := Color(1, 1, 1, 1)
-const EVENING := Color(0.86, 0.71, 0.6, 1)
-const NIGHT := Color(0.4, 0.44, 0.68, 1)
+# Grounded, naturalistic key colours. DAY is a touch warm-neutral rather than
+# pure white so noon never feels clinical; NIGHT is deep and desaturated so
+# firelight and lamps actually read after dark.
+const NIGHT := Color(0.3, 0.35, 0.52, 1)    # deep cool dark
+const DAWN := Color(0.64, 0.58, 0.62, 1)    # cool mauve first light
+const DAY := Color(0.99, 0.97, 0.92, 1)     # soft warm-neutral noon
+const GOLDEN := Color(0.95, 0.76, 0.54, 1)  # warm golden hour
+const DUSK := Color(0.52, 0.44, 0.56, 1)    # violet twilight
 
 func _ready() -> void:
 	TimeManager.time_changed.connect(_on_time_changed)
@@ -16,14 +21,17 @@ func _ready() -> void:
 func _on_time_changed(minutes: int) -> void:
 	color = _color_for(minutes)
 
-## Piecewise-linear tint across the day. Minutes past 24:00 (post-midnight) fold
-## back to the small hours so 25:00 reads like 01:00.
+## Piecewise-linear tint across the day: night -> cool dawn -> day -> golden
+## hour -> violet dusk -> night. Minutes past 24:00 (post-midnight) fold back to
+## the small hours so 25:00 reads like 01:00.
 func _color_for(minutes: int) -> Color:
 	var t: int = clampi(minutes, 0, 26 * 60)
 	if t >= 24 * 60:
 		t -= 24 * 60
-	var stop_min: Array[int] = [0, 300, 420, 1020, 1140, 1260, 1440]
-	var stop_col: Array[Color] = [NIGHT, NIGHT, DAY, DAY, EVENING, NIGHT, NIGHT]
+	var stop_min: Array[int] = [0, 270, 360, 450, 1020, 1110, 1200, 1290, 1440]
+	var stop_col: Array[Color] = [
+		NIGHT, NIGHT, DAWN, DAY, DAY, GOLDEN, DUSK, NIGHT, NIGHT,
+	]
 	for i in range(stop_min.size() - 1):
 		if t >= stop_min[i] and t <= stop_min[i + 1]:
 			var span: int = stop_min[i + 1] - stop_min[i]

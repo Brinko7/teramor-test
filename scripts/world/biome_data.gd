@@ -31,17 +31,35 @@ class_name BiomeData
 ## Baseline difficulty if a generator does not override the tier.
 @export var base_tier: int = 1
 
-## Enemy and prop population ranges (before tier scaling of enemy count).
-@export var min_enemies: int = 2
-@export var max_enemies: int = 4
+## Ambient lone-wanderer count range and prop population range. With encounters in
+## play, min/max_enemies is the sparse handful of stray foes you stumble on between
+## setpieces — keep it low (min may be 0) for semi-peaceful pacing; the designed
+## beats come from `encounter_paths` below.
+@export var min_enemies: int = 1
+@export var max_enemies: int = 2
 @export var min_props: int = 16
 @export var max_props: int = 28
+
+## Authored encounter setpieces (EncounterData .tres paths) this biome can stage,
+## and how many to drop per area. Empty = ambient scatter only. See EncounterData
+## and ProceduralArea._spawn_encounters.
+@export var encounter_paths: PackedStringArray = PackedStringArray()
+@export var min_encounters: int = 0
+@export var max_encounters: int = 0
 
 ## Harvestable resource item paths (ore/stone/crystal/herbs) and how many gather
 ## nodes to scatter. Empty = no nodes (e.g. a road encounter).
 @export var gather_paths: PackedStringArray = PackedStringArray()
 @export var min_gather: int = 0
 @export var max_gather: int = 0
+
+## Passive wildlife (deer/rabbit) scene paths and how many to scatter. These are
+## the WILDLIFE faction — peaceful prey the player can hunt for meat/hide. Unlike
+## enemies they keep their authored loot and skip tier scaling (see
+## ProceduralArea._spawn_wildlife). Empty = no wildlife.
+@export var wildlife_paths: PackedStringArray = PackedStringArray()
+@export var min_wildlife: int = 0
+@export var max_wildlife: int = 0
 
 ## Weighted random enemy path, skipping any whose scene is missing. Returns "" if
 ## none are available.
@@ -63,3 +81,36 @@ func pick_enemy_path(rng: RandomNumberGenerator) -> String:
 		if roll <= 0.0:
 			return String(entry["path"])
 	return String(available[-1]["path"])
+
+## Uniform-random wildlife path, skipping any whose scene is missing. Returns "" if
+## none are available.
+func pick_wildlife_path(rng: RandomNumberGenerator) -> String:
+	var available: Array = []
+	for path in wildlife_paths:
+		if ResourceLoader.exists(path):
+			available.append(path)
+	if available.is_empty():
+		return ""
+	return String(available[rng.randi() % available.size()])
+
+## Weighted-random encounter valid at `tier`, skipping missing resources and any
+## whose `min_tier` exceeds the area tier. Returns null if none qualify.
+func pick_encounter(rng: RandomNumberGenerator, tier: int) -> EncounterData:
+	var available: Array = []
+	var total: float = 0.0
+	for path in encounter_paths:
+		if not ResourceLoader.exists(path):
+			continue
+		var enc := load(path) as EncounterData
+		if enc == null or tier < enc.min_tier:
+			continue
+		available.append(enc)
+		total += maxf(0.0, enc.weight)
+	if available.is_empty() or total <= 0.0:
+		return null
+	var roll: float = rng.randf() * total
+	for enc: EncounterData in available:
+		roll -= maxf(0.0, enc.weight)
+		if roll <= 0.0:
+			return enc
+	return available[-1]

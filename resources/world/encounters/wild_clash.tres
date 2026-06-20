@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/encounter_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wild_clash"
+display_name = "Beasts & Bandits"
+enemy_paths = PackedStringArray("res://scenes/entities/enemy_wolf.tscn", "res://scenes/entities/enemy_wolf.tscn", "res://scenes/entities/enemy.tscn", "res://scenes/entities/enemy_archer.tscn")
+enemy_offsets = PackedVector2Array(-46, -14, -40, 14, 44, -16, 50, 18)
+prop_paths = PackedStringArray("res://scenes/entities/props/crate.tscn", "res://scenes/entities/props/barrel.tscn")
+prop_offsets = PackedVector2Array(64, -2, 70, 20)
+loot_cache = true
+loot_offset = Vector2(78, 6)
+min_tier = 1
+weight = 1.5
+radius = 120.0

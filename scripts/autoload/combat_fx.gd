@@ -20,16 +20,24 @@ func _ready() -> void:
 	Events.damage_dealt.connect(_on_damage_dealt)
 	Events.enemy_killed.connect(_on_enemy_killed)
 
-func _on_damage_dealt(position: Vector2, amount: int, to_enemy: bool) -> void:
+func _on_damage_dealt(position: Vector2, amount: int, to_enemy: bool, player_involved: bool) -> void:
+	# Numbers pop for every hit (so faction brawls read), but the screen-wide
+	# juice — shake and hit-stop — only fires when the player is in the fight.
 	_spawn_number(position, amount, to_enemy)
+	if not player_involved:
+		return
 	Events.screen_shake.emit(2.5 if to_enemy else 4.5)
 	if to_enemy:
 		_hit_stop(HIT_FREEZE)
 
-func _on_enemy_killed(_enemy_id: StringName, _xp_reward: int, position: Vector2) -> void:
+func _on_enemy_killed(_enemy_id: StringName, _xp_reward: int, position: Vector2, by_player: bool) -> void:
+	# A corpse burst at the death site reads fine for any kill; the shake and
+	# freeze are reserved for the player's own kills.
+	_spawn_death_burst(position)
+	if not by_player:
+		return
 	Events.screen_shake.emit(5.5)
 	_hit_stop(KILL_FREEZE)
-	_spawn_death_burst(position)
 
 # --- Hit-stop ---------------------------------------------------------------
 

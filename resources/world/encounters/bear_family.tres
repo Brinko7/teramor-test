@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/encounter_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"bear_family"
+display_name = "Bear & Cubs"
+enemy_paths = PackedStringArray("res://scenes/entities/enemy_bear.tscn", "res://scenes/entities/enemy_bear_cub.tscn", "res://scenes/entities/enemy_bear_cub.tscn")
+enemy_offsets = PackedVector2Array(0, 0, -24, 16, 22, 18)
+loot_cache = false
+min_tier = 1
+weight = 2.0
+radius = 100.0

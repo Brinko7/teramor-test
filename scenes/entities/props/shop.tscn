@@ -1,9 +1,11 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/placeholder/shop.png" id="1_tex"]
+[ext_resource type="Script" path="res://scripts/night_light.gd" id="2_night"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/light_soft.png" id="3_light"]
 
 [sub_resource type="RectangleShape2D" id="shape"]
-size = Vector2(36, 24)
+size = Vector2(54, 16)
 
 [node name="Shop" type="StaticBody2D"]
 y_sort_enabled = true
@@ -12,9 +14,20 @@ collision_mask = 0
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 centered = false
-offset = Vector2(-24, -48)
+offset = Vector2(-36, -84)
 texture = ExtResource("1_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -12)
+position = Vector2(0, -8)
 shape = SubResource("shape")
+
+[node name="WindowGlow" type="PointLight2D" parent="."]
+position = Vector2(0, -42)
+color = Color(1, 0.82, 0.5, 1)
+energy = 0.68
+texture_scale = 1.15
+texture = ExtResource("3_light")
+script = ExtResource("2_night")
+base_energy = 0.7
+jitter = 0.04
+speed = 4.0

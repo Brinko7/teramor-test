@@ -3,7 +3,7 @@
 [ext_resource type="Texture2D" path="res://assets/placeholder/market_stall.png" id="1_tex"]
 
 [sub_resource type="RectangleShape2D" id="shape"]
-size = Vector2(34, 12)
+size = Vector2(38, 10)
 
 [node name="MarketStall" type="StaticBody2D"]
 y_sort_enabled = true
@@ -12,9 +12,9 @@ collision_mask = 0
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 centered = false
-offset = Vector2(-20, -30)
+offset = Vector2(-24, -44)
 texture = ExtResource("1_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -6)
+position = Vector2(0, -5)
 shape = SubResource("shape")

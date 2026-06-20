@@ -99,6 +99,18 @@ wrapped in a versioned envelope: `{"version": N, "entries": {id: state}}`. New
 systems become saveable just by implementing the contract — SaveManager itself
 does not change.
 
+**Carrying the player across area transitions.** `SceneManager.travel()` uses
+`change_scene_to_file`, which frees the old player and builds a fresh one from the
+new scene's authored defaults — so without help, gear/bag/levels reset at every
+threshold. SaveManager reuses the *same* persistent-group contract **in-memory** for
+this: `capture_subtree(player)` snapshots every persistent node in the player's
+subtree (the player itself + `Inventory`, `Equipment`, `Stats`) into a dict, and
+`apply_subtree(player, data)` restores it onto the rebuilt player after the scene
+swap. The restore walks the subtree **root-last** (pre-order gather, then reversed)
+so children (Stats, Equipment) load before the player node, whose `load_state`
+recomputes `_max_hp()` from the already-restored stats + gear. Position is *not*
+carried — `SceneManager._place_player` sets the spawn point after the restore.
+
 When the **shape** of any saved state changes, bump `SAVE_VERSION` and add a step
 to `SaveManager._migrate()`. Pre-versioning files (a bare id→state dictionary with
 no `version` key) are read as version 0 and migrated forward. Keybinds: `F5` save,
@@ -108,24 +120,49 @@ no `version` key) are read as version 0 and migrated forward. Keybinds: `F5` sav
 `scripts/player.gd` (`CharacterBody2D`) handles movement, mouse-aimed combat
 (melee + ranged), progression and death/respawn. Gameplay capabilities are
 composed as child nodes: `Health`, `Stats`, `Equipment`, `Inventory`, `Mana`,
-`AbilityCaster`. Cosmetic rendering — worn armour overlays and the held
-weapon/shield with their posing/swing/recoil — lives in
+`AbilityCaster`, `ItemHotbar`. Cosmetic rendering — worn armour overlays and the
+held weapon/shield with their posing/swing/recoil — lives in
 `scripts/components/player_visuals.gd` (`class_name PlayerVisuals`), created in
 `_ready()` and fed state each frame (body frame, aim, block flag).
+
+**Hotbars (the number row is items; abilities live on Q).** The number row
+**1–0** is a Stardew-style **item hotbar** over the first ten bag slots:
+`scripts/item_hotbar.gd` (`class_name ItemHotbar`, a player child) tracks the
+selected slot (`select`/`cycle`/`use_active`); keys 1–0 select, the mouse wheel
+cycles, **F** uses the held consumable. Its HUD is `item_hotbar_hud.gd` /
+`scenes/ui/item_hotbar.tscn`, a code-built CanvasLayer (layer 81) instanced per
+world scene like the other HUD pieces, binding to the player via the `"player"`
+group. **Abilities** moved to a **hold-Q radial**: `ability_hotbar.gd` is now a
+ring of four ability slots shown only while `ability_menu` (Q) is held, and
+`player.gd` branches input on that hold — Q down casts `ability_1..4` toward the
+cursor, Q up drives the item hotbar — so the two never share a key. Input actions
+(`hotbar_1..10`, `hotbar_prev/next`, `use_item`, `ability_menu`, `ability_1..4`)
+live in `project.godot [input]`; `tools/validate_hotbar.gd` covers the scheme.
 
 ### Combat feel (juice)
 Hits are sold by the **CombatFX** autoload, driven entirely off the `Events` bus so
 combat code stays simple — it just reports outcomes:
-- Entities that take damage emit `Events.damage_dealt(position, amount, to_enemy)`;
-  CombatFX pops a floating `damage_number`, requests an `Events.screen_shake`, and
-  on `to_enemy` does a brief **hit-stop** (a micro `Engine.time_scale` freeze
-  restored by an `ignore_time_scale` timer).
-- `Events.enemy_killed` adds a bigger shake, a longer freeze, and a CPUParticles2D
-  **death burst**.
+- Entities that take damage emit
+  `Events.damage_dealt(position, amount, to_enemy, player_involved)`; CombatFX always
+  pops a floating `damage_number`, then **only when `player_involved`** requests an
+  `Events.screen_shake` and (on `to_enemy`) a brief **hit-stop** (a micro
+  `Engine.time_scale` freeze restored by an `ignore_time_scale` timer).
+- `Events.enemy_killed(enemy_id, xp_reward, position, by_player)` always spawns a
+  CPUParticles2D **death burst**, then **only when `by_player`** adds a bigger shake
+  and a longer freeze.
+- **Player-involvement gating.** `Enemy.take_damage(amount, knockback, from_player)`
+  threads a `from_player` flag that surfaces as `player_involved` / `by_player` on
+  the signals (the killing blow's source is remembered on the enemy as
+  `_last_hit_from_player` for attribution). So a faction-vs-faction brawl (see
+  **Factions & wildlife** below) is **ambient** — numbers and bursts still show for
+  readability, but no shake, no hit-stop, no player **XP**
+  (`player.gd._on_enemy_killed` credits XP only when `by_player`), and no **quest
+  KILL credit** (`QuestManager` skips non-`by_player` kills). Every player attack
+  path (melee, projectile, ability projectile/nova, DoT) passes `true`.
 - The player camera carries `components/camera_shake.gd`, which listens for
   `screen_shake` and jolts its `offset`.
-- **Knockback**: `Enemy.take_damage(amount, knockback)` takes an optional impulse
-  that decays in `_physics_process`; melee/projectiles/nova pass a direction.
+- **Knockback**: the `knockback` arg of `take_damage` is an optional impulse that
+  decays in `_physics_process`; melee/projectiles/nova pass a direction.
 - The player adds a forward **lunge** on melee swings (`_lunge`).
 Tune feel via the constants in `combat_fx.gd`, `camera_shake.gd`, and the player's
 `MELEE_KNOCKBACK`/`LUNGE_*`.
@@ -237,11 +274,112 @@ Generated areas use one scene, `scenes/world/procedural_area.tscn`
 (`scripts/world/procedural_area.gd`), driven by a **`BiomeData`** resource
 (`resources/world/biomes/`) and a difficulty **tier**. The generator reads the
 staged request from `TravelManager.consume_pending()`, paints the ground, scatters
-props, spawns tier-scaled enemies (`Enemy.apply_tier`), and wires exit "gates"
-(triggered by the player's position): a one-way *Continue* for encounters, or
-*Return* / *Deeper* (tier+1) for excursions. Add a biome or a place by authoring a
-`.tres` — scenes/items inside `BiomeData` are referenced by path, so no code
-change is needed.
+props, spawns a sparse set of tier-scaled ambient enemies (`Enemy.apply_tier`),
+drops authored **encounter setpieces** (`EncounterData` in
+`resources/world/encounters/` — hand-arranged enemy/prop clusters a biome lists in
+`encounter_paths`, budgeted + tier-gated), seeds passive **wildlife** (see below),
+and wires exit "gates" (triggered by the player's position): a one-way *Continue*
+for encounters, or *Return* / *Deeper* (tier+1) for excursions. Add a biome or a
+place by authoring a `.tres` — scenes/items inside `BiomeData` are referenced by
+path, so no code change is needed.
+
+### Factions & wildlife
+Every `Enemy` carries a `faction` (`scripts/faction.gd`, `class_name Faction`:
+`PLAYER` / `BEAST` / `BANDIT` / `MONSTER` / `WILDLIFE`). `Faction.hostile(a, b)`
+gates targeting *and* damage, so an enemy chases the **nearest hostile** in range
+(player *or* rival faction) and contact/projectiles only hurt a hostile body —
+rival factions fight each other, not just the player. Those rival fights are
+**ambient**: they deal real damage to each other but award the *player* nothing —
+no shake, hit-stop, XP, or quest credit (see **Combat feel** above) — so the world
+feels alive without hijacking the camera or padding the kill count. **`WILDLIFE` is
+neutral**: it fights no one and nothing faction-targets it.
+
+Passive game (`scripts/wildlife.gd`, `class_name Wildlife extends Enemy` — deer,
+rabbit) is the huntable end of that table. It spawns on a **separate**
+`_spawn_wildlife()` pass from a biome's `wildlife_paths` (+ `min/max_wildlife`),
+*not* `enemy_paths` — that pass deliberately **keeps the scene's authored loot**
+(meat/hide) and **skips `apply_tier`**, so hunting always yields the same gentle
+prey. Its brain overrides only `_decide_input`: flee the nearest non-wildlife thing
+at a sprint, graze when safe, bolt along the knockback when struck (`apply_tier` is
+a no-op). The `wild_clash` encounter weaponizes the faction system by staging
+mutually-hostile BEAST + BANDIT a few steps apart so a brawl erupts on spawn.
+Headless coverage: `tools/validate_wildlife.gd`.
+
+## Art & visual style (the art bible)
+
+> The single source of truth for how Teramor looks. Every sprite — generated or
+> sourced — must obey the **scale grid** and sit on the **grounded palette**.
+> The scale grid exists because we shipped a bug where the player rendered as big
+> as a house; never reintroduce it. When in doubt, generate at these sizes and
+> verify in-engine with a screenshot.
+
+### Mood
+**Grounded & naturalistic serious fantasy.** Muted, earthy, slightly desaturated.
+Think overcast Northern-European woodland, weathered timber and thatch, mossy
+stone. NOT the bright candy palette of Stardew/Sprout-Lands, and NOT heavy
+cartoon outlines. Soft top-left key light, cool ambient shadow. Saturation stays
+low except for deliberate story accents (embers, magic, blight).
+
+### The scale grid (non-negotiable)
+The world is built on a **16 px tile**. Everything is sized in tiles so relative
+proportions read correctly. The governing rule: **a one-story door is about one
+character tall (~40 px / 2.5 tiles).** Buildings tower over the player; trees
+tower over buildings.
+
+| Thing | Footprint / size (px) | In tiles | Notes |
+|---|---|---|---|
+| **Tile** | 16×16 | 1×1 | the base unit |
+| **Player / humanoid frame** | 24×40 | 1.5×2.5 | KEEP — paper-doll + gear overlays tuned to this |
+| Small prop (rock, bush, crate) | 16–28 wide | 1–1.75 | foot-anchored |
+| Cottage / small house | 64×72 | 4×4.5 | door ≈ 40 tall |
+| Town house | 72×88 | 4.5×5.5 | |
+| Big / 2-story building | 80–96 × 112–128 | up to 6×8 | tavern, chapel, hall |
+| Tree | 48–64 wide × 64–96 tall | up to 4×6 | canopy towers over roofs |
+| World scene | 640×480 | 40×30 | standard town/area canvas |
+
+If a new sprite would break the "door ≈ one character" sanity check, it's wrong —
+resize it, don't ship it.
+
+### Foot-anchoring convention (depth + placement)
+Sprites are authored so the **visual base sits at the node origin**, which makes
+placement and `y_sort` depth trivial. On every world Sprite2D:
+- `centered = false`
+- `offset = Vector2(-w/2, -base_h)` — centers horizontally, lifts the sprite so
+  its feet/base touch y=0 (`base_h` = full height for a thing standing on the
+  ground; a hair/gear overlay shares the body's offset).
+- `y_sort_enabled` on the sprite (and its parent) so things behind/in front sort
+  by their base y.
+- **No `scale` multiplier** on world Sprite2D nodes — author at native pixel size
+  so the scale grid is real. (The camera does the zoom.)
+- Collision shapes hug the **base footprint**, not the full sprite (e.g. a tree's
+  collider is a small ellipse at the trunk, not the canopy).
+
+### The pixel engine: `tools/pixelforge.py`
+The bespoke Teramor art (player, NPCs, the Withered, items, FX, and any prop we
+want pixel-perfect on the palette) is generated by a **dependency-free** Python
+toolkit. No Pillow, no pip — PNGs are hand-encoded with stdlib `zlib` + `struct`,
+so it runs anywhere with python3. This is also part of the story: the whole pixel
+pipeline is ours.
+
+- **`class P`** — the grounded palette as light→dark ramps (`GRASS`, `SOIL`,
+  `PATH`, `STONE`, `WOOD`, `ROOF`, `THATCH`, `PLASTER`, `WATER`, `FOLIAGE`,
+  `BARK`, `METAL`, `LEATHER`, `CLOTH`, plus `OUTLINE`/`SHADOW`/`NIGHT`/`EMBER`).
+  Pull colors from here so everything sits in the same world.
+- **`class Canvas`** — a pixel buffer with drawing primitives (`rect`, `frame`,
+  `line`, `ellipse`, `disc`, `shade_rect` bevel, gradients, `dither`, `mottle`
+  value-noise fill, `speckle`) and post pass helpers (`outline`, `drop_shadow`,
+  `replace` palette-swap, `tint`, `blit`, `region`, `scaled`, `save`).
+- Per-sprite generator scripts live in `tools/gen_*.py` and import pixelforge;
+  they paint to `assets/placeholder/`. Run a generator to (re)bake its PNG — art
+  is regenerated, not hand-edited.
+- Smoke test: `python3 tools/pixelforge.py` renders `_pixelforge_smoke.png`.
+
+### Sourced (CC0) art
+Open-source CC0 art (Kenney-first) may back the world foundation where it clearly
+beats generating. Anything sourced must (1) match the scale grid, (2) be retinted
+toward the grounded palette if needed, and (3) have its origin + license recorded
+in `assets/CREDITS.md`. Kenney packs are CC0 (no attribution required) but we log
+them anyway.
 
 ## Conventions
 

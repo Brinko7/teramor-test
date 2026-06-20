@@ -1,0 +1,46 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/enemy_bear.gd" id="1_bear"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/enemies/enemy_bear.png" id="2_sheet"]
+[ext_resource type="Script" path="res://scripts/health.gd" id="3_health"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_feet"]
+size = Vector2(16, 8)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_touch"]
+size = Vector2(22, 18)
+
+[node name="EnemyBear" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_bear")
+speed = 38.0
+touch_damage = 9
+touch_cooldown = 1.2
+xp_reward = 22
+enemy_id = &"bear"
+faction = &"beast"
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = false
+offset = Vector2(-16, -30)
+texture = ExtResource("2_sheet")
+hframes = 4
+vframes = 4
+frame = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -4)
+shape = SubResource("RectangleShape2D_feet")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("3_health")
+max_health = 20
+
+[node name="TouchBox" type="Area2D" parent="."]
+position = Vector2(0, -12)
+collision_layer = 16
+collision_mask = 6
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TouchBox"]
+shape = SubResource("RectangleShape2D_touch")

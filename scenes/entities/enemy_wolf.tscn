@@ -19,6 +19,7 @@ detect_range = 110.0
 touch_damage = 2
 xp_reward = 3
 enemy_id = &"wolf"
+faction = &"beast"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 centered = false
@@ -39,7 +40,7 @@ max_health = 3
 [node name="TouchBox" type="Area2D" parent="."]
 position = Vector2(0, -8)
 collision_layer = 16
-collision_mask = 2
+collision_mask = 6
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="TouchBox"]
 shape = SubResource("RectangleShape2D_touch")

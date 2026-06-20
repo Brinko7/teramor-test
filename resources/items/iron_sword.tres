@@ -1,8 +1,9 @@
-[gd_resource type="Resource" script_class="WeaponItem" load_steps=4 format=3]
+[gd_resource type="Resource" script_class="WeaponItem" load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/items/weapon_item.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/items/iron_sword.png" id="2_icon"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/items/iron_sword_hold.png" id="3_hold"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/sheath_sword.png" id="4_stow"]
 
 [resource]
 script = ExtResource("1_script")
@@ -19,3 +20,4 @@ attack_cooldown = 0.32
 hold_texture = ExtResource("3_hold")
 hold_distance = 12.0
 swing_arc = 1.25
+stow_texture = ExtResource("4_stow")

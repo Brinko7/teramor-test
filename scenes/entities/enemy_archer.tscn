@@ -19,13 +19,14 @@ detect_range = 150.0
 touch_damage = 1
 xp_reward = 10
 enemy_id = &"archer"
+faction = &"bandit"
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 centered = false
 offset = Vector2(-12, -40)
 texture = ExtResource("2_sheet")
 hframes = 4
-vframes = 4
+vframes = 8
 frame = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
@@ -39,7 +40,7 @@ max_health = 5
 [node name="TouchBox" type="Area2D" parent="."]
 position = Vector2(0, -8)
 collision_layer = 16
-collision_mask = 2
+collision_mask = 6
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="TouchBox"]
 shape = SubResource("RectangleShape2D_touch")

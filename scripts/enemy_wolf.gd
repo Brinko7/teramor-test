@@ -24,14 +24,14 @@ func _decide_input(delta: float) -> Vector2:
 	_lunge_cd = maxf(0.0, _lunge_cd - delta)
 	_lunge_timer = maxf(0.0, _lunge_timer - delta)
 
-	if _player != null and is_instance_valid(_player):
-		var to_player: Vector2 = _player.global_position - global_position
-		if to_player.length() <= detect_range:
+	if _target != null and is_instance_valid(_target):
+		var to_target: Vector2 = _target.global_position - global_position
+		if to_target.length() <= detect_range:
 			if _lunge_timer <= 0.0 and _lunge_cd <= 0.0:
 				_lunge_timer = lunge_duration
 				_lunge_cd = lunge_duration + lunge_cooldown
 			speed = _base_speed * lunge_multiplier if _lunge_timer > 0.0 else _base_speed
-			return to_player.normalized()
+			return to_target.normalized()
 
 	speed = _base_speed
 	return _wander(delta)

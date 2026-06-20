@@ -1,0 +1,52 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/wildlife.gd" id="1_wild"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/wildlife/rabbit.png" id="2_sheet"]
+[ext_resource type="Script" path="res://scripts/health.gd" id="3_health"]
+[ext_resource type="Resource" path="res://resources/items/raw_meat.tres" id="4_meat"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_feet"]
+size = Vector2(8, 4)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_touch"]
+size = Vector2(10, 10)
+
+[node name="WildlifeRabbit" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_wild")
+speed = 34.0
+detect_range = 70.0
+touch_damage = 0
+xp_reward = 1
+enemy_id = &"rabbit"
+faction = &"wildlife"
+loot_table = Array[Item]([ExtResource("4_meat")])
+loot_chance = 0.85
+flee_range = 120.0
+flee_speed_mult = 2.7
+spook_time = 2.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = false
+offset = Vector2(-12, -23)
+texture = ExtResource("2_sheet")
+hframes = 4
+vframes = 4
+frame = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -2)
+shape = SubResource("RectangleShape2D_feet")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("3_health")
+max_health = 2
+
+[node name="TouchBox" type="Area2D" parent="."]
+position = Vector2(0, -6)
+collision_layer = 16
+collision_mask = 6
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TouchBox"]
+shape = SubResource("RectangleShape2D_touch")

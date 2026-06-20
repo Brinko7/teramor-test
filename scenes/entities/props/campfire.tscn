@@ -1,8 +1,22 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/placeholder/campfire.png" id="1_tex"]
+[ext_resource type="Script" path="res://scripts/flicker_light.gd" id="2_flicker"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/light_soft.png" id="3_light"]
 
 [node name="Campfire" type="Sprite2D"]
 centered = false
-offset = Vector2(-8, -16)
+offset = Vector2(-13, -20)
 texture = ExtResource("1_tex")
+
+[node name="Light" type="PointLight2D" parent="."]
+position = Vector2(0, -6)
+color = Color(1, 0.66, 0.36, 1)
+energy = 1.35
+texture_scale = 1.7
+texture = ExtResource("3_light")
+script = ExtResource("2_flicker")
+base_energy = 1.4
+sway = 0.16
+jitter = 0.14
+speed = 8.0

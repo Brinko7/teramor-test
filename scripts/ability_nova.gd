@@ -20,7 +20,7 @@ func setup(dmg: int, radius: float, tint: Color,
 			continue
 		if global_position.distance_to(e2d.global_position) <= radius:
 			var push: Vector2 = (e2d.global_position - global_position).normalized() * 150.0
-			enemy.take_damage(dmg, push)
+			enemy.take_damage(dmg, push, true)
 			StatusEffect.apply(enemy, s_kind, s_power, s_dur, s_mag)
 	_play(radius, tint)
 

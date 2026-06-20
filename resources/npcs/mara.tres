@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="NpcData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="NpcData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/npc_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_quartermaster.png" id="2_tex"]
 
 [resource]
 script = ExtResource("1_script")
 id = &"mara"
 display_name = "Mara"
 title = "Camp Quartermaster"
+sprite_texture = ExtResource("2_tex")
 tint = Color(1, 1, 1, 1)
 met_line = "You must be Elkar's child. Zayn, was it? Your father spoke of you often — couldn't get him to stop, honestly."
 greeting = "Good to see you, ranger."

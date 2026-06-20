@@ -1,0 +1,53 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/wildlife.gd" id="1_wild"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/wildlife/deer.png" id="2_sheet"]
+[ext_resource type="Script" path="res://scripts/health.gd" id="3_health"]
+[ext_resource type="Resource" path="res://resources/items/raw_meat.tres" id="4_meat"]
+[ext_resource type="Resource" path="res://resources/items/hide.tres" id="5_hide"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_feet"]
+size = Vector2(10, 5)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_touch"]
+size = Vector2(14, 14)
+
+[node name="WildlifeDeer" type="CharacterBody2D" groups=["enemy"]]
+collision_layer = 4
+collision_mask = 3
+script = ExtResource("1_wild")
+speed = 40.0
+detect_range = 80.0
+touch_damage = 0
+xp_reward = 4
+enemy_id = &"deer"
+faction = &"wildlife"
+loot_table = Array[Item]([ExtResource("4_meat"), ExtResource("5_hide")])
+loot_chance = 0.85
+flee_range = 110.0
+flee_speed_mult = 2.3
+spook_time = 2.5
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = false
+offset = Vector2(-12, -23)
+texture = ExtResource("2_sheet")
+hframes = 4
+vframes = 4
+frame = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -3)
+shape = SubResource("RectangleShape2D_feet")
+
+[node name="Health" type="Node" parent="."]
+script = ExtResource("3_health")
+max_health = 4
+
+[node name="TouchBox" type="Area2D" parent="."]
+position = Vector2(0, -8)
+collision_layer = 16
+collision_mask = 6
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TouchBox"]
+shape = SubResource("RectangleShape2D_touch")

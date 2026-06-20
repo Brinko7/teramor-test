@@ -55,6 +55,12 @@ func travel(target_scene: String, spawn_point: String = "") -> void:
 
 	await fade_to_black()
 
+	# Carry the player's gear/stats/inventory across the swap. change_scene_to_file
+	# frees the old player and builds a fresh one from authored defaults, so without
+	# this every transition would reset equipment and leveling. Captured while the
+	# old player is still alive; position is re-set by _place_player below.
+	var carried := _capture_player()
+
 	var err := get_tree().change_scene_to_file(target_scene)
 	if err != OK:
 		push_warning("SceneManager.travel: change_scene failed (%d)" % err)
@@ -62,10 +68,27 @@ func travel(target_scene: String, spawn_point: String = "") -> void:
 	await get_tree().process_frame
 	await get_tree().process_frame
 
+	_restore_player(carried)
 	_place_player(spawn_point)
 
 	await fade_from_black()
 	_busy = false
+
+## Snapshots the current player subtree's persistent state before a scene swap.
+func _capture_player() -> Dictionary:
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null:
+		return {}
+	return SaveManager.capture_subtree(player)
+
+## Re-applies a captured player snapshot onto the freshly built player.
+func _restore_player(carried: Dictionary) -> void:
+	if carried.is_empty():
+		return
+	var player := get_tree().get_first_node_in_group("player")
+	if player == null:
+		return
+	SaveManager.apply_subtree(player, carried)
 
 func _place_player(spawn_point: String) -> void:
 	var tree := get_tree()

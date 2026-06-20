@@ -1,4 +1,4 @@
-[gd_scene load_steps=46 format=3]
+[gd_scene load_steps=53 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="1_grass"]
 [ext_resource type="TileSet" path="res://assets/tilesets/terrain.tres" id="2_tileset"]
@@ -21,6 +21,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud_coins.tscn" id="19_coins"]
 [ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="40_manabar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="41_hotbar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="57_itembar"]
 [ext_resource type="Resource" path="res://resources/items/health_potion.tres" id="20_hpot"]
 [ext_resource type="Resource" path="res://resources/items/greater_potion.tres" id="21_gpot"]
 [ext_resource type="Resource" path="res://resources/items/iron_sword.tres" id="22_isword"]
@@ -38,12 +39,21 @@
 [ext_resource type="PackedScene" path="res://scenes/entities/props/chapel.tscn" id="34_chapel"]
 [ext_resource type="PackedScene" path="res://scenes/entities/props/market_stall.tscn" id="35_stall"]
 [ext_resource type="PackedScene" path="res://scenes/entities/props/lamp_post.tscn" id="36_lamp"]
-[ext_resource type="PackedScene" path="res://scenes/entities/props/bed.tscn" id="37_bed"]
 [ext_resource type="Resource" path="res://resources/items/seeds/turnip_seeds.tres" id="38_tseed"]
 [ext_resource type="Resource" path="res://resources/items/seeds/wheat_seeds.tres" id="39_wseed"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_warden.png" id="50_warden"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_townswoman.png" id="51_townswoman"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_child.png" id="52_child"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_smith.png" id="53_smith"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_cleric.png" id="54_cleric"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_grocer.png" id="55_grocer"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_gossip.png" id="56_gossip"]
 
 [sub_resource type="RectangleShape2D" id="exit_shape"]
 size = Vector2(96, 28)
+
+[sub_resource type="RectangleShape2D" id="door_shape"]
+size = Vector2(30, 22)
 
 [sub_resource type="RectangleShape2D" id="wall_h_top"]
 size = Vector2(960, 16)
@@ -127,6 +137,20 @@ position = Vector2(575, 400)
 
 [node name="Signpost" parent="Entities" instance=ExtResource("8_sign")]
 position = Vector2(445, 430)
+text = "Cleeve's Landing"
+
+[node name="ShopSign" parent="Entities" instance=ExtResource("8_sign")]
+position = Vector2(250, 232)
+text = "Smith & Goods"
+
+[node name="TavernSign" parent="Entities" instance=ExtResource("8_sign")]
+position = Vector2(812, 232)
+text = "The Tavern"
+
+[node name="RoadHomeSign" parent="Entities" instance=ExtResource("8_sign")]
+position = Vector2(528, 686)
+text = "Road home
+to the Camp"
 
 [node name="TownhouseS1" parent="Entities" instance=ExtResource("32_townhouse")]
 position = Vector2(160, 540)
@@ -139,9 +163,6 @@ position = Vector2(650, 560)
 
 [node name="TownhouseS4" parent="Entities" instance=ExtResource("32_townhouse")]
 position = Vector2(820, 540)
-
-[node name="Bed" parent="Entities" instance=ExtResource("37_bed")]
-position = Vector2(300, 585)
 
 [node name="Lamp1" parent="Entities" instance=ExtResource("36_lamp")]
 position = Vector2(440, 232)
@@ -254,32 +275,6 @@ position = Vector2(760, 694)
 [node name="TreeB6" parent="Entities" instance=ExtResource("12_tree")]
 position = Vector2(890, 692)
 
-[node name="Merchant" parent="Entities" instance=ExtResource("15_merchant")]
-position = Vector2(180, 288)
-shop_name = "Cleeve's Trading Post"
-stock = Array[Item]([ExtResource("38_tseed"), ExtResource("39_wseed"), ExtResource("20_hpot"), ExtResource("21_gpot"), ExtResource("22_isword"), ExtResource("23_bow"), ExtResource("24_ishield"), ExtResource("25_vest")])
-
-[node name="TavernKeeper" parent="Entities" instance=ExtResource("14_npc")]
-position = Vector2(740, 295)
-speaker_name = "Bram, the Keeper"
-lines = PackedStringArray("Welcome to the Drowned Stag, traveler.", "Your father? Aye — Elkar drank here the night before he took a contract into the Deepwood. Never came back.", "Folk say the woods swallowed him. I'm not so sure. Check the board, and mind yourself out there.")
-offered_quest = ExtResource("26_qelkar")
-home_waypoint = "tavern_in"
-schedule = {
-0: "tavern_door",
-1: "tavern_in",
-2: "tavern_in",
-3: "tavern_in"
-}
-
-[node name="Sprite2D" parent="Entities/TavernKeeper" index="0"]
-modulate = Color(0.95, 0.8, 0.6, 1)
-
-[node name="ContractBoard" parent="Entities" instance=ExtResource("16_board")]
-position = Vector2(700, 235)
-board_title = "The Drowned Stag — Bounties"
-contracts = Array[Quest]([ExtResource("27_qwolf"), ExtResource("28_qband"), ExtResource("29_qbrute")])
-
 [node name="Guard" parent="Entities" instance=ExtResource("14_npc")]
 position = Vector2(480, 610)
 speaker_name = "Gate Warden"
@@ -291,9 +286,7 @@ schedule = {
 2: "gate",
 3: "home_s4"
 }
-
-[node name="Sprite2D" parent="Entities/Guard" index="0"]
-modulate = Color(0.7, 0.72, 0.85, 1)
+sprite_texture = ExtResource("50_warden")
 
 [node name="Villager" parent="Entities" instance=ExtResource("14_npc")]
 position = Vector2(430, 360)
@@ -306,9 +299,7 @@ schedule = {
 2: "tavern_door",
 3: "home_s1"
 }
-
-[node name="Sprite2D" parent="Entities/Villager" index="0"]
-modulate = Color(0.85, 0.7, 0.75, 1)
+sprite_texture = ExtResource("51_townswoman")
 
 [node name="Child" parent="Entities" instance=ExtResource("14_npc")]
 position = Vector2(520, 380)
@@ -317,13 +308,13 @@ lines = PackedStringArray("Are you a real ranger? Like Elkar?", "He used to carv
 home_waypoint = "home_s2"
 schedule = {
 0: "home_s2",
-1: "plaza_center",
-2: "market_s",
+1: "market_s",
+2: "plaza_well",
 3: "home_s2"
 }
+sprite_texture = ExtResource("52_child")
 
 [node name="Sprite2D" parent="Entities/Child" index="0"]
-modulate = Color(0.8, 0.9, 0.7, 1)
 scale = Vector2(0.8, 0.8)
 
 [node name="Smith" parent="Entities" instance=ExtResource("14_npc")]
@@ -334,12 +325,10 @@ home_waypoint = "home_ne"
 schedule = {
 0: "forge",
 1: "forge",
-2: "tavern_door",
+2: "tavern_in",
 3: "home_ne"
 }
-
-[node name="Sprite2D" parent="Entities/Smith" index="0"]
-modulate = Color(0.9, 0.62, 0.5, 1)
+sprite_texture = ExtResource("53_smith")
 
 [node name="Cleric" parent="Entities" instance=ExtResource("14_npc")]
 position = Vector2(250, 220)
@@ -352,9 +341,7 @@ schedule = {
 2: "chapel_door",
 3: "chapel_door"
 }
-
-[node name="Sprite2D" parent="Entities/Cleric" index="0"]
-modulate = Color(0.95, 0.92, 0.7, 1)
+sprite_texture = ExtResource("54_cleric")
 
 [node name="Vendor" parent="Entities" instance=ExtResource("14_npc")]
 position = Vector2(575, 345)
@@ -364,12 +351,10 @@ home_waypoint = "home_s3"
 schedule = {
 0: "market_e",
 1: "market_e",
-2: "tavern_door",
+2: "tavern_step",
 3: "home_s3"
 }
-
-[node name="Sprite2D" parent="Entities/Vendor" index="0"]
-modulate = Color(0.7, 0.85, 0.65, 1)
+sprite_texture = ExtResource("55_grocer")
 
 [node name="Gossip" parent="Entities" instance=ExtResource("14_npc")]
 position = Vector2(440, 360)
@@ -379,12 +364,10 @@ home_waypoint = "home_nw"
 schedule = {
 0: "plaza_well",
 1: "market_w",
-2: "chapel_door",
+2: "chapel_yard",
 3: "home_nw"
 }
-
-[node name="Sprite2D" parent="Entities/Gossip" index="0"]
-modulate = Color(0.82, 0.78, 0.88, 1)
+sprite_texture = ExtResource("56_gossip")
 
 [node name="Player" parent="Entities" instance=ExtResource("4_player")]
 position = Vector2(480, 650)
@@ -411,6 +394,9 @@ position = Vector2(738, 300)
 
 [node name="tavern_in" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
 position = Vector2(760, 312)
+
+[node name="tavern_step" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
+position = Vector2(716, 306)
 
 [node name="shop_front" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
 position = Vector2(180, 300)
@@ -453,6 +439,12 @@ position = Vector2(480, 650)
 [node name="from_settlement" type="Marker2D" parent="Spawns" groups=["spawn"]]
 position = Vector2(480, 650)
 
+[node name="to_shop" type="Marker2D" parent="Spawns" groups=["spawn"]]
+position = Vector2(180, 284)
+
+[node name="to_tavern" type="Marker2D" parent="Spawns" groups=["spawn"]]
+position = Vector2(760, 284)
+
 [node name="ExitToRoad" parent="." instance=ExtResource("13_tz")]
 position = Vector2(480, 706)
 target_scene = "res://scenes/world/road.tscn"
@@ -460,6 +452,22 @@ target_spawn = "from_town"
 
 [node name="CollisionShape2D" parent="ExitToRoad" index="0"]
 shape = SubResource("exit_shape")
+
+[node name="ShopDoor" parent="." instance=ExtResource("13_tz")]
+position = Vector2(180, 258)
+target_scene = "res://scenes/world/shop_interior.tscn"
+target_spawn = "from_town"
+
+[node name="CollisionShape2D" parent="ShopDoor" index="0"]
+shape = SubResource("door_shape")
+
+[node name="TavernDoor" parent="." instance=ExtResource("13_tz")]
+position = Vector2(760, 258)
+target_scene = "res://scenes/world/tavern_interior.tscn"
+target_spawn = "from_town"
+
+[node name="CollisionShape2D" parent="TavernDoor" index="0"]
+shape = SubResource("door_shape")
 
 [node name="DayNight" type="CanvasModulate" parent="."]
 script = ExtResource("31_daynight")
@@ -473,3 +481,5 @@ script = ExtResource("31_daynight")
 [node name="ManaBar" parent="." instance=ExtResource("40_manabar")]
 
 [node name="AbilityHotbar" parent="." instance=ExtResource("41_hotbar")]
+
+[node name="ItemHotbarHUD" parent="." instance=ExtResource("57_itembar")]

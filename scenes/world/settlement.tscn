@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3]
+[gd_scene load_steps=38 format=3]
 
 [ext_resource type="Script" path="res://scripts/settlement.gd" id="0_settlement"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="23_clock"]
@@ -8,8 +8,10 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud_coins.tscn" id="16_coins"]
 [ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="28_manabar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="29_hotbar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="32_itembar"]
 [ext_resource type="PackedScene" path="res://scenes/entities/transition_zone.tscn" id="17_tz"]
 [ext_resource type="PackedScene" path="res://scenes/entities/explore_zone.tscn" id="30_explore"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/signpost.tscn" id="31_sign"]
 [ext_resource type="PackedScene" path="res://scenes/entities/item_pickup.tscn" id="18_pickup"]
 [ext_resource type="Resource" path="res://resources/items/wood.tres" id="19_wood"]
 [ext_resource type="Resource" path="res://resources/items/health_potion.tres" id="20_potion"]
@@ -28,7 +30,6 @@
 [ext_resource type="PackedScene" path="res://scenes/entities/props/bush.tscn" id="11_bush"]
 [ext_resource type="PackedScene" path="res://scenes/entities/props/flower.tscn" id="12_flower"]
 [ext_resource type="PackedScene" path="res://scenes/entities/props/rock.tscn" id="13_rock"]
-[ext_resource type="PackedScene" path="res://scenes/entities/props/bed.tscn" id="25_bed"]
 [ext_resource type="PackedScene" path="res://scenes/entities/props/farm_plot.tscn" id="26_plot"]
 [ext_resource type="PackedScene" path="res://scenes/entities/props/chest.tscn" id="27_chest"]
 
@@ -43,6 +44,9 @@ size = Vector2(16, 200)
 
 [sub_resource type="RectangleShape2D" id="exit_shape"]
 size = Vector2(28, 64)
+
+[sub_resource type="RectangleShape2D" id="home_zone"]
+size = Vector2(24, 16)
 
 [node name="Settlement" type="Node2D"]
 script = ExtResource("0_settlement")
@@ -84,6 +88,17 @@ y_sort_enabled = true
 
 [node name="Cabin" parent="Entities" instance=ExtResource("4_cabin")]
 position = Vector2(150, 165)
+
+[node name="EnterHome" parent="Entities" instance=ExtResource("17_tz")]
+position = Vector2(149, 170)
+target_scene = "res://scenes/world/cabin_interior.tscn"
+target_spawn = "from_settlement"
+
+[node name="CollisionShape2D" parent="Entities/EnterHome" index="0"]
+shape = SubResource("home_zone")
+
+[node name="from_home" type="Marker2D" parent="Entities" groups=["spawn"]]
+position = Vector2(149, 196)
 
 [node name="Fence1" parent="Entities" instance=ExtResource("10_fence")]
 position = Vector2(104, 210)
@@ -162,9 +177,6 @@ plot_id = "settlement_3_2"
 [node name="FarmPlot42" parent="Entities" instance=ExtResource("26_plot")]
 position = Vector2(176, 328)
 plot_id = "settlement_4_2"
-
-[node name="Bed" parent="Entities" instance=ExtResource("25_bed")]
-position = Vector2(205, 170)
 
 [node name="Tent1" parent="Entities" instance=ExtResource("5_tent")]
 position = Vector2(360, 170)
@@ -319,6 +331,20 @@ biome_path = "res://resources/world/biomes/cave.tres"
 tier = 3
 return_location = &"settlement_camp"
 
+[node name="DeepwoodSign" parent="Entities" instance=ExtResource("31_sign")]
+position = Vector2(158, 366)
+text = "The Deepwood
+keep your blade close"
+
+[node name="CaveSign" parent="Entities" instance=ExtResource("31_sign")]
+position = Vector2(486, 366)
+text = "The Undervault
+mind the dark"
+
+[node name="RoadSign" parent="Entities" instance=ExtResource("31_sign")]
+position = Vector2(596, 214)
+text = "To Cleeve's Landing"
+
 [node name="Waypoints" type="Node2D" parent="."]
 
 [node name="mara_post" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
@@ -345,3 +371,5 @@ script = ExtResource("24_daynight")
 [node name="ManaBar" parent="." instance=ExtResource("28_manabar")]
 
 [node name="AbilityHotbar" parent="." instance=ExtResource("29_hotbar")]
+
+[node name="ItemHotbarHUD" parent="." instance=ExtResource("32_itembar")]

@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/encounter_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wolf_pack"
+display_name = "Wolf Pack"
+enemy_paths = PackedStringArray("res://scenes/entities/enemy_wolf.tscn", "res://scenes/entities/enemy_wolf.tscn", "res://scenes/entities/enemy_wolf.tscn", "res://scenes/entities/enemy_wolf.tscn")
+enemy_offsets = PackedVector2Array(0, 0, -32, 18, 30, 22, -4, -22)
+loot_cache = false
+min_tier = 1
+weight = 3.0
+radius = 90.0

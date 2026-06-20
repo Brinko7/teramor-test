@@ -20,12 +20,12 @@ func _ready() -> void:
 	_phase_timer = lurch_duration
 
 func _decide_input(delta: float) -> Vector2:
-	if _player != null and is_instance_valid(_player):
-		var to_player: Vector2 = _player.global_position - global_position
-		if to_player.length() <= detect_range:
+	if _target != null and is_instance_valid(_target):
+		var to_target: Vector2 = _target.global_position - global_position
+		if to_target.length() <= detect_range:
 			_advance_lurch(delta)
 			if _lurching:
-				return to_player.normalized()
+				return to_target.normalized()
 			return Vector2.ZERO
 
 	# Out of range: behave like a normal wandering enemy.

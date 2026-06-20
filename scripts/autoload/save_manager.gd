@@ -71,6 +71,44 @@ func load_all() -> void:
 			if entries.has(id):
 				node.call("load_state", entries[id])
 
+## In-memory snapshot of every persistent node at-or-under `root`, keyed by
+## save id. Used to carry the player across a `change_scene_to_file` swap, which
+## rebuilds the player from authored defaults — without this, every area
+## transition would reset gear, stats and inventory. Reuses the exact same
+## get_save_id/save_state contract as the on-disk path.
+func capture_subtree(root: Node) -> Dictionary:
+	var entries: Dictionary = {}
+	for node in _persistent_in_subtree(root):
+		if node.has_method("get_save_id") and node.has_method("save_state"):
+			entries[node.call("get_save_id")] = node.call("save_state")
+	return entries
+
+## Re-applies a `capture_subtree` snapshot onto the (freshly built) subtree at
+## `root`. Descendants load before `root` itself: the player node recomputes its
+## max-HP from its Stats/Equipment children, so those must be restored first.
+func apply_subtree(root: Node, entries: Dictionary) -> void:
+	if entries.is_empty():
+		return
+	var nodes: Array = _persistent_in_subtree(root)
+	nodes.reverse()  # pre-order visits root first, so reversed puts root last
+	for node in nodes:
+		if node.has_method("get_save_id") and node.has_method("load_state"):
+			var id: String = node.call("get_save_id")
+			if entries.has(id):
+				node.call("load_state", entries[id])
+
+## Pre-order walk collecting nodes in the "persistent" group at-or-under `root`.
+func _persistent_in_subtree(root: Node) -> Array:
+	var acc: Array = []
+	_gather_persistent(root, acc)
+	return acc
+
+func _gather_persistent(node: Node, acc: Array) -> void:
+	if node.is_in_group(GROUP):
+		acc.append(node)
+	for child in node.get_children():
+		_gather_persistent(child, acc)
+
 ## Returns the id->state snapshot dictionary, upgrading older formats to the
 ## current schema first. Pre-versioning files are a bare snapshot with no
 ## "version" key (version 0); versioned files wrap it under "entries".

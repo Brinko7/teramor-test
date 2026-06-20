@@ -17,31 +17,41 @@ class_name Enemy
 ## Identifies the creature kind so monster contracts can target it (e.g. a
 ## "slay 3 wolves" bounty matches only enemies whose id is &"wolf").
 @export var enemy_id: StringName = &"bandit"
+## Allegiance for the faction system (see Faction). Decides who this enemy
+## treats as hostile: the player plus any rival-faction enemy in range. Default
+## is BANDIT; wolves/bears are BEAST, the Withered is MONSTER.
+@export var faction: StringName = &"bandit"
 
 ## Items dropped on death. Each entry rolls independently against loot_chance.
 @export var loot_table: Array[Item] = []
 @export_range(0.0, 1.0) var loot_chance: float = 0.5
 
 const PICKUP_SCENE := preload("res://scenes/entities/item_pickup.tscn")
+## Preloaded so the global-class dependency resolves before this script
+## compiles — avoids the editor's "DirUtil not declared" partial-reload error.
+const DIR_UTIL := preload("res://scripts/dir_util.gd")
 
-const ROW_DOWN := 0
-const ROW_UP := 1
-const ROW_LEFT := 2
-const ROW_RIGHT := 3
 const WALK_FRAMES := [0, 1, 0, 2]
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var health: Health = $Health
 @onready var touch_box: Area2D = $TouchBox
 
-var _facing_row: int = ROW_DOWN
+var _facing_row: int = 0
 var _anim_time: float = 0.0
-var _player: Node2D = null
+## Current thing this enemy is chasing/attacking: the player or a rival-faction
+## enemy. Refreshed periodically by _acquire_target.
+var _target: Node2D = null
+var _retarget_timer: float = 0.0
+const RETARGET_INTERVAL := 0.3
 var _touch_timer: float = 0.0
 var _wander_dir: Vector2 = Vector2.ZERO
 var _wander_timer: float = 0.0
 ## Decaying knockback velocity applied when struck.
 var _knockback: Vector2 = Vector2.ZERO
+## Whether the most recent hit came from the player — read on death so faction
+## kills (enemy-vs-enemy) don't award the player XP, quest credit or death juice.
+var _last_hit_from_player: bool = false
 const KNOCKBACK_DECAY := 700.0
 
 func _ready() -> void:
@@ -51,7 +61,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	_touch_timer = maxf(0.0, _touch_timer - delta)
-	_acquire_player()
+	_acquire_target(delta)
 
 	var input: Vector2 = _decide_input(delta)
 
@@ -64,17 +74,55 @@ func _physics_process(delta: float) -> void:
 	_check_touch()
 
 ## Returns the desired movement direction this frame. Base behavior: chase the
-## player within detect_range, otherwise wander. Overridable by subclasses.
+## current target within detect_range, otherwise wander. Overridable by subclasses.
 func _decide_input(delta: float) -> Vector2:
-	if _player != null and is_instance_valid(_player):
-		var to_player: Vector2 = _player.global_position - global_position
-		if to_player.length() <= detect_range:
-			return to_player.normalized()
+	if _target != null and is_instance_valid(_target):
+		var to_target: Vector2 = _target.global_position - global_position
+		if to_target.length() <= detect_range:
+			return to_target.normalized()
 	return _wander(delta)
 
-func _acquire_player() -> void:
-	if _player == null or not is_instance_valid(_player):
-		_player = get_tree().get_first_node_in_group("player")
+## Periodically re-pick the nearest hostile (player or rival-faction enemy) in
+## detection range. Throttled so we don't scan the enemy group every frame, and
+## re-evaluated even when a target is held so a closer threat can steal focus and
+## dead/fled targets get dropped.
+func _acquire_target(delta: float) -> void:
+	_retarget_timer -= delta
+	if _retarget_timer > 0.0 and _target != null and is_instance_valid(_target):
+		return
+	_retarget_timer = RETARGET_INTERVAL
+	_target = _find_nearest_hostile()
+
+## Nearest node this enemy is willing to fight, within detect_range, or null.
+## The player counts when this faction is hostile to it; rival-faction enemies
+## always count when hostile.
+func _find_nearest_hostile() -> Node2D:
+	var best: Node2D = null
+	var best_dist: float = detect_range
+	var player := get_tree().get_first_node_in_group("player") as Node2D
+	if player != null and is_instance_valid(player) and Faction.hostile(faction, Faction.PLAYER):
+		var pd: float = global_position.distance_to(player.global_position)
+		if pd <= best_dist:
+			best = player
+			best_dist = pd
+	for other in get_tree().get_nodes_in_group("enemy"):
+		if other == self or not (other is Enemy) or not is_instance_valid(other):
+			continue
+		if not Faction.hostile(faction, (other as Enemy).faction):
+			continue
+		var od: float = global_position.distance_to((other as Enemy).global_position)
+		if od <= best_dist:
+			best = other
+			best_dist = od
+	return best
+
+## Whether this enemy will deal contact/projectile damage to `node`.
+func _is_hostile_to(node: Node) -> bool:
+	if node.is_in_group("player"):
+		return Faction.hostile(faction, Faction.PLAYER)
+	if node is Enemy:
+		return Faction.hostile(faction, (node as Enemy).faction)
+	return false
 
 func _wander(delta: float) -> Vector2:
 	_wander_timer -= delta
@@ -93,7 +141,9 @@ func _check_touch() -> void:
 	if _touch_timer > 0.0:
 		return
 	for body in touch_box.get_overlapping_bodies():
-		if body.is_in_group("player") and body.has_method("take_damage"):
+		if body == self:
+			continue
+		if _is_hostile_to(body) and body.has_method("take_damage"):
 			body.take_damage(touch_damage)
 			_touch_timer = touch_cooldown
 			return
@@ -101,10 +151,7 @@ func _check_touch() -> void:
 func _update_facing(input: Vector2) -> void:
 	if input == Vector2.ZERO:
 		return
-	if abs(input.x) > abs(input.y):
-		_facing_row = ROW_RIGHT if input.x > 0.0 else ROW_LEFT
-	else:
-		_facing_row = ROW_DOWN if input.y > 0.0 else ROW_UP
+	_facing_row = DIR_UTIL.row_for(input, sprite.vframes)
 
 func _update_animation(delta: float, moving: bool) -> void:
 	if moving:
@@ -129,10 +176,13 @@ func apply_tier(tier: int) -> void:
 	# Tint deeper-tier foes so they read as more dangerous.
 	modulate = modulate.lerp(Color(1.0, 0.6, 0.7), clampf(0.12 * steps, 0.0, 0.5))
 
-func take_damage(amount: int, knockback: Vector2 = Vector2.ZERO) -> void:
+func take_damage(amount: int, knockback: Vector2 = Vector2.ZERO, from_player: bool = false) -> void:
+	# Set before health.take_damage: a killing blow fires died -> _on_died
+	# synchronously, which reads this flag to attribute the kill.
+	_last_hit_from_player = from_player
 	health.take_damage(amount)
 	_flash()
-	Events.damage_dealt.emit(global_position, amount, true)
+	Events.damage_dealt.emit(global_position, amount, true, from_player)
 	if knockback != Vector2.ZERO:
 		_knockback = knockback
 
@@ -143,7 +193,7 @@ func _flash() -> void:
 
 func _on_died() -> void:
 	_drop_loot()
-	Events.enemy_killed.emit(enemy_id, xp_reward, global_position)
+	Events.enemy_killed.emit(enemy_id, xp_reward, global_position, _last_hit_from_player)
 	queue_free()
 
 func _drop_loot() -> void:

@@ -21,12 +21,12 @@ const ARROW_SCENE := preload("res://scenes/entities/arrow.tscn")
 @export var starting_weapon: WeaponItem
 @export var starting_items: Array[Item] = []
 
-const ROW_DOWN := 0
-const ROW_UP := 1
-const ROW_LEFT := 2
-const ROW_RIGHT := 3
-## Column order of the 4-frame walk cycle.
+## Column order of the 4-frame walk cycle. The facing row comes from DirUtil,
+## which reads the sprite's vframes (8 = the directional humanoid rig).
 const WALK_FRAMES := [0, 1, 0, 2]
+## Preloaded so the global-class dependency resolves before this script
+## compiles — avoids the editor's "DirUtil not declared" partial-reload error.
+const DIR_UTIL := preload("res://scripts/dir_util.gd")
 
 ## How far the melee hitbox sits from the player along the aim direction.
 const HITBOX_REACH := 14.0
@@ -48,8 +48,12 @@ const LUNGE_DECAY := 620.0
 }
 @onready var weapon_pivot: Node2D = $WeaponPivot
 @onready var weapon_sprite: Sprite2D = $WeaponPivot/WeaponSprite
+@onready var attack_arm: Sprite2D = $WeaponPivot/AttackArm
 @onready var shield_pivot: Node2D = $ShieldPivot
 @onready var shield_sprite: Sprite2D = $ShieldPivot/ShieldSprite
+## Directional "stowed gear" overlays, shown when the weapon/shield is not in use.
+@onready var weapon_holster: Sprite2D = $WeaponHolster
+@onready var shield_back: Sprite2D = $ShieldBack
 @onready var health: Health = $Health
 @onready var interact_probe: Area2D = $InteractProbe
 @onready var hitbox: Area2D = $Hitbox
@@ -59,8 +63,9 @@ const LUNGE_DECAY := 620.0
 @onready var stats: Stats = $Stats
 @onready var mana: Mana = get_node_or_null("Mana")
 @onready var ability_caster: AbilityCaster = get_node_or_null("AbilityCaster")
+@onready var item_hotbar: ItemHotbar = get_node_or_null("ItemHotbar")
 
-var _facing_row: int = ROW_DOWN
+var _facing_row: int = 0
 var _aim: Vector2 = Vector2.DOWN
 var _anim_time: float = 0.0
 var _attack_timer: float = 0.0
@@ -84,7 +89,8 @@ func _ready() -> void:
 	_visuals.name = "Visuals"
 	add_child(_visuals)
 	_visuals.setup(sprite, outfit_sprite, hair_sprite, gear_layers,
-		weapon_pivot, weapon_sprite, shield_pivot, shield_sprite, equipment)
+		weapon_pivot, weapon_sprite, shield_pivot, shield_sprite, equipment,
+		weapon_holster, shield_back, attack_arm)
 	equipment.changed.connect(_visuals.refresh_gear)
 	equipment.changed.connect(_on_gear_changed)
 	# Progression wiring: earn XP from kills, scale Health to leveled max HP.
@@ -155,21 +161,45 @@ func _physics_process(delta: float) -> void:
 	if _primary_pressed() and _cooldown_timer <= 0.0 and not _blocking and not UIManager.dialogue.is_active():
 		_start_attack()
 
-	_try_cast_abilities()
+	_handle_hotbar_input()
 
 	_movement(delta)
 	_update_gear_pose()
 
-## Casts elemental abilities from the hotbar on the number-key actions. Aimed at
-## the cursor like ranged weapons; gated on dialogue. The AbilityCaster itself
-## enforces mana and cooldown.
-func _try_cast_abilities() -> void:
-	if ability_caster == null or UIManager.dialogue.is_active():
+## The number row is modal: holding the ability key (Q) turns 1–4 into spell
+## casts (the radial wheel is shown by the ability HUD while held); otherwise the
+## keys 1–0 drive the item hotbar — select a slot, wheel to cycle, [F] to use the
+## held item. Splitting on Q means items and abilities never fight over the keys.
+func _handle_hotbar_input() -> void:
+	if UIManager.dialogue.is_active():
+		return
+	if Input.is_action_pressed("ability_menu"):
+		_cast_radial_abilities()
+	else:
+		_drive_item_hotbar()
+
+## Casts an unlocked ability when its 1–4 key is tapped while the radial is open,
+## aimed at the cursor. The AbilityCaster enforces mana and cooldown.
+func _cast_radial_abilities() -> void:
+	if ability_caster == null:
 		return
 	var slots: int = mini(ability_caster.slot_count(), 4)
 	for slot in range(slots):
 		if Input.is_action_just_pressed("ability_%d" % (slot + 1)):
 			ability_caster.cast(slot, global_position + Vector2(0, -10), _aim)
+
+func _drive_item_hotbar() -> void:
+	if item_hotbar == null:
+		return
+	for i in range(ItemHotbar.SIZE):
+		if Input.is_action_just_pressed("hotbar_%d" % (i + 1)):
+			item_hotbar.select(i)
+	if Input.is_action_just_pressed("hotbar_next"):
+		item_hotbar.cycle(1)
+	if Input.is_action_just_pressed("hotbar_prev"):
+		item_hotbar.cycle(-1)
+	if Input.is_action_just_pressed("use_item"):
+		item_hotbar.use_active(self)
 
 func _primary_pressed() -> bool:
 	return Input.is_action_just_pressed("attack_primary") or Input.is_action_just_pressed("attack")
@@ -204,10 +234,7 @@ func _movement(delta: float) -> void:
 func _update_facing(dir: Vector2) -> void:
 	if dir == Vector2.ZERO:
 		return
-	if abs(dir.x) > abs(dir.y):
-		_facing_row = ROW_RIGHT if dir.x > 0.0 else ROW_LEFT
-	else:
-		_facing_row = ROW_DOWN if dir.y > 0.0 else ROW_UP
+	_facing_row = DIR_UTIL.row_for(dir, sprite.vframes)
 
 func _update_animation(delta: float, moving: bool) -> void:
 	if moving:
@@ -289,7 +316,7 @@ func _apply_hit(target) -> void:
 		# Base (level + attributes + skills), the weapon's flat damage, and gear affixes.
 		var dmg: int = stats.attack_power() + weapon_dmg + (equipment.bonus_melee() if equipment != null else 0)
 		_hit_enemies.append(target)
-		target.take_damage(dmg, _aim * MELEE_KNOCKBACK)
+		target.take_damage(dmg, _aim * MELEE_KNOCKBACK, true)
 		var steal: float = equipment.lifesteal() if equipment != null else 0.0
 		if steal > 0.0:
 			health.heal(maxi(1, int(round(dmg * steal))))
@@ -307,7 +334,7 @@ func take_damage(amount: int) -> void:
 			reduction += shield.block
 	var taken: int = maxi(1, amount - reduction)
 	health.take_damage(taken)
-	Events.damage_dealt.emit(global_position, taken, false)
+	Events.damage_dealt.emit(global_position, taken, false, true)
 	_hit_flash()
 
 func _hit_flash() -> void:
@@ -317,8 +344,10 @@ func _hit_flash() -> void:
 
 # --- Progression ------------------------------------------------------------
 
-func _on_enemy_killed(_enemy_id: StringName, xp_reward: int, _position: Vector2) -> void:
-	stats.add_xp(xp_reward)
+func _on_enemy_killed(_enemy_id: StringName, xp_reward: int, _position: Vector2, by_player: bool) -> void:
+	# Only the player's own kills pay XP — faction brawls aren't a free XP fountain.
+	if by_player:
+		stats.add_xp(xp_reward)
 
 func _on_player_leveled_up(_new_level: int) -> void:
 	# Grow the Health pool to the new max and refill on level-up.

@@ -128,7 +128,10 @@ func _auto_track() -> void:
 
 ## --- Objective tracking -----------------------------------------------------
 
-func _on_enemy_killed(enemy_id: StringName, _xp_reward: int, _position: Vector2) -> void:
+func _on_enemy_killed(enemy_id: StringName, _xp_reward: int, _position: Vector2, by_player: bool) -> void:
+	# KILL objectives only credit the player's own kills, not faction brawls.
+	if not by_player:
+		return
 	for quest_id in _active.keys():
 		_advance_kind(quest_id, QuestObjective.Kind.KILL, enemy_id, 1)
 

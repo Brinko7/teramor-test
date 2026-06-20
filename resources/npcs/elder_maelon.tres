@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="NpcData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="NpcData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/npc_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_druid.png" id="2_tex"]
 
 [resource]
 script = ExtResource("1_script")
 id = &"elder_maelon"
 display_name = "Elder Maelon"
 title = "Keeper of the Grove"
+sprite_texture = ExtResource("2_tex")
 tint = Color(0.85, 0.88, 0.95, 1)
 met_line = "Ah. The wind carried word you'd come at last. Elkar's blood, returned to us."
 greeting = "Be welcome, child of Tera."

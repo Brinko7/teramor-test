@@ -12,6 +12,10 @@ enum ArmorSlot { HEAD, BODY, FEET, OFFHAND, LEGS }
 @export var overlay_sheet: Texture2D
 ## In-hand sprite for OFFHAND items (shields). Drawn pointing along +X.
 @export var hold_texture: Texture2D
+## Directional overlay sheet (96x320) showing a shield slung on the back while it
+## is not raised. Synced to the body frame; swapped for the in-hand sprite when
+## the player blocks.
+@export var back_texture: Texture2D
 ## Damage absorbed per hit while actively blocking with this off-hand item.
 ## A value > 0 marks the item as a shield.
 @export var block: int = 0

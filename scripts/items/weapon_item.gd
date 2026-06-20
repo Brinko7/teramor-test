@@ -19,6 +19,11 @@ enum WeaponClass { MELEE, RANGED }
 ## How far from the hand the weapon sits, and its swing arc half-angle (radians).
 @export var hold_distance: float = 10.0
 @export var swing_arc: float = 1.1
+## Directional overlay sheet (96x320) showing the weapon stowed on the body when
+## it is not in hand: a hip scabbard for blades, a slung stave for bows. Synced
+## to the body's animation frame like a worn armour layer; swapped for the
+## in-hand sprite while the player is mid-attack.
+@export var stow_texture: Texture2D
 
 func held_texture() -> Texture2D:
 	return hold_texture if hold_texture != null else icon

@@ -23,25 +23,25 @@ var _fire_timer: float = 0.0
 func _decide_input(delta: float) -> Vector2:
 	_fire_timer = maxf(0.0, _fire_timer - delta)
 
-	if _player == null or not is_instance_valid(_player):
+	if _target == null or not is_instance_valid(_target):
 		return _wander(delta)
 
-	var to_player: Vector2 = _player.global_position - global_position
-	var dist: float = to_player.length()
+	var to_target: Vector2 = _target.global_position - global_position
+	var dist: float = to_target.length()
 	if dist > detect_range:
 		return _wander(delta)
 
 	if dist <= detect_range:
-		_try_fire(to_player)
+		_try_fire(to_target)
 
 	# Maintain preferred distance: retreat if too close, advance if too far.
 	if dist < preferred_range - range_band:
-		return -to_player.normalized()
+		return -to_target.normalized()
 	if dist > preferred_range + range_band:
-		return to_player.normalized()
+		return to_target.normalized()
 	return Vector2.ZERO
 
-func _try_fire(to_player: Vector2) -> void:
+func _try_fire(to_target: Vector2) -> void:
 	if _fire_timer > 0.0:
 		return
 	_fire_timer = fire_cooldown
@@ -52,5 +52,5 @@ func _try_fire(to_player: Vector2) -> void:
 	if proj == null:
 		return
 	proj.global_position = global_position + Vector2(0.0, -8.0)
-	proj.setup(to_player.normalized(), projectile_damage, projectile_speed, detect_range + 80.0)
+	proj.setup(to_target.normalized(), projectile_damage, projectile_speed, detect_range + 80.0, faction)
 	parent.call_deferred("add_child", proj)

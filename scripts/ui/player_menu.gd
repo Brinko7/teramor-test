@@ -299,6 +299,13 @@ func _make_bag_slot(index: int) -> Button:
 		btn.pressed.connect(_on_bag_slot.bind(index))
 	else:
 		btn.disabled = true
+	# The first ten bag slots are the 1–0 quick-use hotbar; mark the key.
+	if index < ItemHotbar.SIZE:
+		var key := UITheme.make_label(str((index + 1) % 10), 8, UITheme.GOLD)
+		key.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		key.position = Vector2(1, -1)
+		key.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		btn.add_child(key)
 	return btn
 
 func _make_doll_slot(label: String, item: Item, on_click: Callable) -> Button:

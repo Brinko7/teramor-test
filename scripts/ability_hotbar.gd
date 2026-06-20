@@ -1,14 +1,19 @@
 extends CanvasLayer
 
-## HUD ability hotbar. Finds the player on _ready and mirrors its AbilityCaster:
-## one slot per hotbar ability (max 4), each showing the ability icon, its hotkey
-## number, a depleting cooldown wipe, and a grey dim when mana is too low to cast.
-## Built in code (like hud_coins) and instanced per world scene. Refreshes on the
-## caster's cooldowns_changed and the Mana component's mana_changed signals.
+## Ability radial. The number row 1–0 now drives the item hotbar, so spells live
+## behind a modifier: **hold Q** and a wheel of the player's unlocked abilities
+## fans out in the screen centre, each slot showing its icon, cast key (1–4), a
+## depleting cooldown wipe and a grey dim when mana is too low. Tapping the key
+## while the wheel is up casts (the player handles the cast + aim). Released, the
+## wheel hides and the number keys belong to items again.
+##
+## Built in code and instanced per world scene; mirrors the player's AbilityCaster
+## and refreshes on its cooldowns_changed and the Mana component's mana_changed.
 
 const MAX_SLOTS: int = 4
-const SLOT: float = 18.0
-const SEP: int = 3
+const SLOT: float = 22.0
+## How far each slot sits from the wheel centre.
+const RADIUS: float = 28.0
 
 const DIM := Color(0.4, 0.4, 0.4, 1)
 const COOLDOWN := Color(0, 0, 0, 0.55)
@@ -16,37 +21,67 @@ const COOLDOWN := Color(0, 0, 0, 0.55)
 var _caster: AbilityCaster = null
 var _mana: Mana = null
 
+var _root: Control = null
 var _slots: Array[Control] = []
 var _icons: Array[TextureRect] = []
 var _overlays: Array[ColorRect] = []
 
 func _ready() -> void:
-	layer = 82
+	layer = 90
 	_build()
 	_try_connect()
 
+func _process(_delta: float) -> void:
+	# The wheel is visible only while the modifier is held and something is
+	# castable; otherwise the number row belongs to the item hotbar.
+	var show: bool = _caster != null and _caster.slot_count() > 0 \
+		and Input.is_action_pressed("ability_menu")
+	if show != _root.visible:
+		_root.visible = show
+		if show:
+			_refresh()
+
 func _build() -> void:
-	var row := HBoxContainer.new()
-	row.anchor_left = 0.5
-	row.anchor_right = 0.5
-	row.anchor_top = 1.0
-	row.anchor_bottom = 1.0
-	row.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	row.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	row.offset_bottom = -6.0
-	row.add_theme_constant_override("separation", SEP)
-	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(row)
+	# A zero-size anchor pinned to screen centre; ring slots hang off its origin.
+	_root = Control.new()
+	_root.set_anchors_preset(Control.PRESET_CENTER)
+	_root.offset_left = 0.0
+	_root.offset_right = 0.0
+	_root.offset_top = 0.0
+	_root.offset_bottom = 0.0
+	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.visible = false
+	add_child(_root)
+
+	# Backing plate so the fanned slots read as one wheel.
+	var plate_extent: float = RADIUS + SLOT * 0.5 + 5.0
+	var plate := Panel.new()
+	plate.custom_minimum_size = Vector2(plate_extent * 2, plate_extent * 2)
+	plate.position = Vector2(-plate_extent, -plate_extent)
+	plate.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	plate.add_theme_stylebox_override("panel", UITheme.panel_style(0.78, int(plate_extent)))
+	_root.add_child(plate)
 
 	for i in range(MAX_SLOTS):
-		row.add_child(_make_slot(i))
+		var slot := _make_slot(i)
+		# Slot 0 at the top, then clockwise.
+		var ang: float = -PI / 2.0 + TAU * float(i) / float(MAX_SLOTS)
+		slot.position = Vector2(cos(ang), sin(ang)) * RADIUS - Vector2(SLOT, SLOT) * 0.5
+		_root.add_child(slot)
+
+	var caption := UITheme.make_label("Abilities", 7, UITheme.PROMPT)
+	caption.position = Vector2(-plate_extent, plate_extent + 1.0)
+	caption.size = Vector2(plate_extent * 2, 10)
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(caption)
 
 func _make_slot(index: int) -> Control:
 	var slot := Panel.new()
 	slot.custom_minimum_size = Vector2(SLOT, SLOT)
+	slot.size = Vector2(SLOT, SLOT)
 	slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := UITheme.panel_style(0.85, 2)
-	slot.add_theme_stylebox_override("panel", style)
+	slot.add_theme_stylebox_override("panel", UITheme.panel_style(0.9, 2))
 
 	var icon := TextureRect.new()
 	icon.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -75,12 +110,12 @@ func _make_slot(index: int) -> Control:
 	var key := Label.new()
 	key.text = str(index + 1)
 	var settings := LabelSettings.new()
-	settings.font_size = 7
+	settings.font_size = 8
 	settings.font_color = Color(0.95, 0.92, 0.82, 1)
 	settings.outline_size = 2
 	settings.outline_color = Color(0, 0, 0, 0.8)
 	key.label_settings = settings
-	key.position = Vector2(2, -2)
+	key.position = Vector2(2, -3)
 	key.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	slot.add_child(key)
 

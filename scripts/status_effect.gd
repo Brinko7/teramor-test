@@ -52,7 +52,7 @@ func _process(delta: float) -> void:
 			_tick -= TICK_INTERVAL
 			var t := get_parent()
 			if t != null and t.has_method("take_damage"):
-				t.take_damage(power)
+				t.take_damage(power, Vector2.ZERO, true)
 	if _elapsed >= duration:
 		_expire()
 

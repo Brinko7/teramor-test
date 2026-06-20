@@ -10,6 +10,9 @@ extends Area2D
 
 ## Friendship points granted per gift category.
 const GIFT_POINTS := {"loved": 80, "liked": 40, "neutral": 20, "disliked": -20}
+## Preloaded so the global-class dependency resolves before this script
+## compiles — avoids the editor's "DirUtil not declared" partial-reload error.
+const DIR_UTIL := preload("res://scripts/dir_util.gd")
 
 @export var data: NpcData = null
 
@@ -17,6 +20,14 @@ const GIFT_POINTS := {"loved": 80, "liked": 40, "neutral": 20, "disliked": -20}
 @export var speaker_name: String = "Villager"
 @export var lines: PackedStringArray = PackedStringArray()
 @export var offered_quest: Quest = null
+
+# --- Appearance (per-instance look so townsfolk aren't clones) ----------------
+## Optional sheet + tint applied to this instance even without an NpcData. When
+## `data` is set and itself names a sprite_texture / non-white tint, the data
+## wins; otherwise these instance values are used. Lets legacy townsfolk look
+## like individuals straight from the scene, no resource required.
+@export var sprite_texture: Texture2D = null
+@export var sprite_tint: Color = Color.WHITE
 
 # --- Daily schedule (home + routed waypoints by time-of-day) ----------------
 ## `schedule` maps a TimeManager.Period (int 0-3) to the name of a Marker2D in
@@ -29,10 +40,6 @@ const GIFT_POINTS := {"loved": 80, "liked": 40, "neutral": 20, "disliked": -20}
 @export var schedule: Dictionary = {}
 @export var walk_speed: float = 34.0
 
-const _ROW_DOWN := 0
-const _ROW_UP := 1
-const _ROW_LEFT := 2
-const _ROW_RIGHT := 3
 const _WALK_FRAMES := [0, 1, 0, 2]
 const _ANIM_FPS := 6.0
 const _ARRIVE_DIST := 2.0
@@ -41,17 +48,30 @@ var _inventory: Inventory = null
 var _sprite: Sprite2D = null
 var _home_position: Vector2 = Vector2.ZERO
 var _target_position: Vector2 = Vector2.ZERO
-var _facing_row: int = _ROW_DOWN
+var _facing_row: int = 0
 var _anim_time: float = 0.0
 
 func _ready() -> void:
 	add_to_group("interactable")
 	_sprite = $Sprite2D as Sprite2D
-	if data != null and _sprite != null:
-		if data.sprite_texture != null:
-			_sprite.texture = data.sprite_texture
-		_sprite.modulate = data.tint
+	_apply_appearance()
 	_setup_schedule()
+
+## Resolve the final sheet + tint: an NpcData's look takes priority when it
+## specifies one, else the per-instance exports, else the scene default.
+func _apply_appearance() -> void:
+	if _sprite == null:
+		return
+	var tex: Texture2D = sprite_texture
+	var tint: Color = sprite_tint
+	if data != null:
+		if data.sprite_texture != null:
+			tex = data.sprite_texture
+		if data.tint != Color.WHITE:
+			tint = data.tint
+	if tex != null:
+		_sprite.texture = tex
+	_sprite.modulate = tint
 
 func _setup_schedule() -> void:
 	_home_position = global_position
@@ -96,10 +116,7 @@ func _process(delta: float) -> void:
 	_animate(delta, true)
 
 func _update_facing(dir: Vector2) -> void:
-	if absf(dir.x) > absf(dir.y):
-		_facing_row = _ROW_RIGHT if dir.x > 0.0 else _ROW_LEFT
-	else:
-		_facing_row = _ROW_DOWN if dir.y > 0.0 else _ROW_UP
+	_facing_row = DIR_UTIL.row_for(dir, _sprite.vframes)
 
 func _animate(delta: float, moving: bool) -> void:
 	if _sprite == null:
