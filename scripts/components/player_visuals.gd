@@ -210,6 +210,33 @@ func swing_melee(weapon: WeaponItem, aim: Vector2) -> void:
 	_swing_tween.tween_interval(STOW_DELAY)
 	_swing_tween.tween_callback(_stow_weapon)
 
+## Swing a cozy tool toward `aim`. The tool's bag icon stands in for an in-hand
+## sprite (a dedicated hold-sprite per tool can come later); it sweeps a short arc
+## then restores whatever weapon was holstered, so this never disturbs gear state.
+func swing_tool(icon: Texture2D, aim: Vector2) -> void:
+	if icon == null:
+		return
+	var restore: Texture2D = _weapon_sprite.texture
+	var arc: float = 1.0
+	var base: float = aim.angle()
+	var perp: Vector2 = Vector2(-aim.y, aim.x)
+	_draw_weapon()
+	_weapon_sprite.texture = icon
+	_swinging = true
+	_weapon_pivot.position = HAND_ANCHOR + perp * HAND_SEPARATION
+	_weapon_pivot.rotation = base - arc
+	_weapon_sprite.flip_v = aim.x < 0.0
+	_attack_arm.flip_v = aim.x < 0.0
+	if _swing_tween != null and _swing_tween.is_valid():
+		_swing_tween.kill()
+	_swing_tween = create_tween()
+	_swing_tween.tween_property(_weapon_pivot, "rotation", base + arc, 0.2)
+	_swing_tween.tween_callback(func() -> void: _swinging = false)
+	_swing_tween.tween_interval(STOW_DELAY)
+	_swing_tween.tween_callback(func() -> void:
+		_weapon_sprite.texture = restore
+		_stow_weapon())
+
 ## Brief kickback on the held weapon when a ranged shot is fired. Draws the bow
 ## from the back, kicks it, then re-stows.
 func recoil(aim: Vector2) -> void:

@@ -341,15 +341,15 @@ func _frame_border() -> void:
 		return
 	var x: int = EDGE
 	while x < world_width - EDGE:
-		_add_prop(border, Vector2(x + _rng.randi_range(-6, 6), EDGE + _rng.randi_range(-4, 8)))
-		_add_prop(border, Vector2(x + _rng.randi_range(-6, 6), world_height - 12 + _rng.randi_range(-6, 4)))
+		_add_border_prop(border, Vector2(x + _rng.randi_range(-6, 6), EDGE + _rng.randi_range(-4, 8)))
+		_add_border_prop(border, Vector2(x + _rng.randi_range(-6, 6), world_height - 12 + _rng.randi_range(-6, 4)))
 		x += _rng.randi_range(52, 84)
 	var mid: float = world_height * 0.5
 	var y: int = EDGE + 48
 	while y < world_height - EDGE - 48:
 		if absf(float(y) - mid) > MOUTH:
-			_add_prop(border, Vector2(EDGE + _rng.randi_range(-4, 8), y + _rng.randi_range(-6, 6)))
-			_add_prop(border, Vector2(world_width - 12 + _rng.randi_range(-6, 4), y + _rng.randi_range(-6, 6)))
+			_add_border_prop(border, Vector2(EDGE + _rng.randi_range(-4, 8), y + _rng.randi_range(-6, 6)))
+			_add_border_prop(border, Vector2(world_width - 12 + _rng.randi_range(-6, 4), y + _rng.randi_range(-6, 6)))
 		y += _rng.randi_range(52, 84)
 
 func _scatter_props() -> void:
@@ -630,6 +630,18 @@ func _add_prop(scene: PackedScene, pos: Vector2) -> void:
 	var inst := scene.instantiate()
 	if inst is Node2D:
 		(inst as Node2D).position = pos
+	_entities.add_child(inst)
+
+## A border prop that, if it's a choppable tree, is marked un-choppable before it
+## enters the tree — so felling can never breach the area's frame.
+func _add_border_prop(scene: PackedScene, pos: Vector2) -> void:
+	if scene == null:
+		return
+	var inst := scene.instantiate()
+	if inst is Node2D:
+		(inst as Node2D).position = pos
+	if "choppable" in inst:
+		inst.set("choppable", false)
 	_entities.add_child(inst)
 
 func _load_scene(path: String) -> PackedScene:

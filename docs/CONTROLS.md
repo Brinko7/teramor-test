@@ -27,9 +27,9 @@ Base viewport 480×270, scaled to 1280×720.
 |---|---|
 | **1 2 3 4 5 6 7 8 9 0** | Select item hotbar slot 1–10 (the first ten bag slots) |
 | **Mouse wheel** | Cycle the hotbar selection |
-| **F** (`use_item`) | Use the held item: drink a consumable, **or** act with a held tool/seed on what you face — |
-| | • **Hoe** → till bare soil · **Seed** → plant on tilled soil · **Watering can** → water a crop · **F over a ripe crop** → harvest |
-| | • **Pickaxe** → break rock/ore/crystal veins · **Axe** → fell trees for wood · **Fishing rod** → cast at a pond |
+| **F** (`use_item`) | Use the held item: drink a consumable, **or** act with a held tool/seed on the nearest target you're **standing by** (proximity, no precise aiming): |
+| | • **Hoe** → till bare soil · **Seed** → plant on tilled soil · **Watering can** → water a crop · **F by a ripe crop** → harvest |
+| | • **Pickaxe** → break rock/ore/crystal veins · **Axe** → fell a tree for wood · **Fishing rod** → cast at a pond |
 | **E** (`interact`) | Talk to NPCs, open chests/doors, read signs, hand-gather herbs/forage, cast at a pond (if carrying a rod) |
 
 > The number row is modal: it selects **hotbar items** normally, and casts **abilities

@@ -240,18 +240,43 @@ func _use_held_on_facing() -> void:
 		_plant_facing(item as SeedItem)
 
 func _apply_tool(kind: StringName) -> void:
-	var target := _faced_interactable()
+	var target := _nearest_tool_target()
 	if target != null and target.has_method("use_tool") and target.use_tool(kind, self):
-		_lunge = _aim * 36.0  # a small nudge into the swing
+		_swing_tool()
 		Events.tool_used.emit(kind, (target as Node2D).global_position)
 
 func _plant_facing(seed: SeedItem) -> void:
 	if seed.crop == null:
 		return
-	var target := _faced_interactable()
+	var target := _nearest_tool_target()
 	if target != null and target.has_method("try_plant") and target.try_plant(seed.crop, self):
 		inventory.consume_items(seed.id, 1)
+		_swing_tool()
 		Events.tool_used.emit(&"plant", (target as Node2D).global_position)
+
+## The nearest tool-able object within arm's reach. Unlike interaction (E, which
+## follows the mouse-aimed probe), tools work by **proximity** — stand on/next to a
+## plot, vein, tree or pond and use it, Stardew-style, without precise aiming.
+const TOOL_REACH := 30.0
+func _nearest_tool_target() -> Node2D:
+	var best: Node2D = null
+	var best_d := TOOL_REACH * TOOL_REACH
+	for n in get_tree().get_nodes_in_group("interactable"):
+		if not (n is Node2D) or not (n.has_method("use_tool") or n.has_method("try_plant")):
+			continue
+		var d := global_position.distance_squared_to((n as Node2D).global_position)
+		if d < best_d:
+			best_d = d
+			best = n
+	return best
+
+## Visibly swing the held tool toward the aim — the tool's bag icon stands in for an
+## in-hand sprite for now, plus a small forward nudge.
+func _swing_tool() -> void:
+	var item: Item = item_hotbar.active_item() if item_hotbar != null else null
+	if item != null and item.icon != null and _visuals != null:
+		_visuals.swing_tool(item.icon, _aim)
+	_lunge = _aim * 36.0
 
 func _primary_pressed() -> bool:
 	return Input.is_action_just_pressed("attack_primary") or Input.is_action_just_pressed("attack")
