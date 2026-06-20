@@ -125,6 +125,14 @@ held weapon/shield with their posing/swing/recoil — lives in
 `scripts/components/player_visuals.gd` (`class_name PlayerVisuals`), created in
 `_ready()` and fed state each frame (body frame, aim, block flag).
 
+**Dodge-roll (defensive verb).** `Shift` (`dodge` action) bursts a dash along the
+move/aim direction with **i-frames** over most of it (`DODGE_*` constants): a roll
+overrides movement, grants `_iframe_timer` invulnerability that `take_damage` honours,
+cancels any swing, and gates attacks/block for its duration, then a short cooldown
+before the next. It reports `Events.player_dodged` (AudioManager whoosh) + a
+`step_puff` (dust). The counterplay to the enemy wind-up telegraphs — read the tell,
+roll through the strike. Headless coverage: `tools/validate_dodge.gd`.
+
 **Hotbars (the number row is items; abilities live on Q).** The number row
 **1–0** is a Stardew-style **item hotbar** over the first ten bag slots:
 `scripts/item_hotbar.gd` (`class_name ItemHotbar`, a player child) tracks the

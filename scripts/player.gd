@@ -39,6 +39,15 @@ const LUNGE_DECAY := 620.0
 ## Seconds between footstep dust puffs while moving.
 const STEP_INTERVAL := 0.28
 
+## Dodge-roll tunables. A burst dash in the move/aim direction with invulnerability
+## (i-frames) over most of it, then a short recovery before you can roll again. The
+## defensive verb the combat needed — read an enemy's wind-up, roll through the hit.
+const DODGE_SPEED := 230.0
+const DODGE_END_SPEED := 70.0
+const DODGE_DURATION := 0.22
+const DODGE_IFRAMES := 0.17
+const DODGE_COOLDOWN := 0.40
+
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var outfit_sprite: Sprite2D = $Outfit
 @onready var hair_sprite: Sprite2D = $Hair
@@ -79,6 +88,11 @@ var _hit_enemies: Array = []
 var _lunge: Vector2 = Vector2.ZERO
 ## Footstep-dust cadence timer.
 var _step_timer: float = 0.0
+## Dodge state: dash time left, invulnerability time left, cooldown, and direction.
+var _dodge_timer: float = 0.0
+var _iframe_timer: float = 0.0
+var _dodge_cd: float = 0.0
+var _dodge_dir: Vector2 = Vector2.DOWN
 ## Cosmetic rendering (worn gear, held weapon/shield), created in _ready().
 var _visuals: PlayerVisuals
 ## Scene-placed start position, used as the respawn point after death.
@@ -149,8 +163,14 @@ func _physics_process(delta: float) -> void:
 	_attack_timer = maxf(0.0, _attack_timer - delta)
 	_cooldown_timer = maxf(0.0, _cooldown_timer - delta)
 	_invuln_timer = maxf(0.0, _invuln_timer - delta)
+	_dodge_timer = maxf(0.0, _dodge_timer - delta)
+	_iframe_timer = maxf(0.0, _iframe_timer - delta)
+	_dodge_cd = maxf(0.0, _dodge_cd - delta)
 
 	_update_aim()
+
+	if Input.is_action_just_pressed("dodge") and _can_dodge():
+		_start_dodge()
 
 	# Only the melee path enables the hitbox; ranged attacks never do, so gate
 	# the scan on monitoring to avoid querying a disabled area.
@@ -160,9 +180,9 @@ func _physics_process(delta: float) -> void:
 		else:
 			_end_attack()
 
-	_blocking = Input.is_action_pressed("attack_secondary") and equipment.get_shield() != null
+	_blocking = _dodge_timer <= 0.0 and Input.is_action_pressed("attack_secondary") and equipment.get_shield() != null
 
-	if _primary_pressed() and _cooldown_timer <= 0.0 and not _blocking and not UIManager.dialogue.is_active():
+	if _dodge_timer <= 0.0 and _primary_pressed() and _cooldown_timer <= 0.0 and not _blocking and not UIManager.dialogue.is_active():
 		_start_attack()
 
 	_handle_hotbar_input()
@@ -219,13 +239,26 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("interact") and not UIManager.dialogue.is_active():
 		_try_interact()
 
-func _movement(delta: float) -> void:
+## The raw WASD/arrow movement vector this frame (clamped to unit length).
+func _move_input() -> Vector2:
 	var input := Vector2(
 		Input.get_axis("move_left", "move_right"),
 		Input.get_axis("move_up", "move_down")
 	)
-	if input.length() > 1.0:
-		input = input.normalized()
+	return input.normalized() if input.length() > 1.0 else input
+
+func _movement(delta: float) -> void:
+	# A dodge overrides normal movement: a decaying dash along the committed
+	# direction, facing the roll. Footsteps/lunge are suppressed for the roll.
+	if _dodge_timer > 0.0:
+		var t: float = 1.0 - _dodge_timer / DODGE_DURATION
+		velocity = _dodge_dir * lerpf(DODGE_SPEED, DODGE_END_SPEED, t)
+		move_and_slide()
+		_update_facing(_dodge_dir)
+		_update_animation(delta, true)
+		return
+
+	var input := _move_input()
 
 	velocity = input * speed + _lunge
 	move_and_slide()
@@ -339,8 +372,32 @@ func _apply_hit(target) -> void:
 		if steal > 0.0:
 			health.heal(maxi(1, int(round(dmg * steal))))
 
+## Whether a dodge can start: off cooldown, not mid-roll, not blocking, alive, and
+## not in a menu/dialogue.
+func _can_dodge() -> bool:
+	return _dodge_cd <= 0.0 and _dodge_timer <= 0.0 and not _blocking \
+		and not health.is_dead() and not UIManager.dialogue.is_active()
+
+## Begin a dodge-roll: commit a direction (movement, else the aim), grant i-frames,
+## cancel any swing, and report it on the Events bus for the dust + whoosh.
+func _start_dodge() -> void:
+	var dir: Vector2 = _move_input()
+	if dir == Vector2.ZERO:
+		dir = _aim
+	_dodge_dir = dir.normalized()
+	if _dodge_dir == Vector2.ZERO:
+		_dodge_dir = Vector2.DOWN
+	_dodge_timer = DODGE_DURATION
+	_iframe_timer = DODGE_IFRAMES
+	_dodge_cd = DODGE_DURATION + DODGE_COOLDOWN
+	_lunge = Vector2.ZERO
+	_end_attack()
+	Events.player_dodged.emit(global_position)
+	Events.step_puff.emit(global_position)
+
 func take_damage(amount: int) -> void:
-	if _invuln_timer > 0.0:
+	# Invulnerable during a dodge's i-frames (roll through the blow) or post-hit.
+	if _invuln_timer > 0.0 or _iframe_timer > 0.0:
 		return
 	_invuln_timer = invuln_time
 	# Mitigation = leveled defense + worn armor defense (+ shield block if raised).

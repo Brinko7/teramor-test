@@ -11,7 +11,7 @@ extends SceneTree
 const SFX_DIR := "res://assets/audio/sfx/"
 const EXPECTED_SFX := [
 	"step", "swing", "bow", "hit_enemy", "hit_player", "death",
-	"pickup", "craft", "gather", "levelup", "ui_click",
+	"pickup", "craft", "gather", "levelup", "ui_click", "dodge",
 ]
 const EXPECTED_BUSES := ["Master", "Music", "SFX", "Ambience"]
 
