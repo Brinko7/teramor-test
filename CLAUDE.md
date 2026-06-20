@@ -45,7 +45,10 @@ Registered in `project.godot` under `[autoload]`:
 - **Story**, **Relationships**, **QuestManager** — narrative/social/quest state.
   Relationships and QuestManager are **pure data managers**: they expose state +
   signals, and the player menu renders them (no UI of their own).
-- **TimeManager** — in-game clock and day counter.
+- **TimeManager** — in-game clock, day counter, and the **calendar** (season /
+  day-of-season / year, all derived from the day). See "Seasons" below.
+- **SeasonManager** — announces the calendar: a banner on each new season and on
+  authored festival days. Registered **after** UIManager (it drives the banner).
 - **Wallet** — gold balance.
 - **SceneManager** — fade transitions and player spawn placement.
 - **SaveManager** — generic group-based persistence (see below).
@@ -389,6 +392,34 @@ crystal veins you interact with to harvest, scattered from a biome's
 ExploreZone) yields materials that feed forge recipes (`forge_iron_sword`, etc.),
 closing the gather → craft → fight loop. Recipes are `Recipe` .tres referencing
 ingredients by item id.
+
+### Seasons & the calendar (the loop's frame)
+The calendar lives in **TimeManager** as pure derivation: four `Season`s
+(Spring/Summer/Autumn/Winter) of `DAYS_PER_SEASON` (28) days make a year, all
+computed from the running `_day` — so seasons cost the save file **nothing** (the
+day already persists). Queries: `get_season()`/`get_day_of_season()`/`get_year()`,
+`get_season_id()` (the lower-case content id, e.g. `&"autumn"`), and
+`format_date()` ("Spring 5", gaining ", Year 2" past the first year). A
+`season_changed(season)` signal fires when a `sleep()` crosses a boundary (and on
+load/reset for sync). The HUD clock shows `format_date()`.
+
+- **Seasonal crops.** `CropData.seasons: Array[StringName]` lists the season ids a
+  crop grows in (**empty = year-round**); `grows_in(season_id)` is the test. Out of
+  season a crop **can't be planted** (`FarmPlot` filters the plant menu / `try_plant`
+  to in-season seeds) and a standing crop **pauses** in `FarmManager._on_day_changed`
+  (`crop.grows_in(TimeManager.get_season_id())`) — it never withers, keeping the loop
+  forgiving. Turnip = spring/summer, wheat = summer/autumn; winter is the off-season.
+- **Seasonal look.** `day_night.gd` folds a subtle per-season `SEASON_TINT`
+  multiplier over its time-of-day colour, so the whole world shifts hue with the
+  calendar (fresh spring → warm summer → amber autumn → pale-cold winter), kept gentle
+  so night/lamplight still read.
+- **Festivals.** A `Festival` resource (`scripts/festival.gd`, `.tres` under
+  `resources/festivals/`) names a `season` + `day` (recurring each year), a banner
+  `title`/`subtitle`, and an optional Story `set_flag`. **SeasonManager** loads the
+  catalog and, on a *natural* day advance (a sleep, not a load/reset jump), pops the
+  season banner on a crossing and the festival banner on its day. Four ship
+  (Spring Bloom Fair, Sunpeak Revel, Harvest Home, The Long Night) — add one by
+  authoring a `.tres`. Headless coverage: `tools/validate_seasons.gd`.
 
 ### Cozy tools as verbs (the Stardew layer)
 Tools are **real verbs**, not menus: select a tool/seed on the item hotbar and press

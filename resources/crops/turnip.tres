@@ -17,3 +17,4 @@ stage_textures = Array[Texture2D]([ExtResource("2_s0"), ExtResource("3_s1"), Ext
 stage_days = Array[int]([1, 1, 1])
 regrows = false
 regrow_days = 2
+seasons = Array[StringName]([&"spring", &"summer"])

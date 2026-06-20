@@ -52,9 +52,9 @@ func _build() -> void:
 	_time_label.label_settings = time_settings
 	box.add_child(_time_label)
 
-func _on_day_changed(day: int) -> void:
+func _on_day_changed(_day: int) -> void:
 	if _day_label != null:
-		_day_label.text = "Day %d" % day
+		_day_label.text = TimeManager.format_date()
 
 func _on_time_changed(_minutes: int) -> void:
 	if _time_label != null:

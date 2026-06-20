@@ -26,13 +26,15 @@ func _ready() -> void:
 
 ## Each new day, watered crops grow one step (capped at maturity) and the soil
 ## dries out, so the player must re-water daily. Unwatered crops simply don't
-## advance — there is no withering, to keep the loop forgiving.
+## advance, and a crop out of its season pauses — there is no withering, to keep
+## the loop forgiving.
 func _on_day_changed(_day: int) -> void:
+	var season: StringName = TimeManager.get_season_id()
 	for plot_id: String in _plots:
 		var p: Dictionary = _plots[plot_id]
 		if String(p["crop"]) != "" and bool(p["watered"]):
 			var crop := load(String(p["crop"])) as CropData
-			if crop != null and not crop.is_mature(int(p["days"])):
+			if crop != null and crop.grows_in(season) and not crop.is_mature(int(p["days"])):
 				p["days"] = int(p["days"]) + 1
 		p["watered"] = false
 	for plot_id: String in _plots:

@@ -14,12 +14,33 @@ const DAY := Color(0.99, 0.97, 0.92, 1)     # soft warm-neutral noon
 const GOLDEN := Color(0.95, 0.76, 0.54, 1)  # warm golden hour
 const DUSK := Color(0.52, 0.44, 0.56, 1)    # violet twilight
 
+## A subtle per-season multiplier folded over the time-of-day colour so the whole
+## world shifts hue with the calendar: fresh spring, warm summer, amber autumn,
+## pale-cold winter. Kept gentle (near white) so night and lamplight still read.
+const SEASON_TINT: Array[Color] = [
+	Color(0.95, 1.0, 0.95),    # SPRING — fresh, faintly green
+	Color(1.0, 0.98, 0.90),    # SUMMER — warm, golden
+	Color(1.0, 0.91, 0.78),    # AUTUMN — amber
+	Color(0.88, 0.93, 1.0),    # WINTER — pale, cold blue
+]
+
+var _season_tint: Color = SEASON_TINT[0]
+
 func _ready() -> void:
 	TimeManager.time_changed.connect(_on_time_changed)
+	TimeManager.season_changed.connect(_on_season_changed)
+	_season_tint = _tint_for(TimeManager.get_season())
 	color = _color_for(TimeManager.get_time_minutes())
 
 func _on_time_changed(minutes: int) -> void:
 	color = _color_for(minutes)
+
+func _on_season_changed(season: int) -> void:
+	_season_tint = _tint_for(season)
+	color = _color_for(TimeManager.get_time_minutes())
+
+func _tint_for(season: int) -> Color:
+	return SEASON_TINT[clampi(season, 0, SEASON_TINT.size() - 1)]
 
 ## Piecewise-linear tint across the day: night -> cool dawn -> day -> golden
 ## hour -> violet dusk -> night. Minutes past 24:00 (post-midnight) fold back to
@@ -36,5 +57,5 @@ func _color_for(minutes: int) -> Color:
 		if t >= stop_min[i] and t <= stop_min[i + 1]:
 			var span: int = stop_min[i + 1] - stop_min[i]
 			var f: float = 0.0 if span == 0 else float(t - stop_min[i]) / float(span)
-			return stop_col[i].lerp(stop_col[i + 1], f)
-	return DAY
+			return stop_col[i].lerp(stop_col[i + 1], f) * _season_tint
+	return DAY * _season_tint

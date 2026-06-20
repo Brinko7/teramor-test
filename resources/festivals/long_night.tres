@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="Festival" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/festival.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"long_night"
+display_name = "The Long Night"
+season = &"winter"
+day = 26
+title = "The Long Night"
+subtitle = "The year's darkest night. The camp keeps the fires lit until dawn."

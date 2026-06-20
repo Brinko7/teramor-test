@@ -41,6 +41,7 @@ Story="*res://scripts/autoload/story.gd"
 UIManager="*res://scripts/autoload/ui_manager.gd"
 CampManager="*res://scripts/autoload/camp_manager.gd"
 HeartEventManager="*res://scripts/autoload/heart_event_manager.gd"
+SeasonManager="*res://scripts/autoload/season_manager.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 
 [display]
