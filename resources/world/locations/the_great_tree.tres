@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="WorldLocation" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/world_location.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"the_great_tree"
+display_name = "The Great Tree"
+blurb = "Tera herself, rooted at the heart of the Cursed Wilds — the dying god whose dome shields the world. The road's end, and its purpose."
+scene_path = ""
+spawn_point = "spawn"
+tier = 7
+region = &"cursed_wilds"
+kind = &"landmark"
+rumored = true
+connections = PackedStringArray()
+discovered_by_default = false
+travel_biome_path = "res://resources/world/biomes/vast_edge.tres"

@@ -4,14 +4,15 @@
 
 [resource]
 script = ExtResource("1_script")
-id = &"cleaves_landing"
-display_name = "Cleeve's Landing"
-blurb = "A border barony of the Third Kingdom — traders, a tavern, and posted monster contracts."
+id = &"kingsford"
+display_name = "Kingsford"
+blurb = "A fortified waystation on the King's Path where the Hollenmark's forests give way to the plains of Plint."
 scene_path = "res://scenes/world/town.tscn"
 spawn_point = "from_road"
-tier = 1
-region = &"hollenmark"
+tier = 2
+region = &"plint"
 kind = &"town"
-connections = PackedStringArray("settlement_camp", "hollen")
+rumored = true
+connections = PackedStringArray("hollen", "plint")
 discovered_by_default = false
-travel_biome_path = "res://resources/world/biomes/roadside.tres"
+travel_biome_path = "res://resources/world/biomes/plains.tres"

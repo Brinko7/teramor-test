@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="BiomeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/biome_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"vast_edge"
+display_name = "The Edge of the Vast"
+ground_texture_path = "res://assets/placeholder/grass.png"
+ground_tint = Color(0.4, 0.37, 0.5, 1)
+enemy_paths = PackedStringArray("res://scenes/entities/enemy_withered.tscn", "res://scenes/entities/enemy_brute.tscn", "res://scenes/entities/enemy_archer.tscn")
+enemy_weights = PackedFloat32Array(4, 2, 1)
+prop_paths = PackedStringArray("res://scenes/entities/props/tree.tscn", "res://scenes/entities/props/rock.tscn", "res://scenes/entities/props/bush.tscn")
+border_path = "res://scenes/entities/props/tree.tscn"
+loot_paths = PackedStringArray("res://resources/items/emberbrand.tres", "res://resources/items/wyrmscale_vest.tres", "res://resources/items/greater_potion.tres", "res://resources/items/windpiercer.tres")
+encounter_paths = PackedStringArray("res://resources/world/encounters/withered_band.tres", "res://resources/world/encounters/bandit_camp.tres")
+min_encounters = 1
+max_encounters = 3
+base_tier = 5
+min_enemies = 2
+max_enemies = 4
+min_props = 16
+max_props = 28
+gather_paths = PackedStringArray("res://resources/items/herb.tres", "res://resources/items/crystal.tres")
+min_gather = 1
+max_gather = 2
+wildlife_paths = PackedStringArray()
+min_wildlife = 0
+max_wildlife = 0

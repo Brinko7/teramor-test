@@ -605,20 +605,31 @@ func _build_map() -> Control:
 		box.add_child(UITheme.make_label("You can't fast travel from the wilds.", 10, UITheme.MUTED))
 		return box
 
-	var options: Array = WorldMap.get_travel_options()
-	if options.is_empty():
+	var regions: Array = WorldMap.get_map_regions()
+	if regions.is_empty():
 		box.add_child(UITheme.make_label("Nowhere discovered to travel yet.", 10, UITheme.MUTED))
 		return box
 
-	box.add_child(UITheme.make_label("Fast travel to:", 10, UITheme.TEXT))
-	for loc: WorldLocation in options:
-		var btn := Button.new()
-		btn.text = "%s   (Tier %d)" % [loc.display_name, loc.tier]
-		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-		btn.add_theme_font_size_override("font_size", 10)
-		btn.tooltip_text = loc.blurb
-		btn.pressed.connect(_on_travel_pressed.bind(loc.id))
-		box.add_child(btn)
+	# The world by kingdom: discovered places are travel buttons; rumored ones show
+	# greyed as named distant goals (a capital, the Great Tree) you've yet to reach.
+	for region: Dictionary in regions:
+		box.add_child(UITheme.make_label(String(region["name"]), 10, UITheme.GOLD))
+		for loc: WorldLocation in region["locations"]:
+			if loc.id == current:
+				box.add_child(UITheme.make_label("   %s — you are here" % loc.display_name, 10, UITheme.ACCENT))
+			elif WorldMap.is_discovered(loc.id):
+				var btn := Button.new()
+				btn.text = "   %s   (Tier %d)" % [loc.display_name, loc.tier]
+				btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+				btn.add_theme_font_size_override("font_size", 10)
+				btn.tooltip_text = loc.blurb
+				btn.pressed.connect(_on_travel_pressed.bind(loc.id))
+				box.add_child(btn)
+			else:
+				var lbl := UITheme.make_label("   %s — rumored" % loc.display_name, 10, UITheme.MUTED)
+				lbl.tooltip_text = loc.blurb
+				box.add_child(lbl)
+		box.add_child(HSeparator.new())
 	return box
 
 func _on_travel_pressed(location_id: StringName) -> void:

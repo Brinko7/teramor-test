@@ -61,6 +61,10 @@ func arrive(location_id: StringName) -> void:
 	if loc == null:
 		return
 	_pending.clear()
+	# Stage + register the destination. stage_arrival lets a shared destination
+	# scene (the town template) claim the right id on load; discover/set_current
+	# keep plain destinations and the map correct either way.
+	WorldMap.stage_arrival(location_id)
 	WorldMap.discover(location_id)
 	WorldMap.set_current(location_id)
 	SceneManager.travel(loc.scene_path, loc.spawn_point)

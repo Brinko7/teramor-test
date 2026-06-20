@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="EncounterData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/world/encounter_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"withered_band"
+display_name = "The Withered"
+enemy_paths = PackedStringArray("res://scenes/entities/enemy_withered.tscn", "res://scenes/entities/enemy_withered.tscn", "res://scenes/entities/enemy_withered.tscn")
+enemy_offsets = PackedVector2Array(0, 0, -34, 20, 30, 24)
+loot_cache = true
+loot_offset = Vector2(0, -26)
+min_tier = 4
+weight = 3.0
+radius = 100.0
