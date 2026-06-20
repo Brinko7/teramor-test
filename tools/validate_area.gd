@@ -18,6 +18,15 @@ const EDGE := 24
 var _fail := 0
 
 func _initialize() -> void:
+	# Defer + await: loading procedural_area.gd (which references the UIManager
+	# autoload) at frame 0 hits "Identifier not found: UIManager" because autoload
+	# globals aren't registered yet. A few frames in, the compile resolves.
+	_run.call_deferred()
+
+func _run() -> void:
+	await process_frame
+	await process_frame
+	await process_frame
 	print("=== vast-area validation ===")
 	var gen: GDScript = load(GEN)
 	if gen == null:
@@ -38,10 +47,20 @@ func _err(msg: String) -> void:
 	_fail += 1
 	print("  [FAIL] " + msg)
 
-## Check that a signpost with text builds its carved label, and an empty one stays a
-## plain post. Drives _ready() directly (it needs no tree), so this is deterministic.
+## Identify a signpost by script path rather than `is Signpost`: referencing the
+## class_name forces signpost.gd (which uses the UIManager autoload) to compile at
+## this validator's frame-0 parse time, before autoload globals register, which
+## poisons every signpost instance in headless. Path-matching keeps the compile lazy.
+func _is_signpost(node: Node) -> bool:
+	var s = node.get_script()
+	return s != null and s.resource_path.ends_with("signpost.gd")
+
+## Check the signpost interact contract: a post carved with text becomes a readable
+## interactable, a blank post stays plain scenery. (Signposts show NO floating label
+## any more — you walk up and press interact to read the line in the dialogue box.)
+## Drives _ready() directly, so this is deterministic.
 func _check_signpost() -> void:
-	print("\n[signpost] carved-label build")
+	print("\n[signpost] interact contract")
 	var scene := load("res://scenes/entities/props/signpost.tscn") as PackedScene
 	if scene == null:
 		_err("signpost.tscn missing")
@@ -49,20 +68,15 @@ func _check_signpost() -> void:
 	var post := scene.instantiate()
 	post.set("text", "Danger ahead")
 	post.call("_ready")
-	var labels := 0
-	for c in post.get_children():
-		if c is Label:
-			labels += 1
-			if (c as Label).text != "Danger ahead":
-				_err("signpost label text wrong: '%s'" % (c as Label).text)
-	if labels != 1:
-		_err("signpost with text should build exactly one label, got %d" % labels)
+	if not post.is_in_group("interactable"):
+		_err("a carved signpost should join the 'interactable' group")
+	if not post.has_method("interact"):
+		_err("a signpost should expose interact()")
 	post.free()
 	var plain := scene.instantiate()
 	plain.call("_ready")
-	for c in plain.get_children():
-		if c is Label:
-			_err("empty signpost should have no label")
+	if plain.is_in_group("interactable"):
+		_err("a blank signpost should stay plain scenery, not interactable")
 	plain.free()
 
 func _run_case(gen: GDScript, biome_path: String, seed_v: int, verbose: bool) -> void:
@@ -142,7 +156,7 @@ func _run_case(gen: GDScript, biome_path: String, seed_v: int, verbose: bool) ->
 	# 5b. entry + exit signage placed.
 	var signs := 0
 	for c in entities.get_children():
-		if c is Signpost:
+		if _is_signpost(c):
 			signs += 1
 	if signs < 2:
 		_err("%s: expected entry+exit signage, got %d signposts" % [tag, signs])

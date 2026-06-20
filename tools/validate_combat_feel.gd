@@ -7,14 +7,16 @@ extends SceneTree
 ##
 ## Run: godot --headless -s tools/validate_combat_feel.gd
 ##
-## Accesses autoloads via /root and only after awaiting a couple of frames, to
-## dodge the frame-0 autoload-compile trap (see validate_combat_signals.gd).
+## Everything is loaded with load() *inside* _run, after awaiting a couple of
+## frames — never top-level preload/class_name refs, which resolve at this script's
+## compile time and trip the frame-0 autoload/global-class trap (scripts then fail
+## to attach). See validate_scene_load.gd for the same pattern.
 
-const ENEMY := preload("res://scenes/entities/enemy.tscn")
-const ARCHER := preload("res://scenes/entities/enemy_archer.tscn")
-const DEER := preload("res://scenes/entities/wildlife_deer.tscn")
-const CUB := preload("res://scenes/entities/enemy_bear_cub.tscn")
-const FLASH_SHADER := preload("res://assets/shaders/hit_flash.gdshader")
+const SLASH := "res://scripts/effects/slash_arc.gd"
+const RING := "res://scripts/effects/telegraph_ring.gd"
+const PUFF := "res://scripts/effects/dust_puff.gd"
+const FLASH_SHADER := "res://assets/shaders/hit_flash.gdshader"
+const WITHERED := "res://scenes/entities/enemy_withered.tscn"
 
 var _fail := 0
 var _swung := 0
@@ -48,6 +50,8 @@ func _make_dummy_player() -> Node2D:
 	return dummy
 
 func _run() -> void:
+	# Let autoloads + global classes finish registering before we touch scenes.
+	await process_frame
 	await process_frame
 	await process_frame
 
@@ -58,7 +62,7 @@ func _run() -> void:
 		return
 
 	# 1) Shader resource loads.
-	if not (FLASH_SHADER is Shader):
+	if not (load(FLASH_SHADER) is Shader):
 		_err("hit_flash.gdshader did not load as a Shader")
 
 	# 2) New signals exist with the right arity; live CombatFX handlers also run
@@ -74,27 +78,30 @@ func _run() -> void:
 		_err("new Events signals did not round-trip (swung=%d windup=%d step=%d)" % [_swung, _windup, _step])
 
 	# 3) The code-built effects instantiate, enter the tree and tween without error.
-	var arc := SlashArc.new()
-	arc.dir = Vector2.UP
-	get_root().add_child(arc)
-	var ring := TelegraphRing.new()
-	ring.duration = 0.1
-	get_root().add_child(ring)
-	var puff := DustPuff.new()
-	get_root().add_child(puff)
+	for path in [SLASH, RING, PUFF]:
+		var script = load(path)
+		if script == null:
+			_err("effect script failed to load: %s" % path)
+			continue
+		var fx = script.new()
+		if not (fx is Node2D):
+			_err("effect %s is not a Node2D" % path)
+			continue
+		get_root().add_child(fx)
 	await process_frame
 
 	# 4) melee_attacker flags: base enemy attacks, kiters/prey/non-combatants don't.
-	_check_attacker(ENEMY, true, "bandit")
-	_check_attacker(ARCHER, false, "archer")
-	_check_attacker(DEER, false, "deer")
-	_check_attacker(CUB, false, "bear cub")
+	_check_attacker("res://scenes/entities/enemy.tscn", true, "bandit")
+	_check_attacker("res://scenes/entities/enemy_archer.tscn", false, "archer")
+	_check_attacker("res://scenes/entities/wildlife_deer.tscn", false, "deer")
+	_check_attacker("res://scenes/entities/enemy_bear_cub.tscn", false, "bear cub")
+	await process_frame
 
 	# 5) A telegraphed strike lands on a dummy in range after the wind-up resolves.
 	var dummy := _make_dummy_player()
 	get_root().add_child(dummy)
 	dummy.global_position = Vector2(15, 0)
-	var e := ENEMY.instantiate()
+	var e = load("res://scenes/entities/enemy.tscn").instantiate()
 	get_root().add_child(e)
 	e.global_position = Vector2.ZERO
 	await process_frame
@@ -109,7 +116,7 @@ func _run() -> void:
 		_err("strike landed but no attack_windup telegraph fired")
 
 	# 6) The death beat: a lethal hit flags the corpse and pulls it from combat.
-	var victim := ENEMY.instantiate()
+	var victim = load("res://scenes/entities/enemy.tscn").instantiate()
 	get_root().add_child(victim)
 	victim.global_position = Vector2(400, 0)
 	await process_frame
@@ -121,12 +128,17 @@ func _run() -> void:
 
 	_finish()
 
-func _check_attacker(scene: PackedScene, want: bool, label: String) -> void:
-	var n := scene.instantiate()
+func _check_attacker(scene_path: String, want: bool, label: String) -> void:
+	var scene = load(scene_path)
+	if scene == null:
+		_err("%s scene failed to load: %s" % [label, scene_path])
+		return
+	var n = scene.instantiate()
 	get_root().add_child(n)
 	# _ready (where archer/prey/cub opt out) has run by now.
-	if n.melee_attacker != want:
-		_err("%s melee_attacker = %s, expected %s" % [label, str(n.melee_attacker), str(want)])
+	var got = n.get("melee_attacker")
+	if got != want:
+		_err("%s melee_attacker = %s, expected %s" % [label, str(got), str(want)])
 	n.queue_free()
 
 func _finish() -> void:
