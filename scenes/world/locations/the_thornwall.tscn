@@ -1,0 +1,253 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://scripts/location.gd" id="e1"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="e2"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="e3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/world_hud.tscn" id="e4"]
+[ext_resource type="Script" path="res://scripts/day_night.gd" id="e5"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/tree.tscn" id="e6"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/bush.tscn" id="e7"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/rock.tscn" id="e8"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/signpost.tscn" id="e9"]
+
+[node name="TheThornwall" type="Node2D"]
+script = ExtResource("e1")
+location_id = &"the_thornwall"
+map_size = Vector2i(980, 680)
+
+[node name="Ground" type="Sprite2D" parent="."]
+texture_repeat = 2
+centered = false
+texture = ExtResource("e2")
+modulate = Color(0.5, 0.46, 0.58, 1)
+
+[node name="Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Player" parent="Entities" instance=ExtResource("e3")]
+position = Vector2(490, 608)
+
+[node name="Tree1" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(490, 320)
+
+[node name="Tree2" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(847, 442)
+
+[node name="Tree3" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(446, 354)
+
+[node name="Tree4" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(261, 495)
+
+[node name="Tree5" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(910, 152)
+
+[node name="Tree6" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(680, 455)
+
+[node name="Tree7" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(691, 522)
+
+[node name="Tree8" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(465, 444)
+
+[node name="Tree9" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(356, 306)
+
+[node name="Tree10" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(511, 454)
+
+[node name="Tree11" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(115, 261)
+
+[node name="Tree12" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(230, 498)
+
+[node name="Tree13" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(770, 385)
+
+[node name="Tree14" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(441, 281)
+
+[node name="Tree15" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(859, 196)
+
+[node name="Tree16" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(626, 367)
+
+[node name="Tree17" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(492, 195)
+
+[node name="Tree18" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(618, 520)
+
+[node name="Tree19" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(486, 466)
+
+[node name="Tree20" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(284, 307)
+
+[node name="Tree21" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(814, 498)
+
+[node name="Tree22" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(889, 129)
+
+[node name="Tree23" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(504, 364)
+
+[node name="Bush1" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(499, 316)
+
+[node name="Bush2" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(428, 239)
+
+[node name="Bush3" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(326, 199)
+
+[node name="Bush4" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(373, 324)
+
+[node name="Bush5" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(325, 496)
+
+[node name="Bush6" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(128, 455)
+
+[node name="Bush7" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(580, 253)
+
+[node name="Bush8" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(724, 391)
+
+[node name="Bush9" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(94, 290)
+
+[node name="Bush10" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(328, 425)
+
+[node name="Bush11" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(445, 297)
+
+[node name="Bush12" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(601, 268)
+
+[node name="Bush13" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(878, 262)
+
+[node name="Bush14" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(288, 437)
+
+[node name="Bush15" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(380, 462)
+
+[node name="Bush16" parent="Entities" instance=ExtResource("e7")]
+position = Vector2(70, 121)
+
+[node name="Rock1" parent="Entities" instance=ExtResource("e8")]
+position = Vector2(66, 136)
+
+[node name="Rock2" parent="Entities" instance=ExtResource("e8")]
+position = Vector2(97, 166)
+
+[node name="Rock3" parent="Entities" instance=ExtResource("e8")]
+position = Vector2(70, 151)
+
+[node name="Rock4" parent="Entities" instance=ExtResource("e8")]
+position = Vector2(718, 269)
+
+[node name="Rock5" parent="Entities" instance=ExtResource("e8")]
+position = Vector2(226, 204)
+
+[node name="Rock6" parent="Entities" instance=ExtResource("e8")]
+position = Vector2(785, 462)
+
+[node name="Rock7" parent="Entities" instance=ExtResource("e8")]
+position = Vector2(747, 107)
+
+[node name="Rock8" parent="Entities" instance=ExtResource("e8")]
+position = Vector2(602, 475)
+
+[node name="Rock9" parent="Entities" instance=ExtResource("e8")]
+position = Vector2(466, 108)
+
+[node name="Rock10" parent="Entities" instance=ExtResource("e8")]
+position = Vector2(829, 119)
+
+[node name="Tree24" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(64, 46)
+
+[node name="Tree25" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(168, 46)
+
+[node name="Tree26" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(272, 46)
+
+[node name="Tree27" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(376, 46)
+
+[node name="Tree28" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(480, 46)
+
+[node name="Tree29" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(584, 46)
+
+[node name="Tree30" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(688, 46)
+
+[node name="Tree31" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(792, 46)
+
+[node name="Tree32" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(896, 46)
+
+[node name="Tree33" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(40, 130)
+
+[node name="Tree34" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(940, 130)
+
+[node name="Tree35" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(40, 234)
+
+[node name="Tree36" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(940, 234)
+
+[node name="Tree37" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(40, 338)
+
+[node name="Tree38" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(940, 338)
+
+[node name="Tree39" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(40, 442)
+
+[node name="Tree40" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(940, 442)
+
+[node name="Tree41" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(40, 546)
+
+[node name="Tree42" parent="Entities" instance=ExtResource("e6")]
+position = Vector2(940, 546)
+
+[node name="Sign1" parent="Entities" instance=ExtResource("e9")]
+position = Vector2(534, 560)
+text = "The Thornwall
+turn back if you value your life"
+
+[node name="Spawns" type="Node2D" parent="."]
+
+[node name="from_road" type="Marker2D" parent="Spawns" groups=["spawn"]]
+position = Vector2(490, 608)
+
+[node name="spawn" type="Marker2D" parent="Spawns" groups=["spawn"]]
+position = Vector2(490, 608)
+
+[node name="from_journey" type="Marker2D" parent="Spawns" groups=["spawn"]]
+position = Vector2(490, 608)
+
+[node name="DayNight" type="CanvasModulate" parent="."]
+script = ExtResource("e5")
+
+[node name="WorldHUD" parent="." instance=ExtResource("e4")]
