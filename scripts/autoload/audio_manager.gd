@@ -33,6 +33,7 @@ func _ready() -> void:
 	Events.item_collected.connect(_on_pickup)
 	Events.item_crafted.connect(_on_craft)
 	Events.player_leveled_up.connect(_on_level_up)
+	Events.player_dodged.connect(_on_dodge)
 
 # --- Playback ---------------------------------------------------------------
 
@@ -110,3 +111,6 @@ func _on_craft(_item_id: StringName) -> void:
 
 func _on_level_up(_new_level: int) -> void:
 	play(&"levelup", 0.0)
+
+func _on_dodge(_pos: Vector2) -> void:
+	play(&"dodge", -3.0, _wobble(0.05))

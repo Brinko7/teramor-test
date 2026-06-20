@@ -44,3 +44,7 @@ signal attack_windup(position: Vector2, dir: Vector2, duration: float)
 ## Emitted on a footfall (the player, and reusable for others) so CombatFX can kick
 ## up a small dust puff at `position`. Emitters throttle this to a step cadence.
 signal step_puff(position: Vector2)
+
+## Emitted when the player dodge-rolls, so AudioManager plays the whoosh (and any
+## future dodge VFX can hook in) without combat code knowing they exist.
+signal player_dodged(position: Vector2)

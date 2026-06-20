@@ -214,6 +214,11 @@ def bake_all() -> None:
 	save_wav("levelup", concat(parts[0][: _n(0.10)], parts[1][: _n(0.10)],
 		parts[2][: _n(0.10)], parts[3]))
 
+	# Dodge: a short airy whoosh — softer and breathier than a sword swing.
+	dodge = lowpass(noise(0.20, 1.0), 0.78)
+	dodge = [s * math.sin(math.pi * i / len(dodge)) ** 1.5 for i, s in enumerate(dodge)]
+	save_wav("dodge", gain(dodge, 0.8))
+
 	# UI click: a tiny dry tick.
 	save_wav("ui_click", env_exp(tone(1500.0, 0.03, 0.5, "square"), decay=80.0))
 
