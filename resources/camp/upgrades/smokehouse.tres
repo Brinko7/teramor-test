@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CampUpgrade" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/camp_upgrade.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"smokehouse"
+display_name = "Smokehouse"
+description = "Cure and store more of what's gathered. Foragers and woodcutters bring back +2 of each good."
+cost = {
+&"wood": 6,
+&"herb": 4
+}
+effect = &"yield"
+amount = 2
+sort = 3

@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_warden.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hadrin"
+display_name = "Hadrin"
+title = "Camp Woodcutter"
+sprite_texture = ExtResource("2_tex")
+tint = Color(0.86, 0.84, 0.8, 1)
+met_line = "Mind the axe. Hadrin. If it's timber, stone, or hard graft you need, I'm your man. Camp won't build itself."
+greeting = "Back in one piece. Good. Need anything hauled?"
+farewell = "I'll be at the woodpile."
+talk_lines = {
+0: PackedStringArray("Every wall and post in this camp came off my back, near enough.", "Wood for the fires, stone for the foundations. Slow work. Honest, though."),
+2: PackedStringArray("You want this place to grow? Then somebody's got to fell the trees. That's me.", "Get me a few more hands and we'll have a proper hall up before the cold."),
+4: PackedStringArray("I've built and lost three homes now, Zayn. This one I mean to keep.", "You give the orders, I'll raise the beams. That's a fair trade, to my mind.")
+}
+loved_gifts = Array[StringName]([&"iron_ore"])
+liked_gifts = Array[StringName]([&"raw_meat", &"health_potion"])
+disliked_gifts = Array[StringName]([&"herb"])
+loved_line = "Good ore! That's smith's gold, that is. Much obliged, ranger."
+liked_line = "A %s? Aye, that'll keep me going through a long day. Thanks."
+disliked_line = "A %s? ...not much call for that at the woodpile, but cheers."
+neutral_line = "For me? Decent of you."
+recruitable = true
+recruit_role = &"woodcutter"
+recruit_hearts = 2
+recruit_label = "Would you stock the camp's stores while I'm away?"
+recruit_accept = "Now you're talking. I'll keep wood and stone piling up in the stash every morning. Build something worth keeping with it, eh?"
+topics = Array[Dictionary]([{
+"label": "What's the camp need?",
+"lines": PackedStringArray("Timber and stone, always. Can't raise a bunkhouse on good intentions.", "Stockpile enough and we can dig channels for the field, raise a longhouse — make this a real place.")
+}])

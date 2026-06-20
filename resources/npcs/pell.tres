@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_townswoman.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"pell"
+display_name = "Pell"
+title = "Camp Cook"
+sprite_texture = ExtResource("2_tex")
+tint = Color(1, 0.94, 0.86, 1)
+met_line = "Smell that? That's a real meal, that is. I'm Pell. Bring me what the field and forest give, and nobody in this camp goes to bed hungry."
+greeting = "Hungry work, the wilds. Sit, eat — or near enough."
+farewell = "Don't let the stew get cold."
+talk_lines = {
+0: PackedStringArray("Give me a turnip and a fire and I'll give you a reason to keep going.", "An army marches on its stomach. So does a camp of frightened folk."),
+2: PackedStringArray("You eat too little and fight too much, Zayn. I worry.", "Get me a proper kitchen and I'll feed twice the mouths off half the stores."),
+4: PackedStringArray("There's a pot on for you always. Whatever else happens out there — remember that.", "My grandmother's recipes are all I carried out of the old country. They're yours now too.")
+}
+loved_gifts = Array[StringName]([&"wheat", &"turnip"])
+liked_gifts = Array[StringName]([&"wild_mushroom", &"herb"])
+disliked_gifts = Array[StringName]([&"rusty_sword"])
+loved_line = "Oh, straight in the pot with this! You spoil me, ranger. Thank you."
+liked_line = "A %s? That'll flavour something nicely. Bless you, Zayn."
+disliked_line = "A %s? ...not for the stew, that. But I'll find a corner for it."
+neutral_line = "For me? Kind of you."
+recruitable = true
+recruit_role = &"cook"
+recruit_hearts = 2
+recruit_label = "Would you cook for the camp while I'm away?"
+recruit_accept = "At last, someone asks! I'll turn the stores into hot meals every morning. Just keep the produce coming and leave the rest to me."
+topics = Array[Dictionary]([{
+"label": "What's on the menu?",
+"lines": PackedStringArray("Stew, mostly. Turnips, a little wheat, whatever Wrenna drags out of the woods.", "It's plain. But it's warm, and it's ours, and out here that's everything.")
+}])
