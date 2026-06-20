@@ -505,6 +505,20 @@ the `cursed_wilds` / `vast_edge` biomes plus the `withered_horde` and `vast_pack
 encounters; each drops a crystal (the hulk a potion too). Distinct silhouettes are
 placeholder retints/reuses for now — bespoke Vast art is a follow-up.
 
+**The boss.** `BossEnemy` (`scripts/boss_enemy.gd`, a thin `Enemy` subclass) is the
+skill-check the curve builds toward — the **Withered Colossus**
+(`enemy_vast_colossus.tscn`). It keeps the base wind-up→strike rhythm but adds
+**health-gated phases** (`phase_thresholds`): each threshold it crosses it sharpens
+wind-ups, shortens recovery, speeds up, and a `UIManager.notify` banner announces the
+turn. From phase 2 it gains a telegraphed **ground slam** — a long, readable wind-up
+(roll out of it) then radial damage + a screen jolt — reusing the same hostile-in-
+radius pattern as the melee strike so faction rules still apply. It overrides
+`apply_tier` for a gentler HP curve (bosses are already big). It ships as the rare,
+`min_tier`-6, low-weight `vast_colossus` encounter in the two Cursed-Wilds biomes, and
+**always** drops its trophy, the unique **Blightbane** blade (`loot_chance = 1.0`).
+Author another boss by putting `BossEnemy` on a scene and tuning the exports. Headless
+coverage: `tools/validate_boss.gd`.
+
 **Talkable NPCs** (`scripts/npc.gd`, an `Area2D`) drive the social loop and, when
 given a `schedule` + `home_waypoint`, walk a daily route between `npc_waypoint`
 markers on `TimeManager.period_changed`. Between scheduled moves they now **idle-wander**

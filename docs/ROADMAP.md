@@ -111,13 +111,29 @@ service of "this little camp, and these people, became mine."
 
 ## Suggested near-term sequence
 
-1. **Camp depth, round 2** — cook + woodcutter roles, and a first **camp-upgrade**
-   (extra plots / a third recruit slot) you buy with stash goods. *(Direct follow-on
-   from the recruit loop; highest differentiation per unit effort.)*
-2. **First member heart-event** — Bram or Wrenna, at 4 hearts. Proves the
-   social→story payoff that bonds players.
-3. **First real boss** in the Cursed Wilds — proves the combat ceiling.
+1. ~~**Camp depth, round 2** — cook + woodcutter roles, and a first **camp-upgrade**
+   you buy with stash goods.~~ ✅ **Done** — `CampManager` cook/woodcutter roles +
+   the `CampUpgrade` economy (bunkhouse/longhouse/irrigation/smokehouse) and a
+   recruit cap.
+2. ~~**First member heart-event** — Bram or Wrenna, at 4 hearts.~~ ✅ **Done** —
+   `HeartEventManager` + Bram's and Wrenna's 4-heart events (Wrenna's turns the main
+   hunt toward the Glade).
+3. ~~**First real boss** in the Cursed Wilds.~~ ✅ **Done** — `BossEnemy` / the
+   Withered Colossus (phases + ground slam + the Blightbane trophy).
 4. **Season layer** over TimeManager — the calendar that reframes the whole loop.
+   *(The next big one.)*
 
-Pick the pillar that excites *you* most; conviction reads on screen. My
-recommendation is to ride Pillar 1's momentum (1 → 2 above) while it's hot.
+### Now-open threads to pull next (in priority order)
+
+- **Seasons & festivals** (Pillar 5) — a season over `TimeManager`; seasonal crops +
+  a first festival day. The calendar players plan around.
+- **Camp construction round 3** (Pillar 1) — visible camp tiers: swap props in
+  `settlement.tscn` by upgrade level so the camp *looks* like it grew; a kitchen/forge
+  building gating cook/smith roles.
+- **More heart-events & a romance track** (Pillar 2) — 6/8/10-heart beats; let
+  Wrenna's Glade thread feed a Story chapter.
+- **Boss polish & a second boss** (Pillar 3) — a dedicated boss health bar (HUD),
+  bespoke Colossus art, and a second pattern (a ranged/summon phase).
+
+Pick the pillar that excites *you* most; conviction reads on screen. Pillar 1's
+momentum is spent for now — **seasons** is the highest-leverage next swing.
