@@ -48,3 +48,8 @@ signal step_puff(position: Vector2)
 ## Emitted when the player dodge-rolls, so AudioManager plays the whoosh (and any
 ## future dodge VFX can hook in) without combat code knowing they exist.
 signal player_dodged(position: Vector2)
+
+## Emitted when a cozy tool acts on the world (hoe/can/pickaxe/axe/fishing rod, and
+## `plant`/`reel`), so AudioManager plays the matching sound and CombatFX can kick
+## dust — the farm/gather/fishing code never references those systems.
+signal tool_used(kind: StringName, position: Vector2)

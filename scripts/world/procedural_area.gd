@@ -55,7 +55,18 @@ const GATHER_TINTS := {
 	&"stone": Color(0.82, 0.82, 0.86),
 	&"iron_ore": Color(0.78, 0.62, 0.46),
 	&"crystal": Color(0.5, 0.85, 0.95),
+	&"wood": Color(0.62, 0.45, 0.3),
 }
+## Which tool a gathered material needs — veins want a pickaxe, wood wants an axe;
+## anything unlisted (herb/mushroom) is hand-gathered (press E). Drives the new
+## tool-verb gating on GatherNode.
+const GATHER_TOOLS := {
+	&"stone": &"pickaxe",
+	&"iron_ore": &"pickaxe",
+	&"crystal": &"pickaxe",
+	&"wood": &"axe",
+}
+const FISHING_SPOT_SCENE := preload("res://scenes/entities/fishing_spot.tscn")
 
 ## Minimap blip colours per feature kind.
 const FEATURE_COLORS := {
@@ -273,6 +284,11 @@ func _feature_pond(c: Vector2, r: float) -> void:
 		var a: float = TAU * float(i) / float(ring) + _rng.randf_range(-0.25, 0.25)
 		var rim := c + Vector2(cos(a) * w * 0.52, sin(a) * h * 0.56)
 		_add_prop(_load_scene(ROCK_SCENE if _rng.randf() < 0.5 else BUSH_SCENE), rim)
+	# A fishable spot at the bank — cast here with the rod (or interact carrying one).
+	var spot := FISHING_SPOT_SCENE.instantiate()
+	if spot is Node2D:
+		(spot as Node2D).position = c + Vector2(0, h * 0.40)
+	_entities.add_child(spot)
 
 ## A dense cluster of the biome's border tree (or plain tree as a fallback).
 func _feature_grove(c: Vector2, r: float) -> void:
@@ -519,7 +535,7 @@ func _spawn_gather_nodes() -> void:
 			(node as Node2D).position = pos
 		_entities.add_child(node)
 		var qty: int = 2 + _rng.randi_range(0, 1 + _tier / 2)
-		node.call("configure", item, qty, GATHER_TINTS.get(item.id, Color.WHITE))
+		node.call("configure", item, qty, GATHER_TINTS.get(item.id, Color.WHITE), GATHER_TOOLS.get(item.id, &""))
 
 func _build_loot() -> Array:
 	var table: Array[Item] = []

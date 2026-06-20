@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="ConsumableItem" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/consumable_item.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/lake_bass.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"lake_bass"
+name = "Lake Bass"
+description = "A fat, prized bass. A hearty bite raw, a feast once cooked."
+icon = ExtResource("2_icon")
+max_stack = 99
+value = 12
+heal = 9

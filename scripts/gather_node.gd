@@ -10,6 +10,9 @@ const PICKUP_SCENE := preload("res://scenes/entities/item_pickup.tscn")
 
 @export var yield_item: Item
 @export var quantity: int = 3
+## The tool needed to work this node: &"pickaxe" for ore/stone/crystal veins,
+## &"axe" for wood. Blank means hand-gatherable (herbs/forage — press E).
+@export var required_tool: StringName = &""
 
 var _depleted: bool = false
 
@@ -18,18 +21,33 @@ var _depleted: bool = false
 func _ready() -> void:
 	add_to_group("interactable")
 
-func configure(item: Item, qty: int, tint: Color = Color.WHITE) -> void:
+func configure(item: Item, qty: int, tint: Color = Color.WHITE, tool: StringName = &"") -> void:
 	yield_item = item
 	quantity = qty
+	required_tool = tool
 	if _sprite != null:
 		_sprite.modulate = tint
 
+## Tool contract (F with a tool selected): only the right tool works a gated vein.
+func use_tool(kind: StringName, player: Node) -> bool:
+	if required_tool != &"" and kind != required_tool:
+		return false
+	return _harvest_one(player)
+
+## Interact contract (E): hand-gatherable nodes only; gated veins need their tool.
 func interact(player: Node) -> void:
-	if _depleted or quantity <= 0 or yield_item == null:
+	if required_tool != &"":
 		return
+	_harvest_one(player)
+
+## Take one yield to the bag (drop it if the bag is full). Returns whether anything
+## was harvested.
+func _harvest_one(player: Node) -> bool:
+	if _depleted or quantity <= 0 or yield_item == null:
+		return false
 	var inv: Inventory = player.get_node_or_null("Inventory") as Inventory
 	if inv == null:
-		return
+		return false
 	# Add to the bag; if it's full, drop the harvest at our feet instead.
 	if inv.add_item(yield_item, 1) > 0:
 		var pickup := PICKUP_SCENE.instantiate() as ItemPickup
@@ -40,6 +58,7 @@ func interact(player: Node) -> void:
 	_strike_flash()
 	if quantity <= 0:
 		_deplete()
+	return true
 
 func _strike_flash() -> void:
 	if _sprite == null:

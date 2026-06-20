@@ -105,6 +105,37 @@ func _build_plant_menu() -> Dictionary:
 	choices.append({"text": "Back", "back": true})
 	return {"text": "Plant which seeds?", "choices": choices}
 
+# --- Tool / seed verbs (Stardew-style: face the plot, use the held item) -----
+
+## Tool contract (F with a tool selected): hoe tills bare ground, the watering can
+## waters a thirsty crop, and F over a ripe crop harvests it. Returns whether the
+## tool did anything (so the player can play feedback).
+func use_tool(kind: StringName, player: Node) -> bool:
+	_player = player
+	if not FarmManager.is_tilled(plot_id):
+		if kind == &"hoe":
+			_till()
+			return true
+		return false
+	if not FarmManager.has_crop(plot_id):
+		return false  # planting is a seed, not a tool
+	if FarmManager.is_mature(plot_id):
+		_harvest()
+		return true
+	if kind == &"watering_can" and not FarmManager.is_watered(plot_id):
+		_water()
+		return true
+	return false
+
+## Plant a crop from a held seed onto tilled, empty soil. Returns whether it planted
+## (the caller consumes the seed).
+func try_plant(crop: CropData, _player_node: Node) -> bool:
+	if crop == null:
+		return false
+	if FarmManager.is_tilled(plot_id) and not FarmManager.has_crop(plot_id):
+		return FarmManager.plant(plot_id, crop)
+	return false
+
 # --- Effects ----------------------------------------------------------------
 
 func _till() -> void:
