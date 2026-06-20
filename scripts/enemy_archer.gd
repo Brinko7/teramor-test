@@ -20,6 +20,11 @@ const PROJECTILE_SCENE := preload("res://scenes/entities/enemy_projectile.tscn")
 
 var _fire_timer: float = 0.0
 
+func _ready() -> void:
+	super._ready()
+	# A kiter: it fights at range and never throws a melee strike.
+	melee_attacker = false
+
 func _decide_input(delta: float) -> Vector2:
 	_fire_timer = maxf(0.0, _fire_timer - delta)
 

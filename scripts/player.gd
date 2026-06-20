@@ -36,6 +36,8 @@ const HITBOX_REACH := 14.0
 const MELEE_KNOCKBACK := 175.0
 const LUNGE_SPEED := 95.0
 const LUNGE_DECAY := 620.0
+## Seconds between footstep dust puffs while moving.
+const STEP_INTERVAL := 0.28
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var outfit_sprite: Sprite2D = $Outfit
@@ -75,6 +77,8 @@ var _blocking: bool = false
 var _hit_enemies: Array = []
 ## Decaying forward step applied during a melee swing for weighty hits.
 var _lunge: Vector2 = Vector2.ZERO
+## Footstep-dust cadence timer.
+var _step_timer: float = 0.0
 ## Cosmetic rendering (worn gear, held weapon/shield), created in _ready().
 var _visuals: PlayerVisuals
 ## Scene-placed start position, used as the respawn point after death.
@@ -227,9 +231,22 @@ func _movement(delta: float) -> void:
 	move_and_slide()
 	_lunge = _lunge.move_toward(Vector2.ZERO, LUNGE_DECAY * delta)
 
+	var moving: bool = input.length() > 0.01
+	_emit_footstep(delta, moving)
+
 	# Face where you're moving; when standing still, face the cursor.
 	_update_facing(input if input != Vector2.ZERO else _aim)
-	_update_animation(delta, input.length() > 0.01)
+	_update_animation(delta, moving)
+
+## Kick up a dust puff at the feet on a step cadence while moving.
+func _emit_footstep(delta: float, moving: bool) -> void:
+	_step_timer -= delta
+	if not moving:
+		_step_timer = minf(_step_timer, 0.0)
+		return
+	if _step_timer <= 0.0:
+		_step_timer = STEP_INTERVAL
+		Events.step_puff.emit(global_position)
 
 func _update_facing(dir: Vector2) -> void:
 	if dir == Vector2.ZERO:
@@ -288,6 +305,7 @@ func _start_attack() -> void:
 	hitbox_shape.disabled = false
 	_lunge = _aim * LUNGE_SPEED  # weighty step into the swing
 	_visuals.swing_melee(weapon, _aim)
+	Events.melee_swung.emit(global_position + _aim * HITBOX_REACH + Vector2(0, -10), _aim, true)
 
 func _fire_projectile(weapon: WeaponItem) -> void:
 	var arrow := ARROW_SCENE.instantiate() as Projectile

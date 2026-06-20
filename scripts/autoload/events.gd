@@ -30,3 +30,17 @@ signal damage_dealt(position: Vector2, amount: int, to_enemy: bool, player_invol
 ## Requests a camera shake of the given strength (in pixels). The player camera's
 ## CameraShake listens.
 signal screen_shake(strength: float)
+
+## Emitted when a melee attack swings (the moment a strike lands), so CombatFX can
+## paint a slash-arc at `position` oriented along `dir`. `by_player` tints it —
+## cool/bright for the player, hot for an enemy.
+signal melee_swung(position: Vector2, dir: Vector2, by_player: bool)
+
+## Emitted by an enemy as it begins an attack wind-up, so CombatFX can spawn a
+## telegraph "tell" at `position` that fills over `duration` seconds — the player's
+## window to react. `dir` is the committed strike direction.
+signal attack_windup(position: Vector2, dir: Vector2, duration: float)
+
+## Emitted on a footfall (the player, and reusable for others) so CombatFX can kick
+## up a small dust puff at `position`. Emitters throttle this to a step cadence.
+signal step_puff(position: Vector2)

@@ -19,6 +19,10 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	Events.damage_dealt.connect(_on_damage_dealt)
 	Events.enemy_killed.connect(_on_enemy_killed)
+	# Spawned actor-local VFX: swing arcs, attack tells, footstep dust.
+	Events.melee_swung.connect(_on_melee_swung)
+	Events.attack_windup.connect(_on_attack_windup)
+	Events.step_puff.connect(_on_step_puff)
 
 func _on_damage_dealt(position: Vector2, amount: int, to_enemy: bool, player_involved: bool) -> void:
 	# Numbers pop for every hit (so faction brawls read), but the screen-wide
@@ -38,6 +42,36 @@ func _on_enemy_killed(_enemy_id: StringName, _xp_reward: int, position: Vector2,
 		return
 	Events.screen_shake.emit(5.5)
 	_hit_stop(KILL_FREEZE)
+
+# --- Actor-local VFX --------------------------------------------------------
+
+func _on_melee_swung(position: Vector2, dir: Vector2, by_player: bool) -> void:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var arc := SlashArc.new()
+	arc.dir = dir
+	arc.by_player = by_player
+	scene.add_child(arc)
+	arc.global_position = position
+
+func _on_attack_windup(position: Vector2, dir: Vector2, duration: float) -> void:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var ring := TelegraphRing.new()
+	ring.dir = dir
+	ring.duration = duration
+	scene.add_child(ring)
+	ring.global_position = position
+
+func _on_step_puff(position: Vector2) -> void:
+	var scene := get_tree().current_scene
+	if scene == null:
+		return
+	var puff := DustPuff.new()
+	scene.add_child(puff)
+	puff.global_position = position
 
 # --- Hit-stop ---------------------------------------------------------------
 

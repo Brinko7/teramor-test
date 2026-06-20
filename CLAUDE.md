@@ -159,13 +159,43 @@ combat code stays simple — it just reports outcomes:
   (`player.gd._on_enemy_killed` credits XP only when `by_player`), and no **quest
   KILL credit** (`QuestManager` skips non-`by_player` kills). Every player attack
   path (melee, projectile, ability projectile/nova, DoT) passes `true`.
-- The player camera carries `components/camera_shake.gd`, which listens for
-  `screen_shake` and jolts its `offset`.
+- The player camera (`components/camera_shake.gd`) listens for `screen_shake` and
+  jolts its `offset`, and also adds a smoothed **aim-lead** — the view drifts a
+  little toward the cursor (clamped to `LEAD_MAX`). Each frame `offset = lead + jolt`.
 - **Knockback**: the `knockback` arg of `take_damage` is an optional impulse that
   decays in `_physics_process`; melee/projectiles/nova pass a direction.
 - The player adds a forward **lunge** on melee swings (`_lunge`).
-Tune feel via the constants in `combat_fx.gd`, `camera_shake.gd`, and the player's
-`MELEE_KNOCKBACK`/`LUNGE_*`.
+
+**The feedback layer (the "good → great" pass).** Beyond the autoload juice above,
+actors sell their own hits:
+- **Enemy telegraphed attacks.** `Enemy` runs a `READY → WINDUP → STRIKE → RECOVER`
+  state machine (`_update_attack`): a hostile within `attack_range` triggers a
+  `windup_time` wind-up (movement locks, the sprite shows a warm warn-glow, and a
+  CombatFX **telegraph ring** fills), then a **strike** paints a swing arc, lunges
+  forward (`STRIKE_LUNGE`), and damages any hostile still inside `strike_range`. The
+  wind-up is the player's window to back off or block — this **replaced** the old
+  passive contact damage, so "they just touch you" is gone. Tune per-enemy via the
+  `melee_attacker` / `attack_range` / `windup_time` / `recover_time` exports
+  (authored in the `.tscn`s — a snappy wolf, a heavy brute). **Kiters and
+  non-combatants opt out** (`melee_attacker = false`: archer, wildlife, bear cub) so
+  they never deal contact damage.
+- **Hit-flash + flinch + death beat.** Taking damage drives a per-instance shader
+  (`assets/shaders/hit_flash.gdshader`, two channels: `warn` telegraph-glow and
+  `flash` white-flash) for a crisp white pop, plus a squash-and-recover `_flinch`.
+  Death is no longer an instant `queue_free` — `_on_died` fires the kill (so XP/quest/
+  burst land immediately), pulls the enemy from the `"enemy"` group, disables its
+  collision, then plays a collapse/topple/fade before freeing (the `_dying` flag gates
+  further hits and physics).
+- **Spawned VFX, Events-driven.** New signals on the bus — `melee_swung(pos, dir,
+  by_player)`, `attack_windup(pos, dir, duration)`, `step_puff(pos)` — let CombatFX
+  spawn the actor-local effects so combat code stays clean. The effects are
+  **code-built** `Node2D`s in `scripts/effects/` (`SlashArc`, `TelegraphRing`,
+  `DustPuff`), drawn with `_draw` on the grounded palette (no `.tscn`). The player
+  emits `melee_swung` on a melee swing and `step_puff` on a footstep cadence.
+
+Tune feel via the constants in `combat_fx.gd`, `camera_shake.gd`, the `scripts/effects/`
+scripts, the enemy attack exports, and the player's `MELEE_KNOCKBACK`/`LUNGE_*`.
+Headless coverage: `tools/validate_combat_feel.gd`.
 
 ### Progression & skills
 `Stats` (`scripts/stats.gd`, child of the player) is the progression authority:
