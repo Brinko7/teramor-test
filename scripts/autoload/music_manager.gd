@@ -22,8 +22,11 @@ const ZONE_MUSIC := {
 	&"cursed": &"theme_cursed", &"finale": &"theme_cursed",
 }
 
-## Outdoor zones whose ambience bed tracks the time of day.
+## Outdoor zones whose ambience bed tracks the time of day (and where weather shows).
 const OUTDOOR: Array[StringName] = [&"camp", &"town", &"wild"]
+
+## Emitted when the active zone changes (WeatherFX gates precipitation on this).
+signal zone_changed(zone: StringName)
 
 var _music: _Layer
 var _amb: _Layer
@@ -41,12 +44,19 @@ func _ready() -> void:
 ## only crossfades when the chosen track actually changes), so walking through a
 ## door into the same kind of place never restarts the music.
 func enter_zone(zone: StringName) -> void:
+	var changed: bool = zone != _zone
 	_zone = zone
 	_music.play(ZONE_MUSIC.get(zone, &"theme_town"))
 	_amb.play(_ambience_for(zone))
+	if changed:
+		zone_changed.emit(_zone)
 
 func get_zone() -> StringName:
 	return _zone
+
+## Whether the current zone is open-air (weather + day/night ambience apply).
+func is_outdoor() -> bool:
+	return OUTDOOR.has(_zone)
 
 ## Stop both layers (e.g. a silent beat). Kept for future cutscene control.
 func silence() -> void:

@@ -24,12 +24,24 @@ const SEASON_TINT: Array[Color] = [
 	Color(0.88, 0.93, 1.0),    # WINTER — pale, cold blue
 ]
 
+## A weather multiplier folded in on top of the season tint: overcast skies dim
+## and cool the world (rain/fog), snow keeps it pale-bright. Kept gentle.
+const WEATHER_TINT := {
+	&"clear": Color(1.0, 1.0, 1.0),
+	&"rain": Color(0.78, 0.82, 0.90),
+	&"fog": Color(0.85, 0.87, 0.90),
+	&"snow": Color(0.93, 0.96, 1.0),
+}
+
 var _season_tint: Color = SEASON_TINT[0]
+var _weather_tint: Color = Color.WHITE
 
 func _ready() -> void:
 	TimeManager.time_changed.connect(_on_time_changed)
 	TimeManager.season_changed.connect(_on_season_changed)
+	WeatherManager.weather_changed.connect(_on_weather_changed)
 	_season_tint = _tint_for(TimeManager.get_season())
+	_weather_tint = _weather_for(WeatherManager.weather_id())
 	color = _color_for(TimeManager.get_time_minutes())
 
 func _on_time_changed(minutes: int) -> void:
@@ -38,6 +50,13 @@ func _on_time_changed(minutes: int) -> void:
 func _on_season_changed(season: int) -> void:
 	_season_tint = _tint_for(season)
 	color = _color_for(TimeManager.get_time_minutes())
+
+func _on_weather_changed(_weather: int) -> void:
+	_weather_tint = _weather_for(WeatherManager.weather_id())
+	color = _color_for(TimeManager.get_time_minutes())
+
+func _weather_for(weather_id: StringName) -> Color:
+	return WEATHER_TINT.get(weather_id, Color.WHITE)
 
 func _tint_for(season: int) -> Color:
 	return SEASON_TINT[clampi(season, 0, SEASON_TINT.size() - 1)]
@@ -57,5 +76,5 @@ func _color_for(minutes: int) -> Color:
 		if t >= stop_min[i] and t <= stop_min[i + 1]:
 			var span: int = stop_min[i + 1] - stop_min[i]
 			var f: float = 0.0 if span == 0 else float(t - stop_min[i]) / float(span)
-			return stop_col[i].lerp(stop_col[i + 1], f) * _season_tint
-	return DAY * _season_tint
+			return stop_col[i].lerp(stop_col[i + 1], f) * _season_tint * _weather_tint
+	return DAY * _season_tint * _weather_tint
