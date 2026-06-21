@@ -312,11 +312,27 @@ verb. Felling the wolves completes `ch1_first_lesson` → `father_missing` → `
 **Cleeve's Landing** (`town.tscn`, spawn `from_road`). Elkar's bust is baked like the
 others by `gen_portraits.py`. Headless: `tools/validate_prologue.gd`.
 
-> **Staged:** the **Children of Tera camp is meant to be a secret** the player only
-> finds *after* searching Cleeve's Landing, then is **recruited** into. That rework
-> (making `settlement_camp` rumoured/undiscovered + a discovery/recruitment beat, and
-> fixing `continue_game` to reload the last place) is the **next slice** — for now the
-> camp stays `discovered_by_default` so it remains reachable from the map.
+**The camp is a secret you earn into.** `settlement_camp` is **not**
+`discovered_by_default` — it isn't on the map until you find it. The route:
+- **ch2** completes the moment you reach Cleeve's Landing, and **ch3_children** points
+  you at the tavern. There a hooded **Child of Tera, Sorrel**
+  (`resources/npcs/sorrel.tres`, in `tavern_interior.tscn`) reveals a **hidden trail**
+  — her topic sets the `trail_revealed` flag.
+- A **flag-gated journey `ExploreZone`** in `town.tscn` (hidden until `trail_revealed`)
+  is the trek: a one-way deepwood crossing that `journey_to`s the camp, **discovering**
+  it. The open `road.tscn` route to the camp stays sealed (`ExitToSettlement`'s
+  `require_flag = beat_visit_settlement_camp`) until that discovery, so the trail is the
+  only first way in. Both `ExploreZone` and `TransitionZone` gained an optional
+  `require_flag` export (hide + go inert until the Story flag is set; re-checked each
+  scene load).
+- At the camp, **Elder Maelon** recruits you (a topic gated on `trail_revealed`, firing
+  the `joined_children` beat that completes `q_seek_camp`); ch3_children sets
+  `joined_children_of_tera` and hands off to **ch4 First Awakening**.
+- **Continue reloads your last location**: `continue_game` peeks the saved WorldMap
+  state (`SaveManager.peek`) to pick the scene from the current location's `scene_path`,
+  falling back to the camp only for pre-existing/wild-area saves.
+
+Headless: `tools/validate_recruitment.gd`.
 
 ### Story / main questline
 The **Story** autoload is both a flag/`stage` bag and the main-line **director**. It

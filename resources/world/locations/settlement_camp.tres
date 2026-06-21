@@ -6,12 +6,12 @@
 script = ExtResource("1_script")
 id = &"settlement_camp"
 display_name = "Children of Tera Camp"
-blurb = "Your hidden camp where the forest meets the Cursed Wilds — home to the Children of Tera."
+blurb = "A hidden camp where the forest meets the Cursed Wilds — the Children of Tera shelter here. Found only by those they trust to walk the path."
 scene_path = "res://scenes/world/settlement.tscn"
 spawn_point = "from_road"
 tier = 0
 region = &"hollenmark"
 kind = &"camp"
 connections = PackedStringArray("cleaves_landing")
-discovered_by_default = true
+discovered_by_default = false
 travel_biome_path = "res://resources/world/biomes/roadside.tres"

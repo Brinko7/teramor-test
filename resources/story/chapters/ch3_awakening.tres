@@ -5,10 +5,10 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ch3_awakening"
-title = "Chapter 3: First Awakening"
-summary = "The Children of Tera take you in. They believe the blood of Tera runs in you — and that the wilds will wake it."
+title = "Chapter 4: First Awakening"
+summary = "Now one of the Children of Tera, you learn the blood of Tera runs in you — and that the wilds will wake it."
 quest_path = "res://resources/quests/q_awakening.tres"
-stage = 2
+stage = 3
 intro_toast = "The Children of Tera: \"Step into the Deepwood. Let it wake what sleeps in you.\""
 completion_toast = "Power stirs within you. (+1 skill point — open the Skills tab)"
 set_flags = PackedStringArray("awakened")

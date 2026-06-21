@@ -14,11 +14,23 @@ extends Area2D
 
 @export var target_scene: String = ""
 @export var target_spawn: String = ""
+## If set, this door stays hidden + inert until the named Story flag is set, so a
+## route can be sealed until the world opens it (e.g. the road to the camp only
+## appears once the camp has been discovered). Re-evaluated each time the scene loads.
+@export var require_flag: StringName = &""
 
 var _triggered: bool = false
 
 func _ready() -> void:
+	if require_flag != &"" and not _flag_set():
+		visible = false
+		set_deferred("monitoring", false)
+		return
 	body_entered.connect(_on_body_entered)
+
+func _flag_set() -> bool:
+	var story := get_node_or_null("/root/Story")
+	return story != null and story.has_method("has_flag") and story.call("has_flag", require_flag)
 
 func _on_body_entered(body: Node) -> void:
 	if _triggered:

@@ -14,11 +14,23 @@ extends Area2D
 ## that *arrives at (and discovers)* this location — the way you cross a long wild
 ## stretch to reach the next town/frontier. Leave blank for a normal excursion.
 @export var journey_to: StringName = &""
+## If set, this zone stays hidden + inert until the named Story flag is set — used
+## for a secret route the world only opens once the player has earned it (e.g. the
+## hidden trail to the camp, revealed by the tavern contact). Re-checked on each load.
+@export var require_flag: StringName = &""
 
 var _triggered: bool = false
 
 func _ready() -> void:
+	if require_flag != &"" and not _flag_set():
+		visible = false
+		set_deferred("monitoring", false)
+		return
 	body_entered.connect(_on_body_entered)
+
+func _flag_set() -> bool:
+	var story := get_node_or_null("/root/Story")
+	return story != null and story.has_method("has_flag") and story.call("has_flag", require_flag)
 
 func _on_body_entered(body: Node) -> void:
 	if _triggered or not body.is_in_group("player"):

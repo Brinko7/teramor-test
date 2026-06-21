@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="StoryChapter" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/story_chapter.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ch3_children"
+title = "Chapter 3: The Children of Tera"
+summary = "Ask after Elkar in Cleeve's Landing, follow the hidden trail the tavern stranger reveals, and find the Children of Tera."
+quest_path = "res://resources/quests/q_seek_camp.tres"
+stage = 2
+intro_toast = "Ask after Elkar in Cleeve's Landing — the tavern hears what the streets won't."
+completion_toast = "The Children of Tera take you in. You are one of them now — as your father was."
+set_flags = PackedStringArray("joined_children_of_tera")
+grant_skill_points = 0
+next_chapter = &"ch3_awakening"

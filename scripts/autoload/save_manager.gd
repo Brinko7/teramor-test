@@ -39,6 +39,24 @@ func _unhandled_input(event: InputEvent) -> void:
 func has_save() -> bool:
 	return FileAccess.file_exists(SAVE_PATH)
 
+## Read one entry's saved state without applying it to the tree — lets a caller
+## peek at where the player was (e.g. WorldMap's current location) before deciding
+## which scene to load on Continue. Returns {} when absent or malformed.
+func peek(save_id: String) -> Dictionary:
+	if not has_save():
+		return {}
+	var file := FileAccess.open(SAVE_PATH, FileAccess.READ)
+	if file == null:
+		return {}
+	var text := file.get_as_text()
+	file.close()
+	var parsed: Variant = JSON.parse_string(text)
+	if typeof(parsed) != TYPE_DICTIONARY:
+		return {}
+	var entries: Dictionary = _migrate(parsed)
+	var entry: Variant = entries.get(save_id, {})
+	return entry if typeof(entry) == TYPE_DICTIONARY else {}
+
 func save_all() -> void:
 	var entries: Dictionary = {}
 	for node in get_tree().get_nodes_in_group(GROUP):

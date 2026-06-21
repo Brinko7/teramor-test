@@ -46,6 +46,7 @@ position = Vector2(900, 160)
 position = Vector2(8, 160)
 target_scene = "res://scenes/world/settlement.tscn"
 target_spawn = "from_road"
+require_flag = &"beat_visit_settlement_camp"
 
 [node name="CollisionShape2D" parent="ExitToSettlement" index="0"]
 shape = SubResource("edge_shape")
