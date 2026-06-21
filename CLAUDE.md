@@ -51,6 +51,10 @@ Registered in `project.godot` under `[autoload]`:
   authored festival days. Registered **after** UIManager (it drives the banner).
 - **MusicManager** — owns the Music/Ambience buses; crossfades looping tracks per
   zone + day/night. See "Music & ambience" below.
+- **SettingsManager** — app preferences (audio bus volumes, fullscreen/vsync, a
+  screen-shake toggle, key rebindings) persisted to `user://settings.cfg`, **separate
+  from the save**. Applies on startup; the options menu reads/writes it. Registered
+  **after** AudioManager (it sets bus volumes on load).
 - **Wallet** — gold balance.
 - **SceneManager** — fade transitions and player spawn placement.
 - **SaveManager** — generic group-based persistence (see below).
@@ -71,10 +75,20 @@ UIManager.dialogue.start_conversation(intro, menu_provider, speaker)
 UIManager.shop.open(stock, shop_name)
 UIManager.storage.open()
 UIManager.menu.open(tab)   # the unified tabbed player menu
+UIManager.settings.open()  # the options overlay (Audio / Display / Controls)
 ```
 
 Each panel is a `CanvasLayer` that processes while the tree is paused and handles
 its own toggle input — `UIManager` just owns it.
+
+**Options menu** (`scripts/ui/settings_panel.gd`, `UIManager.settings`) is the
+tabbed overlay for **Audio** (Master/Music/SFX/Ambience sliders → the mixer buses),
+**Display** (fullscreen, vsync, an accessibility screen-shake toggle the player
+camera honours) and **Controls** (rebind the keyboard actions; combat stays
+mouse-aimed). It's a thin view over **SettingsManager** (which applies + persists to
+`user://settings.cfg`), reachable from the title screen and the player-menu footer.
+Opening it pauses the tree and restores the prior pause state on close, so it layers
+over the already-paused player menu. Headless coverage: `tools/validate_settings.gd`.
 
 **Player menu** (`scripts/ui/player_menu.gd`) is the unified, Stardew/Kynseed-style
 tabbed overlay and the home for inventory, equipped gear, character stats, quests

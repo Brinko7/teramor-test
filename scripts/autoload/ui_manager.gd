@@ -30,6 +30,7 @@ const TRACKER_SCRIPT := preload("res://scripts/ui/quest_tracker.gd")
 const BANNER_SCRIPT := preload("res://scripts/ui/notification_banner.gd")
 const SHOP_SCRIPT := preload("res://scripts/autoload/shop_ui.gd")
 const STORAGE_SCRIPT := preload("res://scripts/autoload/storage_ui.gd")
+const SETTINGS_SCRIPT := preload("res://scripts/ui/settings_panel.gd")
 
 # Untyped on purpose: each panel exposes its own methods (is_active, open, ...)
 # that are not on the CanvasLayer base, so access is dynamic — exactly as it was
@@ -41,6 +42,7 @@ var tracker
 var banner
 var shop
 var storage
+var settings
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -51,7 +53,8 @@ func _ready() -> void:
 	banner = BANNER_SCRIPT.new()
 	shop = SHOP_SCRIPT.new()
 	storage = STORAGE_SCRIPT.new()
-	for panel: CanvasLayer in [dialogue, crafting, menu, tracker, banner, shop, storage]:
+	settings = SETTINGS_SCRIPT.new()
+	for panel: CanvasLayer in [dialogue, crafting, menu, tracker, banner, shop, storage, settings]:
 		add_child(panel)
 
 ## Show a transient banner (story beats, awakenings, etc.).

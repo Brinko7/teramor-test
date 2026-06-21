@@ -24,6 +24,8 @@ func _ready() -> void:
 	Events.screen_shake.connect(_on_screen_shake)
 
 func _on_screen_shake(strength: float) -> void:
+	if not SettingsManager.screen_shake_enabled():
+		return  # accessibility: shake can be turned off in Options
 	_shake = minf(MAX_SHAKE, maxf(_shake, strength))
 
 func _process(delta: float) -> void:

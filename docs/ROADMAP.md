@@ -143,8 +143,11 @@ and none depends on another landing first. Rough priority:
    per NPC swapped on loved/liked gifts and in heart events; baked by
    `gen_portraits.py` on the grounded palette, resolved by id convention.
    `tools/validate_portraits.gd`.
-3. **Options menu** — the volume sliders the buses expect, key rebinding,
-   fullscreen/vsync, assist/difficulty toggles. Table stakes for a shippable feel.
+3. ~~**Options menu** — volume sliders, key rebinding, fullscreen/vsync, assist
+   toggles.~~ ✅ **Done** — `SettingsManager` (persisted to `user://settings.cfg`) +
+   a tabbed `settings_panel` (Audio / Display / Controls) reachable from the title
+   screen and the player-menu footer; sliders drive the mixer buses, a screen-shake
+   toggle for accessibility, keyboard rebinding. `tools/validate_settings.gd`.
 4. **Weather + environmental particles** — rain, fog, drifting leaves, fireflies at
    dusk, wind-sway shaders. Pairs with seasons; drive it off `TimeManager`/biome.
 5. **Post-processing pass** — a full-screen shader for subtle vignette + per-biome
@@ -164,11 +167,10 @@ and none depends on another landing first. Rough priority:
 
 ### Now-open threads to pull next (in priority order)
 
-- **Options menu** (Pillar 8) — the next swing. Volume sliders the buses already
-  expect (`AudioManager.set_bus_volume_linear`), key rebinding, fullscreen, assist
-  toggles. Table stakes for a shippable feel.
-- **Weather + environmental particles** (Pillar 8) — rain/fog/leaves/fireflies + wind
-  sway, driven off `TimeManager`/biome; pairs with seasons.
+- **Weather + environmental particles** (Pillar 8) — the next swing. Rain/fog/leaves/
+  fireflies + wind sway, driven off `TimeManager`/biome; pairs with seasons.
+- **A Codex / almanac tab** (Pillar 8 QoL) — discovered crops/fish/monsters/people as
+  a `player_menu` tab; the completionist hook.
 - **Camp construction round 3** (Pillar 1) — visible camp tiers: swap props in
   `settlement.tscn` by upgrade level so the camp *looks* like it grew; a kitchen/forge
   building gating cook/smith roles.
@@ -180,5 +182,5 @@ and none depends on another landing first. Rough priority:
   bespoke Colossus art, and a second pattern (a ranged/summon phase).
 
 Pick the pillar that excites *you* most; conviction reads on screen. With the season
-layer, the soundscape, and portraits in, the **options menu** (the sliders the buses
-already expect) is the highest-leverage next swing.
+layer, the soundscape, portraits, and the options menu in, **weather + environmental
+particles** (the world in motion, leaning on the season layer) is the next swing.
