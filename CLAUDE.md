@@ -299,6 +299,25 @@ that learned skill nodes unlock. `player.gd` resyncs this (and the health pool) 
 `skills_changed`. Ranged damage now flows through `Stats.ranged_power()`. The
 player menu's **Skills** tab spends points and learns nodes.
 
+### The opening (the Elkar prologue)
+A **new game opens on the prologue** (`scenes/world/prologue.tscn`, `prologue.gd`) —
+the wilds' edge, not the camp. `GameManager.enter_world` drops the player here
+(`PROLOGUE`, distinct from `WORLD` which `continue_game` still uses). It's the home
+of **Elkar**, the player's father and a ranger (`resources/npcs/elkar.tres`), who
+gives a **diegetic last lesson**: his dialogue topics teach the verbs (footwork,
+the blade, the dodge-roll, working the land), the two wolves at the treeline are
+chapter 1's "defeat 2 foes" beat, and a few farm plots + a seed pickup cover the cozy
+verb. Felling the wolves completes `ch1_first_lesson` → `father_missing` → `ch2`
+("find Elkar in Cleeve's Landing"); an exit by the road carries the player onward to
+**Cleeve's Landing** (`town.tscn`, spawn `from_road`). Elkar's bust is baked like the
+others by `gen_portraits.py`. Headless: `tools/validate_prologue.gd`.
+
+> **Staged:** the **Children of Tera camp is meant to be a secret** the player only
+> finds *after* searching Cleeve's Landing, then is **recruited** into. That rework
+> (making `settlement_camp` rumoured/undiscovered + a discovery/recruitment beat, and
+> fixing `continue_game` to reload the last place) is the **next slice** — for now the
+> camp stays `discovered_by_default` so it remains reachable from the map.
+
 ### Story / main questline
 The **Story** autoload is both a flag/`stage` bag and the main-line **director**. It
 loads `StoryChapter` resources (`scripts/story_chapter.gd`) from

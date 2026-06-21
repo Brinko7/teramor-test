@@ -9,6 +9,9 @@ extends Node
 const MAIN_MENU := "res://scenes/ui/main_menu.tscn"
 const CHARACTER_CREATION := "res://scenes/ui/character_creation.tscn"
 const WORLD := "res://scenes/world/settlement.tscn"
+## A new game opens on the prologue — the wilds' edge, Elkar's last lesson — not the
+## camp (the Children of Tera are a secret the player hasn't found yet).
+const PROLOGUE := "res://scenes/world/prologue.tscn"
 
 var _layer: CanvasLayer
 var _panel: Control
@@ -40,7 +43,7 @@ func enter_world() -> void:
 	HeartEventManager.reset()
 	WorldMap.reset()
 	Story.start_new_game()
-	get_tree().change_scene_to_file(WORLD)
+	get_tree().change_scene_to_file(PROLOGUE)
 
 ## Load the world, then restore the saved snapshot once it is in the tree.
 func continue_game() -> void:

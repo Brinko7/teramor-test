@@ -153,6 +153,7 @@ PORTRAITS = [
 	("hadrin",       "tan",   "black",  "short", "brown", True),
 	("mara",         "pale",  "brown",  "long",  "plum",  False),
 	("elder_maelon", "pale",  "white",  "bald",  "slate", True),
+	("elkar",        "tan",   "ash",    "short", "brown", True),   # weathered ranger, greying
 ]
 
 
