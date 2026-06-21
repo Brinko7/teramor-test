@@ -1,0 +1,20 @@
+[gd_scene load_steps=3 format=3 uid="uid://b8critterdog001"]
+
+[ext_resource type="Script" path="res://scripts/critter.gd" id="1_critter"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/critter_dog.png" id="2_tex"]
+
+[node name="Dog" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1_critter")
+move_speed = 22.0
+wander_radius = 64.0
+pause_min = 1.2
+pause_max = 3.6
+anim_fps = 6.0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_tex")
+centered = false
+offset = Vector2(-13, -20)
+hframes = 4
+vframes = 4
