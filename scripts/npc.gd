@@ -173,7 +173,8 @@ func interact(player) -> void:
 	if first_meet and data.met_line != "":
 		intro.append({"text": data.met_line})
 
-	UIManager.dialogue.start_conversation(intro, _build_main_menu, data.display_name)
+	UIManager.dialogue.start_conversation(intro, _build_main_menu, data.display_name,
+		UIManager.dialogue.portrait_for(data.id))
 
 # --- Menu construction ------------------------------------------------------
 
@@ -234,7 +235,7 @@ func _build_gift_menu() -> Dictionary:
 			choices.append({
 				"text": "%s (x%d)" % [item.name, count],
 				"effect": _give_gift.bind(item),
-				"then": [{"text": _reaction_line(item)}],
+				"then": [_reaction_node(item)],
 				"back": true,
 			})
 	choices.append({"text": "Never mind", "back": true})
@@ -289,6 +290,14 @@ func _lines_from(raw) -> Array:
 	for line: String in PackedStringArray(raw):
 		nodes.append({"text": line})
 	return nodes
+
+## A gift-reaction line node — with the happy bust when they love or like it.
+func _reaction_node(item: Item) -> Dictionary:
+	var node: Dictionary = {"text": _reaction_line(item)}
+	var category: String = data.gift_reaction(item.id)
+	if category == "loved" or category == "liked":
+		node["portrait"] = UIManager.dialogue.portrait_for(data.id, true)
+	return node
 
 func _reaction_line(item: Item) -> String:
 	var category: String = data.gift_reaction(item.id)

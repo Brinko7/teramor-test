@@ -576,6 +576,20 @@ gently around their current station (small radius, with pauses) so the town read
 lived-in rather than frozen. Families may share a `home_*` marker; daytime stations
 stay distinct. Headless: `tools/validate_schedules.gd`.
 
+**Dialogue portraits.** Conversations show the speaker's **bust** beside their lines.
+The dialogue box (`scripts/autoload/dialogue.gd`) renders a portrait `TextureRect` in
+an HBox to the left of the text; `start()` / `start_conversation()` take an optional
+portrait, and any per-line/menu node can override it with a `"portrait"` key (so a
+gift the NPC *loves* swaps to their **happy** expression mid-conversation). Portraits
+resolve **by convention** — `UIManager.dialogue.portrait_for(npc_id, happy)` loads
+`assets/placeholder/portraits/portrait_<id>[_happy].png` (cached; a missing happy
+falls back to neutral, a missing portrait to null so an NPC without art just shows no
+bust). `npc.gd` passes the speaker's portrait into every conversation and the happy
+one on loved/liked gifts; `HeartEventManager` shows it during heart-event cutscenes.
+The busts are baked by **`tools/gen_portraits.py`** (built on pixelforge, grounded
+palette + upper-left key light, a neutral + happy per NPC). Headless coverage:
+`tools/validate_portraits.gd`.
+
 Passive game (`scripts/wildlife.gd`, `class_name Wildlife extends Enemy` — deer,
 rabbit) is the huntable end of that table. It spawns on a **separate**
 `_spawn_wildlife()` pass from a biome's `wildlife_paths` (+ `min/max_wildlife`),
@@ -653,7 +667,8 @@ pipeline is ours.
   `replace` palette-swap, `tint`, `blit`, `region`, `scaled`, `save`).
 - Per-sprite generator scripts live in `tools/gen_*.py` and import pixelforge;
   they paint to `assets/placeholder/`. Run a generator to (re)bake its PNG — art
-  is regenerated, not hand-edited.
+  is regenerated, not hand-edited. (`gen_char.py` walk sheets, `gen_portraits.py`
+  dialogue busts, `gen_props.py`/`gen_nature.py`/… world props, etc.)
 - Smoke test: `python3 tools/pixelforge.py` renders `_pixelforge_smoke.png`.
 
 ### Sourced (CC0) art
