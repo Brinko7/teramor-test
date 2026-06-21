@@ -41,6 +41,7 @@
 [ext_resource type="PackedScene" path="res://scenes/entities/props/lamp_post.tscn" id="36_lamp"]
 [ext_resource type="Resource" path="res://resources/items/seeds/turnip_seeds.tres" id="38_tseed"]
 [ext_resource type="Resource" path="res://resources/items/seeds/wheat_seeds.tres" id="39_wseed"]
+[ext_resource type="PackedScene" path="res://scenes/entities/explore_zone.tscn" id="40_explore"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/npc_warden.png" id="50_warden"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/npc_townswoman.png" id="51_townswoman"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/npc_child.png" id="52_child"]
@@ -149,8 +150,14 @@ text = "The Tavern"
 
 [node name="RoadHomeSign" parent="Entities" instance=ExtResource("8_sign")]
 position = Vector2(528, 686)
-text = "Road home
-to the Camp"
+text = "The forest road"
+
+[node name="HiddenTrail" parent="Entities" instance=ExtResource("40_explore")]
+position = Vector2(836, 96)
+biome_path = "res://resources/world/biomes/deepwood.tres"
+tier = 1
+journey_to = &"settlement_camp"
+require_flag = &"trail_revealed"
 
 [node name="TownhouseS1" parent="Entities" instance=ExtResource("32_townhouse")]
 position = Vector2(160, 540)

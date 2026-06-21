@@ -24,6 +24,7 @@
 [ext_resource type="Resource" path="res://resources/quests/contract_bandits.tres" id="21_qband"]
 [ext_resource type="Resource" path="res://resources/quests/contract_brutes.tres" id="22_qbrute"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/npc_keeper.png" id="23_keeper"]
+[ext_resource type="Resource" path="res://resources/npcs/sorrel.tres" id="24_sorrel"]
 
 [sub_resource type="RectangleShape2D" id="wall_v"]
 size = Vector2(12, 224)
@@ -182,6 +183,10 @@ speaker_name = "Bram, the Keeper"
 lines = PackedStringArray("Welcome to the Drowned Stag, traveler.", "Your father? Aye — Elkar drank here the night before he took a contract into the Deepwood. Never came back.", "Folk say the woods swallowed him. I'm not so sure. Check the board, and mind yourself out there.")
 offered_quest = ExtResource("19_qelkar")
 sprite_texture = ExtResource("23_keeper")
+
+[node name="Sorrel" parent="Entities" instance=ExtResource("9_npc")]
+position = Vector2(270, 198)
+data = ExtResource("24_sorrel")
 
 [node name="Player" parent="Entities" instance=ExtResource("13_player")]
 position = Vector2(160, 188)

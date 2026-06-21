@@ -13,4 +13,4 @@ intro_toast = "Find your father. Start by reaching Cleeve's Landing."
 completion_toast = "In town you hear it: the King's men seized a man they took for a hybrid."
 set_flags = PackedStringArray("reached_town")
 grant_skill_points = 0
-next_chapter = &"ch3_awakening"
+next_chapter = &"ch3_children"

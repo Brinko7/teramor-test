@@ -45,10 +45,20 @@ func enter_world() -> void:
 	Story.start_new_game()
 	get_tree().change_scene_to_file(PROLOGUE)
 
-## Load the world, then restore the saved snapshot once it is in the tree.
+## Load the player's last location, then restore the saved snapshot once it is in
+## the tree. Peeks at the saved WorldMap state to pick the right scene (so Continue
+## drops you where you left off, not always the camp); falls back to WORLD when the
+## save predates this, was made in a wild area, or names an unknown place.
 func continue_game() -> void:
 	_dismiss()
-	get_tree().change_scene_to_file(WORLD)
+	var target: String = WORLD
+	var world_state: Dictionary = SaveManager.peek(WorldMap.get_save_id())
+	var current_id := StringName(world_state.get("current", ""))
+	if current_id != &"":
+		var loc := WorldMap.get_location(current_id)
+		if loc != null and not loc.scene_path.is_empty():
+			target = loc.scene_path
+	get_tree().change_scene_to_file(target)
 	await get_tree().process_frame
 	await get_tree().process_frame
 	SaveManager.load_all()

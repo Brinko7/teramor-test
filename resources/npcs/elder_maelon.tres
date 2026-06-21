@@ -26,6 +26,13 @@ liked_line = "A %s. Thoughtful. The old ways teach us to accept what is freely g
 disliked_line = "Cut %s? We do not take from the living wood here, child. But I understand the intent."
 neutral_line = "You honor an old man with this %s. Thank you."
 topics = Array[Dictionary]([{
+"label": "Why have you brought me here?",
+"lines": PackedStringArray("Brought you? No, child — you walked the path yourself. None come to us who are not meant to.", "We are the Children of Tera. Your father was one of us, his father before him. The blood remembers what the mind forgets.", "Elkar went into the Deepwood seeking the Tree's wound, and did not return. If you would follow him — if you would learn what we are, and what you are — then stand with us. Become one of the Children.", "...Good. Then it is done. Welcome home, child of Tera. Rest tonight; tomorrow your true road begins."),
+"require_flag": "trail_revealed",
+"forbid_flag": "joined_children_of_tera",
+"story_beat": "joined_children",
+"affinity": 15
+}, {
 "label": "Ask about my father",
 "lines": PackedStringArray("Elkar came to me before he left. He had found it — the heart-root of the Great Tree, deep in the Deepwood.", "The Tree is sick, Zayn. Something festers at its core. Your father went to look upon the wound with his own eyes.", "But the Deepwood does not surrender what it takes. The Withered walk there now — things that were once men.", "If Elkar still lives, he is beyond the thornwall. You are not ready to follow. Not yet. But you will be."),
 "require_flag": "father_missing",

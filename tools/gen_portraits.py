@@ -154,6 +154,7 @@ PORTRAITS = [
 	("mara",         "pale",  "brown",  "long",  "plum",  False),
 	("elder_maelon", "pale",  "white",  "bald",  "slate", True),
 	("elkar",        "tan",   "ash",    "short", "brown", True),   # weathered ranger, greying
+	("sorrel",       "pale",  "black",  "long",  "green", False),  # a Child of Tera, forest-cloaked
 ]
 
 
