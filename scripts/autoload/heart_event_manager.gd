@@ -74,7 +74,7 @@ func _try_play() -> void:
 	if UIManager.dialogue.is_active():
 		return
 	var ev: HeartEvent = _queue.pop_front()
-	UIManager.dialogue.start(ev.lines, ev.speaker)
+	UIManager.dialogue.start(ev.lines, ev.speaker, UIManager.dialogue.portrait_for(ev.npc_id))
 
 func _on_dialogue_finished() -> void:
 	# A conversation (or a prior heart event) just ended — chain the next.
