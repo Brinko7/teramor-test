@@ -670,6 +670,20 @@ prop scene so it shows everywhere they're placed); it sits on the painted chimne
 and reads against the existing `night_light.gd` window-glow for a lived-in skyline.
 Headless: `tools/validate_townlife.gd`.
 
+**Ambient animals.** `scripts/critter.gd` (`class_name Critter`) is a cosmetic animal:
+a `Node2D` with **no collision** that wanders/pecks around a home spot, animating off
+the **4×4 directional animal sheet** (rows down/up/left/right) via `dir_util` — the
+same rig the wildlife uses, but with no physics body. Exports tune the behaviour:
+`idle_peck` nibbles in place while paused; `skittish` flees the player within
+`flush_radius`; a `flyer` **takes wing** on a flush (rises + fades, latched so it
+commits even after clearing the radius, then respawns near home after `respawn_delay`).
+Three ship — `chicken.tscn` (pecking hen, scurries), `dog.tscn` (ambling, friendly),
+`bird.tscn` (skittish flyer): the camp keeps a few hens by the farm and Cleeve's
+Landing has a street dog plus a **flock of plaza birds that scatter** when you run
+through them. Art is baked by `tools/gen_critters.py` (pixelforge, grounded palette);
+add an animal by authoring a sheet + a tuned `Critter` scene. Headless:
+`tools/validate_critters.gd`.
+
 **Dialogue portraits.** Conversations show the speaker's **bust** beside their lines.
 The dialogue box (`scripts/autoload/dialogue.gd`) renders a portrait `TextureRect` in
 an HBox to the left of the text; `start()` / `start_conversation()` take an optional

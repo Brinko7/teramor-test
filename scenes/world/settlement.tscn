@@ -36,6 +36,7 @@
 [ext_resource type="PackedScene" path="res://scenes/entities/props/rock.tscn" id="13_rock"]
 [ext_resource type="PackedScene" path="res://scenes/entities/props/farm_plot.tscn" id="26_plot"]
 [ext_resource type="PackedScene" path="res://scenes/entities/props/chest.tscn" id="27_chest"]
+[ext_resource type="PackedScene" path="res://scenes/entities/chicken.tscn" id="28_chick"]
 
 [sub_resource type="RectangleShape2D" id="wall_h"]
 size = Vector2(640, 16)
@@ -121,6 +122,15 @@ position = Vector2(128, 196)
 
 [node name="Chest" parent="Entities" instance=ExtResource("27_chest")]
 position = Vector2(96, 296)
+
+[node name="Chicken1" parent="Entities" instance=ExtResource("28_chick")]
+position = Vector2(212, 314)
+
+[node name="Chicken2" parent="Entities" instance=ExtResource("28_chick")]
+position = Vector2(234, 300)
+
+[node name="Chicken3" parent="Entities" instance=ExtResource("28_chick")]
+position = Vector2(198, 336)
 
 [node name="FarmPlot00" parent="Entities" instance=ExtResource("26_plot")]
 position = Vector2(112, 296)

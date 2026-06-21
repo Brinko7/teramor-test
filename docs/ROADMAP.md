@@ -98,8 +98,10 @@ The telegraph→dodge→punish core is good. Make it *deep*:
     (`scripts/townsfolk.gd` + `townsfolk_crowd.gd`, reusing the NPC walk sheet, no new
     art) and **chimney smoke** on the hearth buildings, reading against the existing
     night window-glow. Cleeve's Landing now bustles. `tools/validate_townlife.gd`.
-  - **Living cities, PR2 (next)** — **animals**: peck-wandering chickens, a town dog,
-    and ground **birds that flush** when you run through them (bespoke pixelforge art).
+  - ✅ **Living cities, PR2 (done)** — **animals** (`scripts/critter.gd`): pecking
+    **chickens** by the camp farm, a friendly street **dog**, and a **flock of plaza
+    birds that flush** — flee and take wing — when you run through them. Bespoke
+    pixelforge art (`tools/gen_critters.py`). `tools/validate_critters.gd`.
 
 ## Pillar 7 — Identity & polish (where awards are won or lost)
 
