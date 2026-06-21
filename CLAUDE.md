@@ -816,8 +816,11 @@ pipeline is ours.
   (cool blue-violet).
 - **`class Canvas`** — a pixel buffer with drawing primitives (`rect`, `frame`,
   `line`, `ellipse`, `disc`, `shade_rect` bevel, gradients, `dither`, `mottle`
-  value-noise fill, `speckle`) and post pass helpers (`outline`, `drop_shadow`,
-  `replace` palette-swap, `tint`, `blit`, `region`, `scaled`, `save`).
+  value-noise fill, `speckle`) and post pass helpers (`outline`, `rim_light`
+  warm lit-edge glow, `drop_shadow`, `replace` palette-swap, `tint`, `blit`,
+  `region`, `scaled`, `save`). `rim_light(amount, color)` brightens the
+  upper-left (key-light) silhouette edge so a sprite pops off busy terrain —
+  apply it *before* `outline` so the ink sits just outside the rim.
 - Per-sprite generator scripts live in `tools/gen_*.py` and import pixelforge;
   they paint to `assets/placeholder/`. Run a generator to (re)bake its PNG — art
   is regenerated, not hand-edited. (`gen_char.py` walk sheets, `gen_portraits.py`
