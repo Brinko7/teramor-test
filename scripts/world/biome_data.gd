@@ -65,6 +65,15 @@ class_name BiomeData
 @export var min_wildlife: int = 0
 @export var max_wildlife: int = 0
 
+## Flat ground-cover decal TEXTURE paths (gc_*.png — tufts/flowers/pebbles/leaves/
+## moss/brush) strewn across the Decals layer to break the tiling repeat and dapple
+## the floor with life. Weighted like enemy_paths; empty = bare ground. Density is
+## min/max_groundcover scaled by the area's size (see ProceduralArea._scatter_groundcover).
+@export var groundcover_paths: PackedStringArray = PackedStringArray()
+@export var groundcover_weights: PackedFloat32Array = PackedFloat32Array()
+@export var min_groundcover: int = 0
+@export var max_groundcover: int = 0
+
 ## Weighted random enemy path, skipping any whose scene is missing. Returns "" if
 ## none are available.
 func pick_enemy_path(rng: RandomNumberGenerator) -> String:
@@ -75,6 +84,27 @@ func pick_enemy_path(rng: RandomNumberGenerator) -> String:
 		if not ResourceLoader.exists(path):
 			continue
 		var weight: float = enemy_weights[i] if i < enemy_weights.size() else 1.0
+		available.append({"path": path, "weight": weight})
+		total += weight
+	if available.is_empty() or total <= 0.0:
+		return ""
+	var roll: float = rng.randf() * total
+	for entry: Dictionary in available:
+		roll -= float(entry["weight"])
+		if roll <= 0.0:
+			return String(entry["path"])
+	return String(available[-1]["path"])
+
+## Weighted-random ground-cover texture path, skipping any that are missing.
+## Returns "" if none are available.
+func pick_groundcover_path(rng: RandomNumberGenerator) -> String:
+	var available: Array = []
+	var total: float = 0.0
+	for i in range(groundcover_paths.size()):
+		var path: String = groundcover_paths[i]
+		if not ResourceLoader.exists(path):
+			continue
+		var weight: float = groundcover_weights[i] if i < groundcover_weights.size() else 1.0
 		available.append({"path": path, "weight": weight})
 		total += weight
 	if available.is_empty() or total <= 0.0:

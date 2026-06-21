@@ -21,3 +21,7 @@ max_props = 28
 gather_paths = PackedStringArray("res://resources/items/stone.tres", "res://resources/items/iron_ore.tres", "res://resources/items/crystal.tres")
 min_gather = 3
 max_gather = 6
+groundcover_paths = PackedStringArray("res://assets/placeholder/gc_pebbles.png", "res://assets/placeholder/gc_moss.png")
+groundcover_weights = PackedFloat32Array(4, 2)
+min_groundcover = 20
+max_groundcover = 38

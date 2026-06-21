@@ -28,3 +28,7 @@ max_gather = 4
 wildlife_paths = PackedStringArray("res://scenes/entities/wildlife_rabbit.tscn", "res://scenes/entities/wildlife_deer.tscn")
 min_wildlife = 1
 max_wildlife = 3
+groundcover_paths = PackedStringArray("res://assets/placeholder/gc_tuft.png", "res://assets/placeholder/gc_flowers.png", "res://assets/placeholder/gc_pebbles.png", "res://assets/placeholder/gc_brush.png")
+groundcover_weights = PackedFloat32Array(4, 2, 2, 1)
+min_groundcover = 30
+max_groundcover = 52
