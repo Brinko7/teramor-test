@@ -49,6 +49,11 @@ Registered in `project.godot` under `[autoload]`:
   day-of-season / year, all derived from the day). See "Seasons" below.
 - **SeasonManager** — announces the calendar: a banner on each new season and on
   authored festival days. Registered **after** UIManager (it drives the banner).
+- **WeatherManager** — each day's sky, a deterministic season-weighted roll derived
+  from the day (so it costs the save nothing). See "Weather" below.
+- **WeatherFX** — paints the weather + ambient life (rain/snow/fog/fireflies/leaves)
+  as screen-space particles, gated to outdoor zones. Registered **after** MusicManager
+  (it reads the zone).
 - **MusicManager** — owns the Music/Ambience buses; crossfades looping tracks per
   zone + day/night. See "Music & ambience" below.
 - **SettingsManager** — app preferences (audio bus volumes, fullscreen/vsync, a
@@ -453,6 +458,27 @@ load/reset for sync). The HUD clock shows `format_date()`.
   season banner on a crossing and the festival banner on its day. Four ship
   (Spring Bloom Fair, Sunpeak Revel, Harvest Home, The Long Night) — add one by
   authoring a `.tres`. Headless coverage: `tools/validate_seasons.gd`.
+
+### Weather (the day's mood)
+Each day has a sky. **WeatherManager** rolls it **deterministically from the day**
+(a season-weighted pick — winter trades rain for snow, autumn is the foggiest,
+summer the clearest), so like the season it costs the save file nothing and a load
+reproduces the same weather. It exposes `get_weather()`/`weather_id()` and the
+`is_rainy()`/`is_snowy()`/`is_foggy()`/`waters_crops()` queries, and fires
+`weather_changed` on a day roll. Consumers react, never poll:
+
+- **WeatherFX** (autoload `CanvasLayer`, layer 79) paints it as **code-built
+  CPUParticles2D** over tiny runtime textures (no assets) — rain, snow, a fog veil,
+  plus ambient life: **fireflies** at dusk/night in the growing seasons and drifting
+  **autumn leaves**. All of it is gated to the **outdoor** zones (via
+  `MusicManager.is_outdoor()` + its new `zone_changed`) and keyed off weather/season/
+  time, so nothing shows indoors. Tune feel entirely in `weather_fx.gd`.
+- **day_night** folds a gentle per-weather tint over its time-of-day + season colour
+  (rain/fog dim and cool the world, snow stays pale-bright).
+- **FarmManager** lets a **rainy day water every crop for free** (and leave the soil
+  wet), so weather feeds the farming loop.
+
+Headless coverage: `tools/validate_weather.gd`.
 
 ### Cozy tools as verbs (the Stardew layer)
 Tools are **real verbs**, not menus: select a tool/seed on the item hotbar and press
