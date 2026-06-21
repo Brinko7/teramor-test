@@ -13,8 +13,10 @@ both legs swing fore-and-aft (a real walk, not a forward-locked shuffle), and th
 diagonals are three-quarter blends that stride along the travel direction. The
 art is GROUNDED, not Stardew-cute: a muted ranger in leather and wool, lit from
 the upper-left with real tonal volume (multi-step ramps, ambient occlusion in the
-creases, a soft rim on the lit edge). A restrained dark-umber selout keeps it
-readable on grass/stone/timber without the heavy cartoon ink line.
+creases, a buckled chest strap + lit belt + shoulder seams for gear detail). A warm
+`rim_light` pass then catches the upper-left silhouette edge so the figure pops off
+grass/stone/timber (the Withered gets a cold rim instead of a heroic one), and a
+restrained dark-umber selout sits just outside it, no heavy cartoon ink line.
 
 Two kinds of output:
   * Layered, tintable parts for the player paper-doll. Skin and hair are drawn
@@ -29,7 +31,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from pixelforge import Canvas, P, rgb  # noqa: E402
+from pixelforge import Canvas, P, rgb, shade  # noqa: E402
 
 FW, FH = 24, 40
 COLS, ROWS = 4, 8
@@ -438,6 +440,10 @@ def _torso(outfit, ox, oy, pal, back):
         outfit.rect(ox + 11, oy + 17, ox + 12, oy + 25, lea[2])  # lacing seam
         outfit.paint(ox + 11, oy + 19, lea[0])
         outfit.paint(ox + 11, oy + 22, lea[0])
+        # a buckled chest strap across the jerkin (a fastening, breaks the flat panel)
+        outfit.rect(ox + 9, oy + 20, ox + 14, oy + 20, lea[3])
+        outfit.rect(ox + 9, oy + 19, ox + 14, oy + 19, lea[0])   # lit edge above it
+        outfit.paint(ox + 12, oy + 20, pal["buckle"])
         # collar of the tunic showing above the jerkin
         outfit.rect(ox + 9, oy + 16, ox + 14, oy + 16, tun[0])
         outfit.paint(ox + 11, oy + 16, tun[2])
@@ -445,11 +451,14 @@ def _torso(outfit, ox, oy, pal, back):
     else:
         outfit.rect(ox + 11, oy + 17, ox + 12, oy + 24, lea[2])  # back seam
         outfit.rect(ox + 8, oy + 16, ox + 15, oy + 16, tun[1])
-    # shoulders / sleeve caps
+    # shoulders / sleeve caps, with a seam shadow defining where the arm meets torso
     outfit.rect(ox + 6, oy + 17, ox + 6, oy + 19, tun[1])
     outfit.rect(ox + 17, oy + 17, ox + 17, oy + 19, tun[2])
-    # belt + buckle
+    outfit.paint(ox + 8, oy + 17, tun[0])                    # lit left shoulder seam
+    outfit.paint(ox + 15, oy + 17, tun[2])                   # shaded right shoulder
+    # belt + buckle, with a lit top edge so the leather catches the key light
     outfit.rect(ox + 7, oy + 26, ox + 16, oy + 27, pal["belt"])
+    outfit.rect(ox + 7, oy + 26, ox + 16, oy + 26, shade(pal["belt"], 1.22))
     if not back:
         outfit.rect(ox + 11, oy + 26, ox + 12, oy + 27, pal["buckle"])
 
@@ -649,6 +658,13 @@ def _selout(c, color):
     c.outline(color)
 
 
+# A warm lit rim along the upper-left silhouette (the key-light edge) makes the
+# figure pop off grass/stone/timber; the cold variant separates the Withered
+# without making it look heroic.
+RIM_WARM = rgb(250, 236, 200)
+RIM_COLD = rgb(150, 176, 156)
+
+
 # --- outputs ----------------------------------------------------------------
 
 BASE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -658,12 +674,18 @@ BASE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 def save_layered_player():
     cdir = os.path.join(BASE, "char")
     skin, outfit, _ = render_human(RANGER, "short")
+    # Rim each layer before its ink. Skin/hair are greyscale (the scene tints them),
+    # so their rim lands as a bright edge in the final skin/hair hue — a natural
+    # per-material lit edge; the fixed outfit takes the warm rim directly.
+    skin.rim_light(0.5, RIM_WARM)
+    outfit.rim_light(0.5, RIM_WARM)
     _selout(skin, INK_TINT)
     _selout(outfit, INK)
     skin.save(os.path.join(cdir, "body.png"))
     outfit.save(os.path.join(cdir, "outfit_ranger.png"))
     for style in ("short", "long", "spiky"):
         _, _, hair = render_human(RANGER, style)
+        hair.rim_light(0.5, RIM_WARM)
         _selout(hair, INK_TINT)
         hair.save(os.path.join(cdir, "hair_%s.png" % style))
 
@@ -677,6 +699,7 @@ def bake_sheet(pal, skin_tone, hair_color, style):
     base.blit(skin, 0, 0, mode="over")
     base.blit(outfit, 0, 0, mode="over")
     base.blit(hair, 0, 0, mode="over")
+    base.rim_light(0.5, RIM_WARM)
     _selout(base, P.OUTLINE)
     return base
 
@@ -746,6 +769,7 @@ def save_withered(path):
             elif face == "side_l":
                 _blight_eye(base, hx + 9, oy + 9)
             _rot_blotches(base, ox, oy, face)
+    base.rim_light(0.34, RIM_COLD)   # a cold, dead separation — not a heroic glow
     _selout(base, BLIGHT_OUTLINE)
     base.save(path)
     # eyeball preview on a murky backdrop so the glow reads.
@@ -929,6 +953,7 @@ def render_preview():
     base.blit(skin, 0, 0, mode="over")
     base.blit(outfit, 0, 0, mode="over")
     base.blit(hair, 0, 0, mode="over")
+    base.rim_light(0.5, RIM_WARM)
     _selout(base, P.OUTLINE)
     bg = Canvas(W, H)
     bg.rect(0, 0, W - 1, H - 1, rgb(122, 130, 96))  # grass-ish backdrop

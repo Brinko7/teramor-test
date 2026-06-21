@@ -400,6 +400,28 @@ class Canvas:
                 if hit:
                     self.paint(x, y, color)
 
+    def rim_light(self, amount=0.5, color=rgb(250, 236, 200)):
+        """Brighten the light-facing (up / left) silhouette edge so the form catches
+        a warm rim and pops off the background — the single biggest readability lift
+        for a sprite over busy terrain. Operates in place on the outermost opaque
+        pixels only; pair it BEFORE `outline` so the dark ink sits just outside the
+        glow. Edges facing down/right (the shadow side) are left alone."""
+        snap = bytes(self.buf)
+
+        def clear(x, y):
+            return not (0 <= x < self.w and 0 <= y < self.h
+                        and snap[(y * self.w + x) * 4 + 3] != 0)
+        for y in range(self.h):
+            for x in range(self.w):
+                i = (y * self.w + x) * 4
+                if snap[i + 3] == 0:
+                    continue
+                # a lit edge faces the upper-left light: an empty pixel up, left, or
+                # diagonally up-left (and NOT buried against the shadow-side edge).
+                if clear(x, y - 1) or clear(x - 1, y) or clear(x - 1, y - 1):
+                    c = (snap[i], snap[i + 1], snap[i + 2], snap[i + 3])
+                    self.paint(x, y, lerp(c, color, amount))
+
     def drop_shadow(self, color=P.SHADOW):
         """Soft elliptical contact shadow at the base of the opaque cluster."""
         minx, maxx, maxy = self.w, -1, -1
