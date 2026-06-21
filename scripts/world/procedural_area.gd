@@ -141,6 +141,28 @@ func _ready() -> void:
 	_send_to_minimap()
 	_clamp_camera()
 	MusicManager.enter_zone(_music_zone())
+	# Drift dappled overhead shade in wooded biomes (after enter_zone, which resets it).
+	var canopy := get_node_or_null("/root/CanopyFX")
+	if canopy != null:
+		canopy.call("set_canopy", _biome.has_canopy)
+	_maybe_reveal_wilds()
+
+## The first time the player crosses into the Cursed Wilds, play the one-time reveal
+## cutscene of Tera looming on the horizon (a composed full-screen shot, so it dodges
+## the no-sky camera clamp). One-shot via a Story flag.
+func _maybe_reveal_wilds() -> void:
+	if _biome.id != &"cursed_wilds" and _biome.id != &"vast_edge":
+		return
+	var story := get_node_or_null("/root/Story")
+	if story == null or story.call("has_flag", &"seen_wilds_reveal"):
+		return
+	story.call("set_flag", &"seen_wilds_reveal")
+	var scene := load("res://scenes/ui/wilds_reveal.tscn") as PackedScene
+	if scene == null:
+		return
+	var cutscene := scene.instantiate()
+	add_child(cutscene)
+	cutscene.call("play")
 
 ## Map the staged biome to a music zone: the Cursed-Wilds biomes get the ominous
 ## theme, the cave its own bed, everything else the lonely wild exploration theme.

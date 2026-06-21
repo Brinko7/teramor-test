@@ -54,6 +54,11 @@ Registered in `project.godot` under `[autoload]`:
 - **WeatherFX** — paints the weather + ambient life (rain/snow/fog/fireflies/leaves)
   as screen-space particles, gated to outdoor zones. Registered **after** MusicManager
   (it reads the zone).
+- **CanopyFX** — drifts a dappled overhead-shade overlay across **wooded** areas (the
+  "moving under a thick canopy" feel). A procedural area turns it on from its
+  `BiomeData.has_canopy`, so it's data-driven (forests yes, plains/desert/cave no);
+  it fades out at night and resets on zone change. Registered **after** WeatherFX. See
+  "Forest canopy" below.
 - **MusicManager** — owns the Music/Ambience buses; crossfades looping tracks per
   zone + day/night. See "Music & ambience" below.
 - **SettingsManager** — app preferences (audio bus volumes, fullscreen/vsync, a
@@ -514,6 +519,35 @@ reproduces the same weather. It exposes `get_weather()`/`weather_id()` and the
   wet), so weather feeds the farming loop.
 
 Headless coverage: `tools/validate_weather.gd`.
+
+### Forest canopy (depth overhead)
+**CanopyFX** (autoload `CanvasLayer`, layer 77 — under WeatherFX, over the world) sells
+"thick forest" by drifting a **dappled overhead shade** across wooded areas: a small
+seamless shadow tile (`assets/placeholder/canopy_dapple.png`, baked by
+`tools/gen_canopy.py`) scrolls *opposite* the player's motion (`PARALLAX`), so you read
+as moving **under** the leaves. It's **data-driven, not zone-guessed** — a procedural
+area calls `CanopyFX.set_canopy(_biome.has_canopy)` after `enter_zone`, so the new
+`BiomeData.has_canopy` flag decides (on for deepwood/roadside/cursed_wilds/vast_edge,
+off for plains/desert/cave). It **fades out at night** (no sun to dapple; keyed off
+`TimeManager.get_period()`) and **resets off on `zone_changed`** so it never lingers
+into a town or cave. CanvasLayers skip the world's CanvasModulate, so the day/night
+fade is done here. Tune feel (tile, `PARALLAX`, `STRENGTH`) in `canopy_fx.gd`.
+Headless: `tools/validate_canopy.gd`.
+
+### The Cursed Wilds reveal (the Great Tree vista)
+The gameplay camera clamps `limit_top = 0`, so there's **no sky above the maps** to
+loom a distant landmark into — a persistent in-world horizon vista can't work. The
+fix is a **cutscene**: a composed full-screen shot isn't bound by that clamp. The
+**first** time the player crosses into the Cursed Wilds, `procedural_area._maybe_reveal_wilds()`
+(gated on `_biome.id` in `cursed_wilds`/`vast_edge`, one-shot via the Story flag
+`seen_wilds_reveal`) plays `scenes/ui/wilds_reveal.tscn` (`scripts/wilds_reveal.gd`):
+a `CanvasLayer` (layer 95) that composes **sky → distant Great Tree → haze veil →
+foreground treeline** (baked by `tools/gen_wilds_reveal.py`), pauses the tree, fades up
+from black, slow-pushes in on **Tera** looming above the lesser forest with a line of
+narration, then fades back to play (skippable on any key). Atmospheric perspective —
+the pale `wilds_haze` band — pushes the tree back behind the nearer trees so it reads as
+*far*. Re-bake/tune the shot in `gen_wilds_reveal.py` (it also writes a `/tmp` preview
+still). Headless: `tools/validate_wilds_reveal.gd`.
 
 ### Cozy tools as verbs (the Stardew layer)
 Tools are **real verbs**, not menus: select a tool/seed on the item hotbar and press

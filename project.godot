@@ -45,6 +45,7 @@ SeasonManager="*res://scripts/autoload/season_manager.gd"
 WeatherManager="*res://scripts/autoload/weather_manager.gd"
 MusicManager="*res://scripts/autoload/music_manager.gd"
 WeatherFX="*res://scripts/autoload/weather_fx.gd"
+CanopyFX="*res://scripts/autoload/canopy_fx.gd"
 SettingsManager="*res://scripts/autoload/settings_manager.gd"
 _mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
 

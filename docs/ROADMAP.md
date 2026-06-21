@@ -102,6 +102,14 @@ The telegraph→dodge→punish core is good. Make it *deep*:
     **chickens** by the camp farm, a friendly street **dog**, and a **flock of plaza
     birds that flush** — flee and take wing — when you run through them. Bespoke
     pixelforge art (`tools/gen_critters.py`). `tools/validate_critters.gd`.
+  - ✅ **Depth & vistas, PR1 (done)** — a **forest canopy**: `CanopyFX` drifts dappled
+    overhead shade across wooded areas (data-driven via `BiomeData.has_canopy`, fades
+    at night) so you read as moving *under* a thick canopy. `tools/validate_canopy.gd`.
+  - ✅ **Depth & vistas, PR2 (done)** — the **Great Tree reveal cutscene**: the camera
+    can't show sky above the maps (`limit_top = 0`), so instead of a persistent horizon,
+    the first crossing into the Cursed Wilds plays a one-time cinematic of Tera looming
+    in the far distance above the forest (`scripts/wilds_reveal.gd`, art by
+    `gen_wilds_reveal.py`). `tools/validate_wilds_reveal.gd`.
 
 ## Pillar 7 — Identity & polish (where awards are won or lost)
 
