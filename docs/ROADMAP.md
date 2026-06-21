@@ -105,10 +105,11 @@ The telegraph→dodge→punish core is good. Make it *deep*:
   - ✅ **Depth & vistas, PR1 (done)** — a **forest canopy**: `CanopyFX` drifts dappled
     overhead shade across wooded areas (data-driven via `BiomeData.has_canopy`, fades
     at night) so you read as moving *under* a thick canopy. `tools/validate_canopy.gd`.
-  - **Depth & vistas, PR2 (next)** — the **Great Tree on the horizon**. Blocked on a
-    screen-space horizon band: the camera clamps `limit_top = 0`, so there's no sky
-    above the maps to render a distant looming silhouette into. (Silhouette art already
-    baked: `gen_great_tree.py` → `great_tree_far.png`.) A deliberate look change.
+  - ✅ **Depth & vistas, PR2 (done)** — the **Great Tree reveal cutscene**: the camera
+    can't show sky above the maps (`limit_top = 0`), so instead of a persistent horizon,
+    the first crossing into the Cursed Wilds plays a one-time cinematic of Tera looming
+    in the far distance above the forest (`scripts/wilds_reveal.gd`, art by
+    `gen_wilds_reveal.py`). `tools/validate_wilds_reveal.gd`.
 
 ## Pillar 7 — Identity & polish (where awards are won or lost)
 

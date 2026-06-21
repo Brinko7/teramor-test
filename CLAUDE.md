@@ -532,9 +532,22 @@ off for plains/desert/cave). It **fades out at night** (no sun to dapple; keyed 
 `TimeManager.get_period()`) and **resets off on `zone_changed`** so it never lingers
 into a town or cave. CanvasLayers skip the world's CanvasModulate, so the day/night
 fade is done here. Tune feel (tile, `PARALLAX`, `STRENGTH`) in `canopy_fx.gd`.
-*(Next in this thread: the **Great Tree on the horizon** — blocked on introducing a
-screen-space horizon band, since the camera clamps `limit_top = 0` and can't show sky
-above the maps.)* Headless: `tools/validate_canopy.gd`.
+Headless: `tools/validate_canopy.gd`.
+
+### The Cursed Wilds reveal (the Great Tree vista)
+The gameplay camera clamps `limit_top = 0`, so there's **no sky above the maps** to
+loom a distant landmark into — a persistent in-world horizon vista can't work. The
+fix is a **cutscene**: a composed full-screen shot isn't bound by that clamp. The
+**first** time the player crosses into the Cursed Wilds, `procedural_area._maybe_reveal_wilds()`
+(gated on `_biome.id` in `cursed_wilds`/`vast_edge`, one-shot via the Story flag
+`seen_wilds_reveal`) plays `scenes/ui/wilds_reveal.tscn` (`scripts/wilds_reveal.gd`):
+a `CanvasLayer` (layer 95) that composes **sky → distant Great Tree → haze veil →
+foreground treeline** (baked by `tools/gen_wilds_reveal.py`), pauses the tree, fades up
+from black, slow-pushes in on **Tera** looming above the lesser forest with a line of
+narration, then fades back to play (skippable on any key). Atmospheric perspective —
+the pale `wilds_haze` band — pushes the tree back behind the nearer trees so it reads as
+*far*. Re-bake/tune the shot in `gen_wilds_reveal.py` (it also writes a `/tmp` preview
+still). Headless: `tools/validate_wilds_reveal.gd`.
 
 ### Cozy tools as verbs (the Stardew layer)
 Tools are **real verbs**, not menus: select a tool/seed on the item hotbar and press
