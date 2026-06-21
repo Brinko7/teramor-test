@@ -651,6 +651,25 @@ gently around their current station (small radius, with pauses) so the town read
 lived-in rather than frozen. Families may share a `home_*` marker; daytime stations
 stay distinct. Headless: `tools/validate_schedules.gd`.
 
+**The crowd (cosmetic townsfolk).** A bustling city needs more bodies than it has
+quest-givers, so `scripts/townsfolk.gd` (`class_name Townsfolk`, `scenes/entities/
+townsfolk.tscn`) is a lightweight **non-interactive pedestrian**: a `Node2D` that
+strolls between shared waypoints (the `npc_waypoint` group by default), milling a beat
+at each then picking a new one. It reuses the same 4×8 directional walk-sheet animation
+(`dir_util.gd`) the talking NPCs use, so the crowd moves identically — but carries **no
+dialogue/quest/relationship/gift state** and isn't in the `"interactable"` group, and
+has **no collision** (the player walks right through them). They're spawned in bulk by
+`scripts/townsfolk_crowd.gd` (`townsfolk_crowd.tscn`): one node that instances `count`
+Townsfolk at random stroll points with varied looks (cycled from a sprite pool) and
+gaits. Crucially the spawner adds them to **its parent** (the scene's y-sorted
+`Entities` root), not under itself, so each pedestrian depth-sorts against the buildings
+by its own feet. Cleeve's Landing carries a crowd of 9. **Chimney smoke**
+(`scenes/entities/props/chimney_smoke.tscn`, a `CPUParticles2D` over `light_soft`) rises
+from the hearth buildings (townhouse/tavern/blacksmith/cabin — added as a child of each
+prop scene so it shows everywhere they're placed); it sits on the painted chimney mouth
+and reads against the existing `night_light.gd` window-glow for a lived-in skyline.
+Headless: `tools/validate_townlife.gd`.
+
 **Dialogue portraits.** Conversations show the speaker's **bust** beside their lines.
 The dialogue box (`scripts/autoload/dialogue.gd`) renders a portrait `TextureRect` in
 an HBox to the left of the text; `start()` / `start_conversation()` take an optional
