@@ -50,6 +50,14 @@ Base viewport 480×270, scaled to 1280×720.
 | **F5** (`save_game`) | Save |
 | **F9** (`quick_load`) | Quick-load |
 
+## Rebinding
+The keyboard actions (movement, interact, dodge, use item, open menu, crafting,
+abilities) are **rebindable** in **Options → Controls** (open Options from the title
+screen or the player-menu footer). Overrides persist to `user://settings.cfg` via
+`SettingsManager`, separate from the save. Combat stays mouse-aimed, so attack/block
+aren't rebound. Options also has **Audio** volume sliders and **Display** toggles
+(fullscreen, vsync, and an accessibility screen-shake toggle).
+
 ## Planned (not yet bound)
-- **Gamepad** support and **rebindable** controls (a rebinding UI in the coming Options menu).
-- A dedicated **pause** key (Esc) once the pause/options menu lands.
+- **Gamepad** support and gamepad rebinding.
+- A dedicated **pause** key (Esc) — Esc currently closes the open menu/overlay.

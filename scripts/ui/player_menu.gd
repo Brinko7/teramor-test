@@ -219,9 +219,20 @@ func _build_shell() -> void:
 	_content.custom_minimum_size = Vector2(0, 180)
 	vbox.add_child(_content)
 
+	var footer := HBoxContainer.new()
+	vbox.add_child(footer)
+	var options_btn := Button.new()
+	options_btn.text = "Options"
+	options_btn.add_theme_font_size_override("font_size", 9)
+	options_btn.pressed.connect(func() -> void: UIManager.settings.open())
+	footer.add_child(options_btn)
+	var spacer := Control.new()
+	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	footer.add_child(spacer)
 	var prompt := UITheme.make_label("[Tab] Close", 9, UITheme.PROMPT)
 	prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	vbox.add_child(prompt)
+	prompt.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	footer.add_child(prompt)
 
 func _rebuild_tab_bar() -> void:
 	for child: Node in _tab_bar.get_children():

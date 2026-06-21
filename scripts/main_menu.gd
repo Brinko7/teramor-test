@@ -24,5 +24,8 @@ func _on_new_game_pressed() -> void:
 func _on_continue_pressed() -> void:
 	GameManager.continue_game()
 
+func _on_options_pressed() -> void:
+	UIManager.settings.open()
+
 func _on_quit_pressed() -> void:
 	get_tree().quit()
