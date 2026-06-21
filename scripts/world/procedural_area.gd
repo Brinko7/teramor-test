@@ -141,6 +141,10 @@ func _ready() -> void:
 	_send_to_minimap()
 	_clamp_camera()
 	MusicManager.enter_zone(_music_zone())
+	# Drift dappled overhead shade in wooded biomes (after enter_zone, which resets it).
+	var canopy := get_node_or_null("/root/CanopyFX")
+	if canopy != null:
+		canopy.call("set_canopy", _biome.has_canopy)
 
 ## Map the staged biome to a music zone: the Cursed-Wilds biomes get the ominous
 ## theme, the cave its own bed, everything else the lonely wild exploration theme.

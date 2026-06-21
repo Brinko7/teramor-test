@@ -8,6 +8,7 @@ id = &"vast_edge"
 display_name = "The Edge of the Vast"
 ground_texture_path = "res://assets/placeholder/grass.png"
 ground_tint = Color(0.4, 0.37, 0.5, 1)
+has_canopy = true
 enemy_paths = PackedStringArray("res://scenes/entities/enemy_withered.tscn", "res://scenes/entities/enemy_brute.tscn", "res://scenes/entities/enemy_archer.tscn", "res://scenes/entities/enemy_vast_hound.tscn", "res://scenes/entities/enemy_vast_hulk.tscn")
 enemy_weights = PackedFloat32Array(4, 2, 1, 3, 2)
 prop_paths = PackedStringArray("res://scenes/entities/props/tree.tscn", "res://scenes/entities/props/rock.tscn", "res://scenes/entities/props/bush.tscn")

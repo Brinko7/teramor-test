@@ -8,6 +8,7 @@ id = &"cursed_wilds"
 display_name = "The Cursed Wilds"
 ground_texture_path = "res://assets/placeholder/grass.png"
 ground_tint = Color(0.5, 0.44, 0.6, 1)
+has_canopy = true
 enemy_paths = PackedStringArray("res://scenes/entities/enemy_withered.tscn", "res://scenes/entities/enemy_brute.tscn", "res://scenes/entities/enemy_archer.tscn", "res://scenes/entities/enemy_wolf.tscn", "res://scenes/entities/enemy_vast_hound.tscn", "res://scenes/entities/enemy_vast_hulk.tscn")
 enemy_weights = PackedFloat32Array(3, 3, 2, 2, 3, 1)
 prop_paths = PackedStringArray("res://scenes/entities/props/rock.tscn", "res://scenes/entities/props/tree.tscn", "res://scenes/entities/props/bush.tscn")

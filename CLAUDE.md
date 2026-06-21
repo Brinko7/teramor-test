@@ -54,6 +54,11 @@ Registered in `project.godot` under `[autoload]`:
 - **WeatherFX** — paints the weather + ambient life (rain/snow/fog/fireflies/leaves)
   as screen-space particles, gated to outdoor zones. Registered **after** MusicManager
   (it reads the zone).
+- **CanopyFX** — drifts a dappled overhead-shade overlay across **wooded** areas (the
+  "moving under a thick canopy" feel). A procedural area turns it on from its
+  `BiomeData.has_canopy`, so it's data-driven (forests yes, plains/desert/cave no);
+  it fades out at night and resets on zone change. Registered **after** WeatherFX. See
+  "Forest canopy" below.
 - **MusicManager** — owns the Music/Ambience buses; crossfades looping tracks per
   zone + day/night. See "Music & ambience" below.
 - **SettingsManager** — app preferences (audio bus volumes, fullscreen/vsync, a
@@ -514,6 +519,22 @@ reproduces the same weather. It exposes `get_weather()`/`weather_id()` and the
   wet), so weather feeds the farming loop.
 
 Headless coverage: `tools/validate_weather.gd`.
+
+### Forest canopy (depth overhead)
+**CanopyFX** (autoload `CanvasLayer`, layer 77 — under WeatherFX, over the world) sells
+"thick forest" by drifting a **dappled overhead shade** across wooded areas: a small
+seamless shadow tile (`assets/placeholder/canopy_dapple.png`, baked by
+`tools/gen_canopy.py`) scrolls *opposite* the player's motion (`PARALLAX`), so you read
+as moving **under** the leaves. It's **data-driven, not zone-guessed** — a procedural
+area calls `CanopyFX.set_canopy(_biome.has_canopy)` after `enter_zone`, so the new
+`BiomeData.has_canopy` flag decides (on for deepwood/roadside/cursed_wilds/vast_edge,
+off for plains/desert/cave). It **fades out at night** (no sun to dapple; keyed off
+`TimeManager.get_period()`) and **resets off on `zone_changed`** so it never lingers
+into a town or cave. CanvasLayers skip the world's CanvasModulate, so the day/night
+fade is done here. Tune feel (tile, `PARALLAX`, `STRENGTH`) in `canopy_fx.gd`.
+*(Next in this thread: the **Great Tree on the horizon** — blocked on introducing a
+screen-space horizon band, since the camera clamps `limit_top = 0` and can't show sky
+above the maps.)* Headless: `tools/validate_canopy.gd`.
 
 ### Cozy tools as verbs (the Stardew layer)
 Tools are **real verbs**, not menus: select a tool/seed on the item hotbar and press

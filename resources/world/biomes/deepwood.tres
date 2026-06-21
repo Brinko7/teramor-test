@@ -8,6 +8,7 @@ id = &"deepwood"
 display_name = "The Deepwood"
 ground_texture_path = "res://assets/placeholder/grass.png"
 ground_tint = Color(0.6, 0.74, 0.55, 1)
+has_canopy = true
 enemy_paths = PackedStringArray("res://scenes/entities/enemy_wolf.tscn", "res://scenes/entities/enemy.tscn", "res://scenes/entities/enemy_archer.tscn", "res://scenes/entities/enemy_brute.tscn", "res://scenes/entities/enemy_bear.tscn")
 enemy_weights = PackedFloat32Array(4, 3, 2, 1, 1)
 prop_paths = PackedStringArray("res://scenes/entities/props/tree.tscn", "res://scenes/entities/props/bush.tscn", "res://scenes/entities/props/rock.tscn", "res://scenes/entities/props/flower.tscn")

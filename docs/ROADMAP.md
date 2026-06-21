@@ -102,6 +102,13 @@ The telegraph→dodge→punish core is good. Make it *deep*:
     **chickens** by the camp farm, a friendly street **dog**, and a **flock of plaza
     birds that flush** — flee and take wing — when you run through them. Bespoke
     pixelforge art (`tools/gen_critters.py`). `tools/validate_critters.gd`.
+  - ✅ **Depth & vistas, PR1 (done)** — a **forest canopy**: `CanopyFX` drifts dappled
+    overhead shade across wooded areas (data-driven via `BiomeData.has_canopy`, fades
+    at night) so you read as moving *under* a thick canopy. `tools/validate_canopy.gd`.
+  - **Depth & vistas, PR2 (next)** — the **Great Tree on the horizon**. Blocked on a
+    screen-space horizon band: the camera clamps `limit_top = 0`, so there's no sky
+    above the maps to render a distant looming silhouette into. (Silhouette art already
+    baked: `gen_great_tree.py` → `great_tree_far.png`.) A deliberate look change.
 
 ## Pillar 7 — Identity & polish (where awards are won or lost)
 

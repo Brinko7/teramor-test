@@ -14,6 +14,10 @@ class_name BiomeData
 ## while sharing one placeholder texture.
 @export var ground_texture_path: String = "res://assets/placeholder/grass.png"
 @export var ground_tint: Color = Color.WHITE
+## Wooded biomes set this so CanopyFX drifts dappled overhead shade across the area
+## (sunlight filtering through a thick canopy). Off for open ground (plains/desert)
+## and underground (cave).
+@export var has_canopy: bool = false
 
 ## Enemy scene paths and matching relative spawn weights (parallel arrays; a
 ## missing/short weights array means uniform odds).
