@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="NpcData" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/npc_data.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_warden.png" id="2_tex"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"elkar"
+display_name = "Elkar"
+title = "Ranger — Your Father"
+sprite_texture = ExtResource("2_tex")
+tint = Color(0.9, 0.88, 0.82, 1)
+met_line = "Up before the birds. Good — the wood doesn't wait for the slow. One more lesson before I ride for the Landing contract, and then you're a ranger proper. Come here. Let's see what I've taught you."
+greeting = "Still got two ears and a blade? Then we're not done. What is it?"
+farewell = "Enough talk. Two wolves came down off the ridge at first light — put them down, and we'll call you a ranger."
+talk_lines = {
+0: PackedStringArray("Your mother had this same look before a fight. Halfway to laughing, halfway to bolting.", "Stand straight. The wood can smell doubt.")
+}
+topics = Array[Dictionary]([{
+"label": "Footwork.",
+"lines": PackedStringArray("First thing a ranger learns: never plant your feet. Move — [WASD], heel to toe, light. The thing that stands still in the Deepwood is the thing that gets eaten.")
+}, {
+"label": "The blade.",
+"lines": PackedStringArray("There — by the treeline. Two wolves, down off the ridge with the cold.", "Draw on them with your off-hand — [Left-click] — and watch them, not your blade. A beast tells you before it strikes; it draws back, winds up. That breath is yours.", "Read the tell, take the strike. Put both of them down. Show me you can hold your own.")
+}, {
+"label": "When it's faster than you.",
+"lines": PackedStringArray("Some things you can't trade blows with. When the strike's coming and you can't answer it — roll [Shift]. There's a heartbeat in a roll where nothing can touch you.", "Time it to the tell, not to your fear. Fear's always early.")
+}, {
+"label": "Working the land.",
+"lines": PackedStringArray("A blade keeps you breathing; the soil keeps you fed. I left the tools by the post and a fistful of seed.", "Turn the earth, set the seed, draw the water — [F], with the right thing in hand. A ranger who can't feed himself is just a fool with a sword.")
+}, {
+"label": "Why the contract?",
+"lines": PackedStringArray("Coin, mostly. A border baron pays well to keep bandits off his road, and we don't eat on lessons.", "But keep this close, lad: strange times. The crown's been taking people — the ones born... different. Folk who aren't quite like the rest.", "Keep your head down and your blade sharp. I'll be back before the moon turns.")
+}])

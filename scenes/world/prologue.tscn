@@ -1,0 +1,138 @@
+[gd_scene load_steps=25 format=3]
+
+[ext_resource type="Script" path="res://scripts/prologue.gd" id="0_prologue"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="1_grass"]
+[ext_resource type="Script" path="res://scripts/day_night.gd" id="2_daynight"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://scenes/entities/npc.tscn" id="4_npc"]
+[ext_resource type="PackedScene" path="res://scenes/entities/enemy_wolf.tscn" id="5_wolf"]
+[ext_resource type="PackedScene" path="res://scenes/entities/transition_zone.tscn" id="6_tz"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/signpost.tscn" id="7_sign"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/cabin.tscn" id="8_cabin"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/tree.tscn" id="9_tree"]
+[ext_resource type="PackedScene" path="res://scenes/entities/item_pickup.tscn" id="10_pickup"]
+[ext_resource type="Resource" path="res://resources/items/seeds/turnip_seeds.tres" id="11_seeds"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/farm_plot.tscn" id="12_plot"]
+[ext_resource type="PackedScene" path="res://scenes/ui/health_bar.tscn" id="13_hud"]
+[ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="14_mana"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_coins.tscn" id="15_coins"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="16_clock"]
+[ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="17_itembar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="18_abilitybar"]
+[ext_resource type="Resource" path="res://resources/npcs/elkar.tres" id="19_elkar"]
+
+[sub_resource type="RectangleShape2D" id="wall_h"]
+size = Vector2(480, 16)
+
+[sub_resource type="RectangleShape2D" id="wall_v"]
+size = Vector2(16, 320)
+
+[sub_resource type="RectangleShape2D" id="wall_v_top"]
+size = Vector2(16, 150)
+
+[sub_resource type="RectangleShape2D" id="wall_v_bot"]
+size = Vector2(16, 130)
+
+[sub_resource type="RectangleShape2D" id="exit_shape"]
+size = Vector2(28, 40)
+
+[node name="Prologue" type="Node2D"]
+script = ExtResource("0_prologue")
+
+[node name="Ground" type="Sprite2D" parent="."]
+texture_repeat = 2
+centered = false
+texture = ExtResource("1_grass")
+region_enabled = true
+region_rect = Rect2(0, 0, 480, 320)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+
+[node name="WallTop" type="CollisionShape2D" parent="Walls"]
+position = Vector2(240, 8)
+shape = SubResource("wall_h")
+
+[node name="WallBottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(240, 312)
+shape = SubResource("wall_h")
+
+[node name="WallLeft" type="CollisionShape2D" parent="Walls"]
+position = Vector2(8, 160)
+shape = SubResource("wall_v")
+
+[node name="WallRightTop" type="CollisionShape2D" parent="Walls"]
+position = Vector2(472, 80)
+shape = SubResource("wall_v_top")
+
+[node name="WallRightBottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(472, 255)
+shape = SubResource("wall_v_bot")
+
+[node name="Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="Cabin" parent="Entities" instance=ExtResource("8_cabin")]
+position = Vector2(108, 150)
+
+[node name="Tree1" parent="Entities" instance=ExtResource("9_tree")]
+position = Vector2(280, 92)
+
+[node name="Tree2" parent="Entities" instance=ExtResource("9_tree")]
+position = Vector2(340, 80)
+
+[node name="Tree3" parent="Entities" instance=ExtResource("9_tree")]
+position = Vector2(412, 96)
+
+[node name="Tree4" parent="Entities" instance=ExtResource("9_tree")]
+position = Vector2(70, 110)
+
+[node name="FarmPlot1" parent="Entities" instance=ExtResource("12_plot")]
+position = Vector2(150, 238)
+
+[node name="FarmPlot2" parent="Entities" instance=ExtResource("12_plot")]
+position = Vector2(176, 238)
+
+[node name="SeedPickup" parent="Entities" instance=ExtResource("10_pickup")]
+position = Vector2(150, 264)
+item = ExtResource("11_seeds")
+count = 4
+
+[node name="Player" parent="Entities" instance=ExtResource("3_player")]
+position = Vector2(210, 252)
+
+[node name="Elkar" parent="Entities" instance=ExtResource("4_npc")]
+position = Vector2(232, 196)
+data = ExtResource("19_elkar")
+
+[node name="Wolf1" parent="Entities" instance=ExtResource("5_wolf")]
+position = Vector2(338, 132)
+
+[node name="Wolf2" parent="Entities" instance=ExtResource("5_wolf")]
+position = Vector2(396, 156)
+
+[node name="ExitToTown" parent="Entities" instance=ExtResource("6_tz")]
+position = Vector2(462, 172)
+target_scene = "res://scenes/world/town.tscn"
+target_spawn = "from_road"
+
+[node name="CollisionShape2D" parent="Entities/ExitToTown" index="0"]
+shape = SubResource("exit_shape")
+
+[node name="RoadSign" parent="Entities" instance=ExtResource("7_sign")]
+position = Vector2(436, 150)
+text = "To Cleeve's Landing"
+
+[node name="DayNight" type="CanvasModulate" parent="."]
+script = ExtResource("2_daynight")
+
+[node name="HUD" parent="." instance=ExtResource("13_hud")]
+
+[node name="ManaBar" parent="." instance=ExtResource("14_mana")]
+
+[node name="CoinHUD" parent="." instance=ExtResource("15_coins")]
+
+[node name="ClockHUD" parent="." instance=ExtResource("16_clock")]
+
+[node name="ItemHotbar" parent="." instance=ExtResource("17_itembar")]
+
+[node name="AbilityHotbar" parent="." instance=ExtResource("18_abilitybar")]

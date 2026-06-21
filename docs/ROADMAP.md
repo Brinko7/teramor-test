@@ -169,9 +169,15 @@ and none depends on another landing first. Rough priority:
 
 ### Now-open threads to pull next (in priority order)
 
-- **The Elkar opening / tutorial** (Pillar 4 + onboarding) — the next swing. Make
-  the father a *present* mentor who teaches the verbs at the wilds' edge, then
-  departs (the inciting beat behind `ch1_first_lesson` → `ch2_missing_father`).
+- **The Elkar opening / tutorial** (Pillar 4 + onboarding) — *in progress.*
+  - ✅ **PR A (done)** — the **prologue** (`prologue.tscn`): a new game opens at the
+    wilds' edge where **Elkar** gives a diegetic last lesson (footwork / blade / roll /
+    the land), the two wolves are the `ch1` "defeat 2 foes" beat, then an exit carries
+    you to Cleeve's Landing. `tools/validate_prologue.gd`.
+  - **PR B (next)** — make the **camp a secret**: `settlement_camp` rumoured/
+    undiscovered, found only *after* searching Cleeve's Landing, with a **recruitment**
+    beat into the Children of Tera (lean on `CampManager`); and fix `continue_game` to
+    reload the player's last location rather than always the camp.
 - **A Codex / almanac tab** (Pillar 8 QoL) — discovered crops/fish/monsters/people as
   a `player_menu` tab; the completionist hook.
 - **Camp construction round 3** (Pillar 1) — visible camp tiers: swap props in
@@ -184,8 +190,8 @@ and none depends on another landing first. Rough priority:
 - **Boss polish & a second boss** (Pillar 3) — a dedicated boss health bar (HUD),
   bespoke Colossus art, and a second pattern (a ranged/summon phase).
 
-Pick the pillar that excites *you* most; conviction reads on screen. With the season
-layer, the soundscape, portraits, the options menu, and weather in, the **Elkar
-opening** — turning the father from toast text into a present mentor who teaches you
-and then goes missing — is the next swing: the game's tone-setting first fifteen
-minutes.
+Pick the pillar that excites *you* most; conviction reads on screen. The **Elkar
+opening** is now underway — the prologue (PR A) turns the father from toast text into
+a present mentor who teaches you and then goes missing. **PR B** completes it: the
+camp becomes the secret you earn your way into, found only after you search Cleeve's
+Landing for him.
