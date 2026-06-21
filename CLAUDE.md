@@ -802,7 +802,18 @@ pipeline is ours.
 - **`class P`** — the grounded palette as light→dark ramps (`GRASS`, `SOIL`,
   `PATH`, `STONE`, `WOOD`, `ROOF`, `THATCH`, `PLASTER`, `WATER`, `FOLIAGE`,
   `BARK`, `METAL`, `LEATHER`, `CLOTH`, plus `OUTLINE`/`SHADOW`/`NIGHT`/`EMBER`).
-  Pull colors from here so everything sits in the same world.
+  Pull colors from here so everything sits in the same world. Every material ramp is
+  **hue-shifted** (run through `grade()` at class build): highlights drift warm +
+  desaturate, shadows drift cool + saturate, with a touch of added contrast — the
+  pro-pixel-art depth that flat value-darkening misses, kept subtle so the world stays
+  earthy. **Regenerating any sprite picks this up for free**; after touching the palette
+  or `grade()`, re-run every `gen_*.py` so the look stays cohesive.
+- **Hue-shift shading helpers** (use these when authoring new shading instead of plain
+  `shade`): `rgb_to_hsv`/`hsv_to_rgb`, `hue_shift(c, k)` (shade one colour by ramp
+  position `k∈[-1..1]` with hue rotation), `ramp_hue(base)` (a hue-shifted ramp from a
+  single base), and `grade(ramp)` (enrich an existing light→dark ramp, preserving its
+  lightness). Light drifts toward `LIGHT_HUE` (warm gold), shadow toward `SHADOW_HUE`
+  (cool blue-violet).
 - **`class Canvas`** — a pixel buffer with drawing primitives (`rect`, `frame`,
   `line`, `ellipse`, `disc`, `shade_rect` bevel, gradients, `dither`, `mottle`
   value-noise fill, `speckle`) and post pass helpers (`outline`, `drop_shadow`,

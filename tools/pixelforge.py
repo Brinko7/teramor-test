@@ -54,13 +54,107 @@ def lerp(a, b, t):
 
 
 def ramp(base, steps=5, lo=0.55, hi=1.28):
-    """Build a light->dark ramp (index 0 = lightest) around a base color."""
+    """Build a light->dark ramp (index 0 = lightest) around a base color.
+
+    Pure value shift (legacy). Prefer `ramp_hue` for the grounded palette — it adds
+    the hue-shifting that gives pixel art its depth."""
     out = []
     for i in range(steps):
         t = i / (steps - 1)             # 0..1
         f = hi + (lo - hi) * t
         out.append(shade(base, f))
     return out
+
+
+# --- Hue-shifted shading ----------------------------------------------------
+# The single biggest lift over flat value-darkening: as a surface falls into
+# shadow it rotates toward a cool hue and gains saturation; as it catches light it
+# rotates warm and desaturates. Kept SUBTLE so the palette stays earthy, not candy.
+
+LIGHT_HUE = 46.0     # highlights drift toward warm gold
+SHADOW_HUE = 254.0   # shadows drift toward cool blue-violet
+
+
+def rgb_to_hsv(c):
+    r, g, b = c[0] / 255.0, c[1] / 255.0, c[2] / 255.0
+    mx, mn = max(r, g, b), min(r, g, b)
+    d = mx - mn
+    h = 0.0
+    if d:
+        if mx == r:
+            h = ((g - b) / d) % 6
+        elif mx == g:
+            h = (b - r) / d + 2
+        else:
+            h = (r - g) / d + 4
+        h *= 60.0
+    return h, (0.0 if mx == 0 else d / mx), mx
+
+
+def hsv_to_rgb(h, s, v, a=255):
+    h %= 360.0
+    c = v * s
+    x = c * (1 - abs((h / 60.0) % 2 - 1))
+    m = v - c
+    r, g, b = [(c, x, 0), (x, c, 0), (0, c, x),
+               (0, x, c), (x, 0, c), (c, 0, x)][int(h // 60) % 6]
+    return rgb((r + m) * 255, (g + m) * 255, (b + m) * 255, a)
+
+
+def _rotate_hue(h, target, amt):
+    d = ((target - h + 180) % 360) - 180
+    return (h + d * amt) % 360
+
+
+def hue_shift(c, k, warm=0.13, cool=0.18, sat=0.20):
+    """Shade one colour by `k` in [-1 (full light) .. +1 (full shadow)] with hue
+    rotation: light -> warm + desaturate, shadow -> cool + saturate."""
+    h, s, v = rgb_to_hsv(c)
+    if k <= 0.0:
+        kk = -k
+        nh = _rotate_hue(h, LIGHT_HUE, kk * warm)
+        ns = max(0.0, s * (1 - kk * 0.34))
+        nv = min(1.0, v * (1.0 + kk * 0.16))
+    else:
+        nh = _rotate_hue(h, SHADOW_HUE, k * cool)
+        ns = min(1.0, s + k * sat)
+        nv = max(0.0, v * (1.0 - k * 0.42))
+    return hsv_to_rgb(nh, ns, nv, c[3] if len(c) > 3 else 255)
+
+
+def ramp_hue(base, steps=5, warm=0.13, cool=0.18, sat=0.20):
+    """A hue-shifted light->dark ramp (index 0 = lightest). `base` anchors the mid
+    tone; ends rotate warm (light) and cool (shadow)."""
+    return [hue_shift(base, (i / (steps - 1) - 0.5) * 2.0, warm, cool, sat)
+            for i in range(steps)]
+
+
+def hue_grade(c, k, warm=0.14, cool=0.24, sat=0.22, contrast=0.10):
+    """Grade a colour by ramp position `k` in [-1 (light) .. +1 (shadow)]: rotate hue
+    toward warm (light) or cool (shadow), push saturation, and add a little contrast
+    (lift highlights, deepen shadows) for pop — built on the existing value ramp so
+    its careful spacing is kept, just enriched."""
+    h, s, v = rgb_to_hsv(c)
+    if k <= 0.0:
+        kk = -k
+        nh = _rotate_hue(h, LIGHT_HUE, kk * warm)
+        ns = max(0.0, s * (1 - kk * 0.28))
+        nv = min(1.0, v * (1.0 + kk * contrast))
+    else:
+        nh = _rotate_hue(h, SHADOW_HUE, k * cool)
+        ns = min(1.0, s + k * sat)
+        nv = max(0.0, v * (1.0 - k * contrast))
+    return hsv_to_rgb(nh, ns, nv, c[3] if len(c) > 3 else 255)
+
+
+def grade(colors, warm=0.12, cool=0.20, sat=0.16):
+    """Add hue-shift depth to an existing light->dark ramp, preserving each step's
+    lightness. Index 0 grades warmest, the last grades coolest."""
+    n = len(colors)
+    if n < 2:
+        return list(colors)
+    return [hue_grade(c, (i / (n - 1) - 0.5) * 2.0, warm, cool, sat)
+            for i, c in enumerate(colors)]
 
 
 # --- Grounded palette -------------------------------------------------------
@@ -107,6 +201,15 @@ class P:
     NIGHT = rgb(40, 46, 78)
     EMBER = [rgb(255, 224, 150), rgb(248, 170, 70), rgb(214, 96, 40),
              rgb(150, 52, 32)]
+
+
+# Grade every material ramp with hue-shift depth (cool, saturated shadows; warm
+# highlights) while preserving each step's hand-tuned lightness. The scalars
+# (OUTLINE/SHADOW/NIGHT) and the already-warm EMBER glow are left as authored.
+for _name in ("GRASS", "GRASS_DRY", "SOIL", "PATH", "STONE", "WOOD", "WOOD_GREY",
+              "ROOF", "ROOF_SLATE", "THATCH", "PLASTER", "WATER", "FOLIAGE",
+              "BARK", "METAL", "LEATHER", "CLOTH"):
+    setattr(P, _name, grade(getattr(P, _name)))
 
 
 BAYER4 = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]]
