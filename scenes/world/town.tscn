@@ -42,6 +42,7 @@
 [ext_resource type="Resource" path="res://resources/items/seeds/turnip_seeds.tres" id="38_tseed"]
 [ext_resource type="Resource" path="res://resources/items/seeds/wheat_seeds.tres" id="39_wseed"]
 [ext_resource type="PackedScene" path="res://scenes/entities/explore_zone.tscn" id="40_explore"]
+[ext_resource type="PackedScene" path="res://scenes/entities/townsfolk_crowd.tscn" id="41_crowd"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/npc_warden.png" id="50_warden"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/npc_townswoman.png" id="51_townswoman"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/npc_child.png" id="52_child"]
@@ -102,6 +103,9 @@ shape = SubResource("wall_h_bottom")
 
 [node name="Entities" type="Node2D" parent="."]
 y_sort_enabled = true
+
+[node name="TownsfolkCrowd" parent="Entities" instance=ExtResource("41_crowd")]
+count = 9
 
 [node name="Chapel" parent="Entities" instance=ExtResource("34_chapel")]
 position = Vector2(250, 165)

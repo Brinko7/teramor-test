@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://b8towncrowd0001"]
+
+[ext_resource type="Script" path="res://scripts/townsfolk_crowd.gd" id="1_crowd"]
+
+[node name="TownsfolkCrowd" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1_crowd")

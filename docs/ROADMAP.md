@@ -87,6 +87,19 @@ The telegraph→dodge→punish core is good. Make it *deep*:
   identity and rewards.
 - **Biome identity:** distinct enemies, gather nodes, weather, music per biome, so
   travel *feels* like crossing a world.
+- **A living, vast world (in progress).** The look-and-feel push toward a Stardew-
+  bustling, lived-in world. Threads, by impact: **(a)** depth/parallax — a background
+  layer, a drifting foreground forest canopy, and the Great Tree looming on the wilds'
+  horizon; **(b)** thick forests — a dense deepwood thicket tier with underbrush,
+  dappled light + mist, short winding sightlines; **(c)** **living cities** — a moving
+  crowd, animals, market bustle, chimney smoke; **(d)** ground detail — kill the flat
+  tinted plane with scattered tufts/flowers/pebbles/path-blending.
+  - ✅ **Living cities, PR1 (done)** — cosmetic **townsfolk** crowds
+    (`scripts/townsfolk.gd` + `townsfolk_crowd.gd`, reusing the NPC walk sheet, no new
+    art) and **chimney smoke** on the hearth buildings, reading against the existing
+    night window-glow. Cleeve's Landing now bustles. `tools/validate_townlife.gd`.
+  - **Living cities, PR2 (next)** — **animals**: peck-wandering chickens, a town dog,
+    and ground **birds that flush** when you run through them (bespoke pixelforge art).
 
 ## Pillar 7 — Identity & polish (where awards are won or lost)
 

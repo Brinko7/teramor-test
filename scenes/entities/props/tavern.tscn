@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/placeholder/tavern.png" id="1_tex"]
 [ext_resource type="Script" path="res://scripts/night_light.gd" id="2_night"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/light_soft.png" id="3_light"]
+[ext_resource type="PackedScene" path="res://scenes/entities/props/chimney_smoke.tscn" id="4_smoke"]
 
 [sub_resource type="RectangleShape2D" id="shape"]
 size = Vector2(66, 18)
@@ -33,3 +34,6 @@ day_energy = 0.06
 sway = 0.05
 jitter = 0.06
 speed = 4.5
+
+[node name="ChimneySmoke" parent="." instance=ExtResource("4_smoke")]
+position = Vector2(26, -90)

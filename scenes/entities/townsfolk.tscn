@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://b8townsfolk0001"]
+
+[ext_resource type="Script" path="res://scripts/townsfolk.gd" id="1_townsfolk"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_villager.png" id="2_tex"]
+
+[node name="Townsfolk" type="Node2D"]
+y_sort_enabled = true
+script = ExtResource("1_townsfolk")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_tex")
+centered = false
+offset = Vector2(-12, -40)
+hframes = 4
+vframes = 8
