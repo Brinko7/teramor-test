@@ -83,6 +83,7 @@ def gen_tree(name="tree.png"):
     c.line(32, 40, 35, 31, P.BARK[2])
     # Canopy (towering, fills the upper two-thirds).
     _canopy(c, 28, 2, 54, 62, seed=4)
+    c.rim_light(0.4)
     c.outline(P.OUTLINE, diagonal=True)
     c.drop_shadow()
     c.save(asset(name))
@@ -96,6 +97,7 @@ def gen_bush(name="bush.png"):
     rnd = random.Random(3)
     for _ in range(3):
         c.paint(rnd.randint(6, 21), rnd.randint(6, 14), (150, 60, 56, 255))
+    c.rim_light(0.4)
     c.outline(P.OUTLINE, diagonal=True)
     c.drop_shadow()
     c.save(asset(name))
@@ -114,6 +116,7 @@ def gen_rock(name="rock.png"):
     for _ in range(14):
         mx = rnd.randint(5, 14); my = rnd.randint(6, 11)
         c.paint(mx, my, P.FOLIAGE[1] if rnd.random() < 0.6 else P.FOLIAGE[2])
+    c.rim_light(0.4)
     c.outline(P.OUTLINE, diagonal=True)
     c.drop_shadow()
     c.save(asset(name))
@@ -127,6 +130,7 @@ def gen_stump(name="stump.png"):
     c.ellipse(11, 6, 6, 2, P.WOOD[1])         # cut top
     c.ellipse(11, 6, 4, 1, P.WOOD[0])
     c.ellipse(11, 6, 2, 1, P.WOOD[2])         # rings
+    c.rim_light(0.4)
     c.outline(P.OUTLINE, diagonal=True)
     c.drop_shadow()
     c.save(asset(name))
@@ -142,6 +146,7 @@ def gen_flower(name="flower.png"):
                           (8, 6, (150, 110, 150, 255))]:
         c.disc(fx, fy, 2, col)
         c.paint(fx, fy, shade(col, 1.2))
+    c.rim_light(0.4)
     c.outline(P.OUTLINE, diagonal=True)
     c.save(asset(name))
     print("generated", name, "(12x14)")

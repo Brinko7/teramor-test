@@ -749,6 +749,18 @@ The busts are baked by **`tools/gen_portraits.py`** (built on pixelforge, ground
 palette + upper-left key light, a neutral + happy per NPC). Headless coverage:
 `tools/validate_portraits.gd`.
 
+**Portrait ↔ world-sprite parity.** Each named camp/story NPC has its **own** baked
+walk-sheet (`gen_char.py` `NAMED_CAST`) whose skin / hair / style / garb matches that
+NPC's portrait, referenced by the `.tres` with a **neutral white tint** — so the bust
+and the world sprite read as the same individual. This replaced the old scheme where
+several NPCs shared one sheet recoloured by a per-`.tres` `tint` (which made
+Elkar/Hadrin/Sorrel one guard and Wrenna/Maelon one druid, and left portraits not
+matching their sprites). Generic, unnamed townsfolk still draw from the shared
+`VILLAGER_WARDROBE` sheets. `validate_npcs.gd` asserts every named NPC wears a
+distinct, individual sheet (no shared-tint fallback). Add a named NPC by adding a
+`NAMED_CAST` row + a matching `gen_portraits.py` entry, then pointing the `.tres` at
+the new sheet with a white tint.
+
 Passive game (`scripts/wildlife.gd`, `class_name Wildlife extends Enemy` — deer,
 rabbit) is the huntable end of that table. It spawns on a **separate**
 `_spawn_wildlife()` pass from a biome's `wildlife_paths` (+ `min/max_wildlife`),

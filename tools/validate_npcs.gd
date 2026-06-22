@@ -26,7 +26,16 @@ const TOWN_LOOKS := {
 	"Gossip": "npc_gossip.png",
 }
 const TAVERN_LOOKS := {"TavernKeeper": "npc_keeper.png"}
-const SETTLEMENT_LOOKS := {"Mara": "npc_quartermaster.png", "ElderMaelon": "npc_druid.png"}
+# The named camp cast each have their OWN bespoke sheet (matching their dialogue
+# portrait), not a shared+tinted one — so every entry here is distinct.
+const SETTLEMENT_LOOKS := {
+	"Mara": "npc_mara.png",
+	"ElderMaelon": "npc_maelon.png",
+	"Bram": "npc_bram.png",
+	"Wrenna": "npc_wrenna.png",
+	"Pell": "npc_pell.png",
+	"Hadrin": "npc_hadrin.png",
+}
 
 var _fail := 0
 

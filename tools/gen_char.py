@@ -211,13 +211,37 @@ QUARTERMASTER = {  # Mara: practical olive wool + buff leather
     "belt": rgb(92, 70, 44),
     "buckle": rgb(146, 124, 78),
 }
-DRUID_GARB = {  # Elder Maelon: mossy grey-green grove robe
+DRUID_GARB = {  # mossy grey-green grove robe
     "tunic": [rgb(108, 122, 102), rgb(84, 98, 80), rgb(62, 74, 58)],
     "leather": [rgb(96, 102, 84), rgb(74, 80, 64), rgb(54, 60, 46), rgb(40, 44, 32)],
     "trouser": [rgb(100, 112, 96), rgb(78, 90, 74), rgb(58, 68, 56)],
     "boot": [rgb(60, 58, 46), rgb(42, 40, 30)],
     "belt": rgb(78, 72, 54),
     "buckle": rgb(150, 140, 96),
+}
+FARMHAND_GARB = {  # Bram: dusty olive work tunic, brown leather
+    "tunic": [rgb(138, 134, 92), rgb(112, 108, 72), rgb(86, 82, 52)],
+    "leather": [rgb(120, 92, 60), rgb(96, 72, 46), rgb(72, 52, 32), rgb(52, 38, 22)],
+    "trouser": [rgb(108, 96, 72), rgb(86, 76, 56), rgb(64, 56, 42)],
+    "boot": [rgb(60, 48, 34), rgb(42, 32, 22)],
+    "belt": rgb(86, 64, 42),
+    "buckle": rgb(146, 124, 80),
+}
+FORAGER_GARB = {  # Wrenna / Sorrel: deep forest-green cloak + tunic
+    "tunic": [rgb(86, 114, 82), rgb(66, 92, 64), rgb(48, 70, 48)],
+    "leather": [rgb(96, 100, 72), rgb(74, 80, 56), rgb(54, 60, 40), rgb(40, 46, 30)],
+    "trouser": [rgb(80, 90, 72), rgb(62, 72, 56), rgb(46, 54, 42)],
+    "boot": [rgb(54, 52, 40), rgb(38, 36, 28)],
+    "belt": rgb(72, 66, 46),
+    "buckle": rgb(140, 130, 90),
+}
+WOODCUTTER_GARB = {  # Hadrin: heavy brown wool + thick leather
+    "tunic": [rgb(126, 96, 66), rgb(100, 74, 50), rgb(76, 56, 36)],
+    "leather": [rgb(92, 72, 54), rgb(72, 56, 42), rgb(54, 42, 30), rgb(38, 30, 20)],
+    "trouser": [rgb(88, 76, 62), rgb(70, 60, 48), rgb(52, 44, 36)],
+    "boot": [rgb(52, 42, 34), rgb(36, 28, 22)],
+    "belt": rgb(78, 60, 42),
+    "buckle": rgb(140, 120, 82),
 }
 
 # Each entry bakes a full 8-direction sheet: (filename, outfit, skin, hair, style).
@@ -232,6 +256,22 @@ VILLAGER_WARDROBE = [
     ("npc_gossip.png", ELDER_GARB, "pale", "white", "long"),
     ("npc_quartermaster.png", QUARTERMASTER, "tan", "auburn", "long"),
     ("npc_druid.png", DRUID_GARB, "deep", "ash", "long"),
+]
+
+# The named camp / story NPCs each get their OWN baked sheet whose skin, hair,
+# style and garb match that NPC's dialogue portrait (gen_portraits.py), so the
+# bust and the world sprite read as the same individual. Their .tres reference
+# these directly with a neutral (white) tint — no more sharing a tinted sheet
+# (which made Elkar/Hadrin/Sorrel one guard, and Wrenna/Maelon one druid).
+NAMED_CAST = [
+    ("npc_bram.png",   FARMHAND_GARB,   "tan",   "brown",  "short"),
+    ("npc_wrenna.png", FORAGER_GARB,    "pale",  "auburn", "long"),
+    ("npc_pell.png",   TOWNSWOMAN,      "brown", "black",  "short"),
+    ("npc_hadrin.png", WOODCUTTER_GARB, "tan",   "black",  "short"),
+    ("npc_mara.png",   VILLAGER,        "pale",  "brown",  "long"),
+    ("npc_maelon.png", ELDER_GARB,      "pale",  "white",  "short"),
+    ("npc_elkar.png",  RANGER,          "tan",   "ash",    "short"),
+    ("npc_sorrel.png", FORAGER_GARB,    "pale",  "black",  "long"),
 ]
 
 # --- blight (the Withered) --------------------------------------------------
@@ -968,6 +1008,9 @@ def main():
     save_baked(os.path.join(BASE, "npc_villager.png"), VILLAGER,
                SKIN_TONES["pale"], HAIR_COLORS["auburn"], "long")
     save_wardrobe()
+    for fname, pal, skin, hair, style in NAMED_CAST:
+        save_baked(os.path.join(BASE, fname), pal, SKIN_TONES[skin],
+                   HAIR_COLORS[hair], style)
     save_baked(os.path.join(BASE, "enemy_bandit.png"), BANDIT,
                SKIN_TONES["tan"], HAIR_COLORS["black"], "short")
     save_baked(os.path.join(BASE, "enemies", "enemy_archer.png"), ARCHER,

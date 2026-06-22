@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="NpcData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/npc_data.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/npc_druid.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_wrenna.png" id="2_tex"]
 
 [resource]
 script = ExtResource("1_script")
@@ -9,7 +9,7 @@ id = &"wrenna"
 display_name = "Wrenna"
 title = "Camp Forager"
 sprite_texture = ExtResource("2_tex")
-tint = Color(0.82, 0.92, 0.8, 1)
+tint = Color(1, 1, 1, 1)
 met_line = "Mind the basket — mushrooms. I'm Wrenna. The treeline feeds us more than the field does, if you know where to look. Most don't."
 greeting = "The woods were generous today. And you?"
 farewell = "Walk soft out there."
