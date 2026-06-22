@@ -63,14 +63,18 @@ def draw_character(c, cx, opts):
     BK = opts.get("buckle", GOLD)
     freckles = opts.get("freckles", False)
     SK_HI = rgb(min(255,SK[0][0]+8), min(255,SK[0][1]+12), min(255,SK[0][2]+14))
+    bw = {"slim":-2,"avg":0,"stout":4}.get(opts.get("build","avg"),0)
+    apron = opts.get("apron"); robe = opts.get("robe"); hood = opts.get("hood")
+    AP = CLOTH[apron] if apron else None
+    OH = OUT or TU  # hood colour
 
     # ---- cloak (optional, behind) ----
     if OUT:
-        ell(c, cx, 70, 27, 42, OUT[3]); R(c, cx-25, 46, cx+25, 104, OUT[3])
-        R(c, cx-25, 46, cx-22, 104, OUT[2]); R(c, cx+12, 46, cx+25, 104, OUT[4])
+        ell(c, cx, 70, 27+bw, 42, OUT[3]); R(c, cx-25-bw, 46, cx+25+bw, 104, OUT[3])
+        R(c, cx-25-bw, 46, cx-22-bw, 104, OUT[2]); R(c, cx+12+bw, 46, cx+25+bw, 104, OUT[4])
         for fx in (cx-17,cx-9,cx+3): c.line(fx,50,fx,102,OUT[2])
         for fx in (cx-13,cx-4,cx+8): c.line(fx,50,fx,104,OUT[4])
-        for hx in range(cx-24,cx+25,3): c.paint(hx,103,OUT[2])
+        for hx in range(cx-24-bw,cx+25+bw,3): c.paint(hx,103,OUT[2])
 
     # ---- legs ----
     for s in (-1,1):
@@ -82,27 +86,40 @@ def draw_character(c, cx, opts):
         R(c,lx-6,98,lx+5,99,BT[0]); R(c,lx-7,110,lx+6,112,BT[3]); c.line(lx-3,104,lx+2,104,BT[3])
     R(c,cx-3,76,cx+2,100,TR[3])
 
+    # ---- robe (long garment over the legs, optional) ----
+    if robe:
+        R(c,cx-16-bw,72,cx+16+bw,104,TU[1]); R(c,cx-16-bw,72,cx-13-bw,104,TU[0])
+        R(c,cx+11+bw,72,cx+16+bw,104,TU[2]); R(c,cx-16-bw,102,cx+16+bw,104,TU[3])
+        for fx in (cx-9,cx,cx+9): c.line(fx,76,fx,103,TU[2])
+        R(c,cx-9,104,cx-2,110,BT[1]); R(c,cx+2,104,cx+9,110,BT[1])     # feet peek out
+
     # ---- torso (tunic + belt) ----
-    ell(c,cx,58,19,21,TU[1]); R(c,cx-18,44,cx+18,72,TU[1])
-    R(c,cx-18,44,cx-15,72,TU[0]); R(c,cx+8,44,cx+18,74,TU[2]); R(c,cx+14,46,cx+18,72,TU[3])
-    R(c,cx-18,68,cx+18,72,TU[3])
+    ell(c,cx,58,19+bw,21,TU[1]); R(c,cx-18-bw,44,cx+18+bw,72,TU[1])
+    R(c,cx-18-bw,44,cx-15-bw,72,TU[0]); R(c,cx+8+bw,44,cx+18+bw,74,TU[2]); R(c,cx+14+bw,46,cx+18+bw,72,TU[3])
+    R(c,cx-18-bw,68,cx+18+bw,72,TU[3])
     c.line(cx-9,50,cx-5,60,TU[2]); c.line(cx+6,52,cx+3,62,TU[3]); c.line(cx-12,60,cx-9,66,TU[2])
     R(c,cx-5,42,cx+5,48,CLOTH["cream"][1]); R(c,cx-5,42,cx-3,48,CLOTH["cream"][0])
     c.line(cx-5,42,cx,48,TU[3]); c.line(cx+5,42,cx,48,TU[3])
-    # satchel strap (clean, tucks under belt)
-    i=0
-    while True:
-        sx=cx-13+i; sy=47+i
-        if sy>=69: break
-        c.paint(sx,sy,LEA[2]); c.paint(sx+1,sy,LEA[3])
-        if i%5==0: c.paint(sx,sy,LEA[1])
-        i+=1
-    R(c,cx-18,70,cx+18,75,LEA[2]); R(c,cx-18,70,cx+18,70,LEA[1]); R(c,cx-18,74,cx+18,75,LEA[4])
+    # apron (optional) over the tunic
+    if AP:
+        R(c,cx-9,47,cx+9,72,AP[1]); R(c,cx-9,47,cx-7,72,AP[0]); R(c,cx+6,47,cx+9,72,AP[2])
+        R(c,cx-9,47,cx+9,48,AP[0]); c.line(cx-9,70,cx+9,70,AP[3])
+        c.line(cx-5,42,cx-3,47,AP[2]); c.line(cx+5,42,cx+3,47,AP[2])    # neck strap
+    else:
+        # satchel strap (clean, tucks under belt)
+        i=0
+        while True:
+            sx=cx-13+i; sy=47+i
+            if sy>=69: break
+            c.paint(sx,sy,LEA[2]); c.paint(sx+1,sy,LEA[3])
+            if i%5==0: c.paint(sx,sy,LEA[1])
+            i+=1
+    R(c,cx-18-bw,70,cx+18+bw,75,LEA[2]); R(c,cx-18-bw,70,cx+18+bw,70,LEA[1]); R(c,cx-18-bw,74,cx+18+bw,75,LEA[4])
     R(c,cx-3,69,cx+3,76,BK[1]); R(c,cx-3,69,cx+3,70,BK[0]); c.paint(cx+2,74,BK[2])
 
     # ---- arms (sleeves + gloves, hands below belt) ----
     for s in (-1,1):
-        ax=cx+s*19
+        ax=cx+s*(19+bw)
         R(c,ax-4,46,ax+4,76,TU[1]); R(c,ax-4,46,ax-2,76,TU[0]); R(c,ax+2,46,ax+4,76,TU[3])
         c.line(ax-2,54,ax-1,64,TU[2])
         R(c,ax-4,76,ax+4,79,LEA[2]); ell(c,ax,83,5,5,LEA[1]); R(c,ax-4,81,ax-2,86,LEA[0])
@@ -141,8 +158,16 @@ def draw_character(c, cx, opts):
         c.line(cx-3,31,cx+3,31,rgb(150,86,78)); c.paint(cx-4,30,rgb(150,86,78)); c.paint(cx+4,30,rgb(150,86,78))
         R(c,cx-2,32,cx+2,32,rgb(196,124,112))
 
+    # ---- hood (covers the hair, frames a shadowed face) ----
+    if hood:
+        ell(c,cx,11,16,9,OH[2])                          # crown cap (above the eyes)
+        ell(c,cx-1,15,7,4,OH[2])                         # peak dipping at the brow
+        R(c,cx-16,14,cx-12,40,OH[2]); R(c,cx+12,14,cx+16,40,OH[3])    # side falls framing the face
+        R(c,cx-12,16,cx+12,18,OH[3])                     # inner shadow under the rim
+        ell(c,cx-5,7,8,3,OH[1]); c.line(cx-10,6,cx+1,5,OH[1])         # hood sheen
+        for fx,fy in ((cx-6,21),(cx-5,22),(cx+5,21),(cx+6,22)): c.paint(fx,fy,SK[3])  # face in shade
     # ---- hair ----
-    if style != "bald":
+    elif style != "bald":
         ell(c,cx,12,15,10,HR[2])
         R(c,cx-15,12,cx-11,28,HR[2]); R(c,cx+11,12,cx+15,28,HR[3])
         ell(c,cx-8,13,5,4,HR[2]); ell(c,cx,14,5,4,HR[2]); ell(c,cx+8,13,5,4,HR[2])
@@ -160,27 +185,41 @@ def draw_character(c, cx, opts):
     c.outline(INK, diagonal=False)
 
 
-# ----------------- cast lineup -----------------
+# ----------------- Teramor named cast -----------------
 CAST = [
-    {"name":"ranger", "skin":"tan",  "hair":"brown","hair_style":"short","cloak":"green",
-     "tunic":"green","trouser":"slate","boots":"brown","freckles":True,"eyes":rgb(112,146,92)},
-    {"name":"elder",  "skin":"fair", "hair":"grey", "hair_style":"bald", "beard":True,
-     "tunic":"plum", "trouser":"brown","boots":"brown","buckle":SILV,"eyes":rgb(120,120,140)},
-    {"name":"villager","skin":"brown","hair":"black","hair_style":"long","cloak":None,
-     "tunic":"rust", "trouser":"slate","boots":"brown","freckles":False,"eyes":rgb(90,70,50)},
+    {"name":"Zayn (hero)","skin":"tan","hair":"brown","hair_style":"short","cloak":"green",
+     "tunic":"green","trouser":"slate","freckles":True,"eyes":rgb(112,146,92)},
+    {"name":"Bram","skin":"tan","hair":"brown","hair_style":"short","tunic":"mustard",
+     "trouser":"brown","apron":"brown","freckles":True,"eyes":rgb(120,96,60)},
+    {"name":"Wrenna","skin":"fair","hair":"red","hair_style":"long","cloak":"green",
+     "tunic":"green","trouser":"brown","freckles":True,"eyes":rgb(120,150,96)},
+    {"name":"Pell","skin":"brown","hair":"black","hair_style":"short","build":"stout",
+     "tunic":"rust","trouser":"slate","apron":"cream","eyes":rgb(80,60,46)},
+    {"name":"Hadrin","skin":"tan","hair":"black","hair_style":"short","beard":True,
+     "tunic":"brown","trouser":"slate","build":"stout","eyes":rgb(80,60,46)},
+    {"name":"Mara","skin":"fair","hair":"brown","hair_style":"long","tunic":"mustard",
+     "trouser":"slate","buckle":SILV,"eyes":rgb(96,118,150)},
+    {"name":"Elder Maelon","skin":"fair","hair":"grey","hair_style":"bald","beard":True,
+     "tunic":"plum","robe":True,"buckle":SILV,"eyes":rgb(120,120,140)},
+    {"name":"Sorrel","skin":"fair","hair":"black","hair_style":"long","cloak":"green",
+     "hood":True,"tunic":"green","trouser":"brown","eyes":rgb(150,170,150)},
+    {"name":"Elkar","skin":"tan","hair":"grey","hair_style":"short","beard":True,"cloak":"green",
+     "tunic":"green","trouser":"brown","eyes":rgb(112,146,92)},
 ]
 
 def main():
-    cellw, cellh = 96, 130
-    m = Canvas(cellw*len(CAST), cellh)
+    cols = 5; rows = (len(CAST)+cols-1)//cols
+    cw, ch = 90, 128
+    m = Canvas(cw*cols, ch*rows)
     m.rect(0,0,m.w-1,m.h-1,rgb(126,160,120))
     for i, opts in enumerate(CAST):
         sub = Canvas(84,120)
         draw_character(sub, 42, opts)
-        m.blit(sub, i*cellw + (cellw-84)//2, cellh-120-4, mode="over")
+        r, co = divmod(i, cols)
+        m.blit(sub, co*cw + (cw-84)//2, r*ch + (ch-120)-2, mode="over")
     m.save("/tmp/cast.png")
-    m.scaled(4).save("/tmp/cast_4x.png")
-    print("wrote /tmp/cast.png (%d chars)" % len(CAST))
+    m.scaled(3).save("/tmp/cast_3x.png")
+    print("wrote /tmp/cast.png (%d cast members)" % len(CAST))
 
 if __name__ == "__main__":
     main()
