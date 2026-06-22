@@ -13,7 +13,7 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pixelforge import Canvas  # noqa: E402
 from gen_cast import SKIN, HAIR, CLOTH, LEA, GOLD, INK, WHITE, BLUSH  # noqa: E402
-import forge_anim  # noqa: E402  (GIF encoder)
+import gifutil  # noqa: E402  (GIF encoder)
 
 SK = SKIN["tan"]; HR = HAIR["brown"]
 GRN = CLOTH["green"]; TR = CLOTH["slate"]; BT = CLOTH["brown"]
@@ -136,8 +136,8 @@ def main():
         m = Canvas(60, 124); m.rect(0,0,m.w-1,m.h-1,(126,160,120,255))
         m.blit(frame(p), (60-FW)//2, 124-FH-2, mode="over")
         comps.append(m.scaled(3))
-    pal, idx = forge_anim.quantize(comps)
-    forge_anim.write_gif("/tmp/player_walk.gif", pal, idx, comps[0].w, comps[0].h, 12)
+    pal, idx = gifutil.quantize(comps)
+    gifutil.write_gif("/tmp/player_walk.gif", pal, idx, comps[0].w, comps[0].h, 12)
     print("wrote /tmp/player_walk.gif + sheet")
 
 if __name__ == "__main__":
