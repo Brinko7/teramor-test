@@ -28,3 +28,7 @@ max_gather = 2
 wildlife_paths = PackedStringArray()
 min_wildlife = 0
 max_wildlife = 0
+groundcover_paths = PackedStringArray("res://assets/placeholder/gc_moss.png", "res://assets/placeholder/gc_pebbles.png", "res://assets/placeholder/gc_brush.png")
+groundcover_weights = PackedFloat32Array(3, 2, 2)
+min_groundcover = 24
+max_groundcover = 44

@@ -113,11 +113,14 @@ func _run_case(gen: GDScript, biome_path: String, seed_v: int, verbose: bool) ->
 	area.call("_paint_ground")
 	area.call("_paint_trail")
 	area.call("_place_features")
+	var decals: Node2D = area.get("_decals")
+	var trail_n: int = decals.get_child_count() if decals != null else 0
+	area.call("_scatter_groundcover")
+	var cover_n: int = (decals.get_child_count() - trail_n) if decals != null else 0
 	area.call("_frame_border")
 	area.call("_scatter_props")
 	area.call("_place_signage")
 
-	var decals: Node2D = area.get("_decals")
 	var features: Array = area.get("_features")
 	var tag := "%s/seed%d" % [biome.id, seed_v]
 
@@ -126,9 +129,14 @@ func _run_case(gen: GDScript, biome_path: String, seed_v: int, verbose: bool) ->
 		_err("%s: area not vast (%dx%d)" % [tag, w, h])
 
 	# 2. trail decals laid as a ribbon.
-	var decal_n: int = decals.get_child_count() if decals != null else 0
-	if decal_n < 80:
-		_err("%s: too few trail decals (%d)" % [tag, decal_n])
+	if trail_n < 80:
+		_err("%s: too few trail decals (%d)" % [tag, trail_n])
+
+	# 2b. ground-cover decals strewn to break the tiling repeat (these biomes all
+	# author groundcover; the pass scales the count by density and caps it).
+	if biome.groundcover_paths.size() > 0 and biome.max_groundcover > 0:
+		if cover_n < 20:
+			_err("%s: too little ground-cover scatter (%d decals)" % [tag, cover_n])
 
 	# 3. trail pinned to mid-height at both mouths.
 	var mid := float(h) * 0.5
@@ -174,7 +182,7 @@ func _run_case(gen: GDScript, biome_path: String, seed_v: int, verbose: bool) ->
 		var tally := {}
 		for f: Dictionary in features:
 			tally[f["type"]] = int(tally.get(f["type"], 0)) + 1
-		print("  [%s] %dx%d  density=%.2f  decals=%d  features=%s  entities=%d" % [
-			tag, w, h, float(area.get("_density")), decal_n, str(tally), ent_n])
+		print("  [%s] %dx%d  density=%.2f  trail=%d  groundcover=%d  features=%s  entities=%d" % [
+			tag, w, h, float(area.get("_density")), trail_n, cover_n, str(tally), ent_n])
 
 	area.free()

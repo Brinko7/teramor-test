@@ -645,6 +645,23 @@ for encounters, or *Return* / *Deeper* (tier+1) for excursions. Add a biome or a
 place by authoring a `.tres` — scenes/items inside `BiomeData` are referenced by
 path, so no code change is needed.
 
+**Ground-cover decals (breaking the tiling repeat).** The ground is a single 16px
+tile region-repeated across a 1200×900+ area, so even seamless turf reads as a flat
+grid once your eye catches the period. `_scatter_groundcover()` strews small, flat,
+transparent-background accents across the **Decals** layer (under the y-sorted
+Entities) to dapple the floor with life — grass tufts, wildflowers, pebble scatters,
+fallen leaves, moss blotches and dry brush. They're plain `Sprite2D`s with a little
+value-jitter + random flip, kept off feature keep-outs (ponds/ruins) and a step clear
+of the worn trail, density scaled by area size and hard-capped (`MAX_GROUNDCOVER`).
+Which decals suit a floor is **data-driven**: `BiomeData.groundcover_paths` (weighted
+like `enemy_paths`, via `pick_groundcover_path`) + `min/max_groundcover` — plains get
+flowery meadow, forests moss + leaf litter, desert brush + pebbles, the Cursed Wilds a
+darker mossy floor (no cheery flowers). The decal art is baked by
+**`tools/gen_groundcover.py`** (pixelforge, grounded palette, `gc_*.png`); add a decal
+by authoring one there and listing it on a biome. The broken-path safety net is free
+(`validate_content.gd` reflects over the new `res://` paths); the scatter pass itself
+is asserted by `tools/validate_area.gd`.
+
 ### Factions & wildlife
 Every `Enemy` carries a `faction` (`scripts/faction.gd`, `class_name Faction`:
 `PLAYER` / `BEAST` / `BANDIT` / `MONSTER` / `WILDLIFE`). `Faction.hostile(a, b)`

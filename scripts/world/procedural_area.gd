@@ -35,6 +35,9 @@ const GATE_MARGIN := 20.0
 const BASE_AREA := 288000.0
 ## Half-height of the clear "mouth" left in the side border for each exit/trail.
 const MOUTH := 110.0
+## Hard cap on scattered ground-cover decals so a huge area can't spawn thousands
+## of tiny sprites; density already scales the authored count toward this.
+const MAX_GROUNDCOVER := 420
 
 const TREASURE_SCENE := preload("res://scenes/entities/treasure_chest.tscn")
 const GATHER_SCENE := preload("res://scenes/entities/gather_node.tscn")
@@ -129,6 +132,7 @@ func _ready() -> void:
 	_paint_ground()
 	_paint_trail()
 	_place_features()
+	_scatter_groundcover()
 	_frame_border()
 	_scatter_props()
 	_spawn_enemies()
@@ -252,6 +256,32 @@ func _add_decal(tex_path: String, rect: Rect2, tint: Color) -> void:
 	s.position = rect.position
 	s.modulate = tint
 	_decals.add_child(s)
+
+## Strew flat ground-cover decals (tufts/flowers/pebbles/leaves/moss/brush) across
+## the Decals layer — the pass that breaks the ground's tiling repeat and dapples
+## the floor with life. Each is a tiny Sprite2D under the y-sorted Entities, kept
+## off feature keep-outs (ponds/ruins) and a step clear of the worn trail, with a
+## little value-jitter and random flip so no two read identically. Cheap: static
+## sprites, count scaled by area size and hard-capped.
+func _scatter_groundcover() -> void:
+	if _decals == null or _biome.groundcover_paths.is_empty() or _biome.max_groundcover <= 0:
+		return
+	var base := _rng.randi_range(_biome.min_groundcover, maxi(_biome.min_groundcover, _biome.max_groundcover))
+	var count: int = mini(MAX_GROUNDCOVER, int(round(float(base) * _density)))
+	for _i in range(count):
+		var path := _biome.pick_groundcover_path(_rng)
+		if path.is_empty() or not ResourceLoader.exists(path):
+			continue
+		var pos := _free_point(EDGE + 8, 14.0)
+		if pos.x < 0.0:
+			continue
+		var s := Sprite2D.new()
+		s.texture = load(path)
+		s.position = pos
+		s.flip_h = _rng.randf() < 0.5
+		var v: float = _rng.randf_range(0.9, 1.08)
+		s.modulate = Color(v, v, v, _rng.randf_range(0.85, 1.0))
+		_decals.add_child(s)
 
 ## Pick a handful of interior features and place them at non-overlapping anchors,
 ## kept away from the edges. Each records a keep-out radius so generic scatter and
