@@ -181,6 +181,7 @@ def gen_cabin(name="cabin.png"):
     c.rect(41, 43, 42, 52, P.WOOD[3]); c.rect(51, 43, 52, 52, P.WOOD[3])  # shutters
     glow_window(c, 14, 44, 21, 51)
     c.rect(12, 43, 13, 52, P.WOOD[3]); c.rect(22, 43, 23, 52, P.WOOD[3])
+    c.rim_light(0.3)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
@@ -205,6 +206,7 @@ def gen_townhouse(name="townhouse.png"):
     c.rect(28, 83, 43, 85, P.STONE[1])            # step
     glow_window(c, 12, 60, 21, 69, lit=False)
     glow_window(c, 50, 60, 59, 69)
+    c.rim_light(0.3)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
@@ -236,6 +238,7 @@ def gen_shop(name="shop.png"):
     glow_window(c, 11, 60, 30, 74)
     c.vline(20, 60, 74, P.WOOD[3])                # extra mullion
     plank_door(c, 42, 58, 53, 80)
+    c.rim_light(0.3)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
@@ -268,6 +271,7 @@ def gen_tavern(name="tavern.png"):
         cc.rect(mx - 2, my - 2, mx + 1, my - 1, P.PLASTER[0])   # foam head
         cc.vline(mx + 2, my - 1, my + 1, P.METAL[2])            # handle
     hanging_sign(c, 1, 48, 10, 12, emblem=mug)
+    c.rim_light(0.3)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
@@ -307,6 +311,7 @@ def gen_blacksmith(name="blacksmith.png"):
         cc.rect(mx - 3, my + 2, mx + 3, my + 3, (0, 0, 0, 0))
         cc.paint(mx - 3, my + 2, P.METAL[2]); cc.paint(mx + 3, my + 2, P.METAL[2])
     hanging_sign(c, 50, 32, 10, 10, emblem=shoe)
+    c.rim_light(0.3)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
@@ -353,6 +358,7 @@ def gen_chapel(name="chapel.png"):
     # Arched double door.
     plank_door(c, 27, 92, 44, 108)
     c.vline(35, 92, 108, P.WOOD[4]); c.rect(28, 90, 43, 92, P.WOOD[2])
+    c.rim_light(0.3)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
@@ -382,6 +388,7 @@ def gen_market_stall(name="market_stall.png"):
     c.hline(2, 45, 2, P.PLASTER[0])
     for x in range(2, 46, 4):                     # scalloped lip
         c.rect(x, 12, x + 1, 13, P.ROOF[2])
+    c.rim_light(0.3)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
@@ -397,6 +404,7 @@ def gen_lamp_post(name="lamp_post.png"):
     c.paint(7, 10, (255, 244, 200, 255)); c.paint(8, 10, (255, 244, 200, 255))
     c.rect(5, 4, 10, 5, P.METAL[3])               # cap
     c.paint(7, 2, P.METAL[2]); c.paint(8, 2, P.METAL[2]); c.paint(7, 1, P.METAL[3])
+    c.rim_light(0.3)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
@@ -417,6 +425,7 @@ def gen_signpost(name="signpost.png"):
     # Small lower board (points left).
     c.rect(4, 20, 17, 27, P.WOOD[3]); c.frame(4, 20, 17, 27, P.WOOD[4])
     c.hline(7, 14, 23, P.WOOD[4])
+    c.rim_light(0.3)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))

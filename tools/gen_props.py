@@ -46,6 +46,7 @@ def gen_tent(name="tent.png"):
     c.line(22 + 7, 33, 22, 19, canvas_d)
     # Guy-rope + peg.
     c.line(6, 9, 1, 33, P.WOOD[4]); c.paint(1, 33, P.METAL[3])
+    c.rim_light(0.4)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
@@ -71,6 +72,7 @@ def gen_campfire(name="campfire.png"):
     c.ellipse(13, 11, 2, 3, P.EMBER[1])
     c.ellipse(13, 10, 1, 2, P.EMBER[0])
     c.paint(13, 7, P.EMBER[0])
+    c.rim_light(0.4)
     c.outline()
     c.save(asset(name))
     print("generated", name, "(26x22)")
@@ -89,6 +91,7 @@ def gen_barrel(name="barrel.png"):
     for hy in (7, 14, 21):
         c.hline(2, 13, hy, P.METAL[3])
         c.hline(2, 13, hy - 1, P.METAL[1])
+    c.rim_light(0.4)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
@@ -102,6 +105,7 @@ def gen_crate(name="crate.png"):
     c.vline(2, 2, 16, P.WOOD[3]); c.vline(15, 2, 16, P.WOOD[3])
     c.line(3, 3, 14, 15, P.WOOD[3]); c.line(14, 3, 3, 15, P.WOOD[3])  # X brace
     c.line(3, 3, 14, 15, P.WOOD[1])
+    c.rim_light(0.4)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
@@ -118,6 +122,7 @@ def gen_fence(name="fence.png"):
     for ry in (7, 12):
         c.rect(0, ry, 15, ry + 1, P.WOOD[2])
         c.hline(0, 15, ry, P.WOOD[1]); c.hline(0, 15, ry + 1, P.WOOD[3])
+    c.rim_light(0.4)
     c.outline()
     c.save(asset(name))
     print("generated", name, "(16x18)")
@@ -146,6 +151,7 @@ def gen_well(name="well.png"):
     # Bucket rope + bucket.
     c.vline(15, 12, 22, P.WOOD[4])
     c.rect(13, 22, 17, 25, P.WOOD[2]); c.hline(13, 17, 22, P.WOOD[1])
+    c.rim_light(0.4)
     c.outline()
     c.drop_shadow()
     c.save(asset(name))
