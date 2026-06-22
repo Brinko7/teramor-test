@@ -101,15 +101,16 @@ def main():
     # ================= ARMS (sleeves + gloves) =================
     for s in (-1, 1):
         ax = cx + s*19
-        R(c, ax-4, 46, ax+4, 68, GRN[1])              # sleeve
-        R(c, ax-4, 46, ax-2, 68, GRN[0]); R(c, ax+2, 46, ax+4, 68, GRN[3])
-        c.line(ax-2, 54, ax-1, 62, GRN[2])            # sleeve fold
-        R(c, ax-4, 66, ax+4, 69, LEA[2])              # glove cuff
-        ell(c, ax, 73, 5, 5, LEA[1])                  # gloved fist
-        R(c, ax-4, 71, ax-2, 75, LEA[0])              # lit edge
-        c.paint(ax+3, 75, LEA[3]); c.paint(ax+2, 74, LEA[3])
-        c.line(ax-1, 71, ax-1, 75, LEA[3])            # finger groove
-        c.line(ax+1, 71, ax+1, 75, LEA[3])
+        # sleeve runs down PAST the belt (so the arm reads in front of it)
+        R(c, ax-4, 46, ax+4, 76, GRN[1])              # sleeve
+        R(c, ax-4, 46, ax-2, 76, GRN[0]); R(c, ax+2, 46, ax+4, 76, GRN[3])
+        c.line(ax-2, 54, ax-1, 64, GRN[2])            # sleeve fold
+        R(c, ax-4, 76, ax+4, 79, LEA[2])              # glove cuff at the wrist
+        ell(c, ax, 83, 5, 5, LEA[1])                  # gloved fist, resting below the belt
+        R(c, ax-4, 81, ax-2, 86, LEA[0])              # lit edge
+        c.paint(ax+3, 86, LEA[3]); c.paint(ax+2, 85, LEA[3])
+        c.line(ax-1, 81, ax-1, 85, LEA[3])            # finger grooves
+        c.line(ax+1, 81, ax+1, 85, LEA[3])
 
     # ================= NECK + HEAD =================
     R(c, cx-5, 36, cx+4, 42, SK[3]); R(c, cx-5, 36, cx-3, 42, SK[2])   # neck (shadowed)
