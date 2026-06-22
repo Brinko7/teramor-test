@@ -23,6 +23,7 @@ SKIN = {
     "tan":  [rgb(238,196,150),rgb(222,172,124),rgb(196,144,100),rgb(160,110,74),rgb(122,80,54)],
     "brown":[rgb(206,154,110),rgb(184,130,88),rgb(152,102,66),rgb(116,74,46),rgb(84,52,34)],
     "deep": [rgb(168,118,84),rgb(142,96,64),rgb(112,74,48),rgb(82,52,34),rgb(56,36,26)],
+    "ashen":[rgb(150,162,134),rgb(124,138,112),rgb(98,114,90),rgb(74,90,70),rgb(52,66,52)],  # blight-corrupted
 }
 HAIR = {
     "brown":[rgb(170,122,74),rgb(142,100,58),rgb(114,78,44),rgb(88,58,32),rgb(64,42,24)],
@@ -30,6 +31,7 @@ HAIR = {
     "blond":[rgb(238,210,140),rgb(214,182,110),rgb(184,150,84),rgb(150,118,62),rgb(116,88,46)],
     "grey": [rgb(224,222,222),rgb(196,194,196),rgb(164,162,166),rgb(128,126,132),rgb(94,92,98)],
     "red":  [rgb(206,128,76),rgb(176,100,56),rgb(144,76,42),rgb(110,56,32),rgb(80,40,24)],
+    "matted":[rgb(96,98,86),rgb(78,80,68),rgb(60,62,52),rgb(44,46,38),rgb(30,32,26)],  # greasy/corrupted
 }
 CLOTH = {
     "green": [rgb(150,172,116),rgb(122,146,92),rgb(98,122,72),rgb(74,98,55),rgb(54,74,42)],
@@ -133,27 +135,45 @@ def draw_character(c, cx, opts):
     ell(c,cx,31,9,5,SK[2]); ell(c,cx,36,6,2,SK[3])
     for s in (-1,1):
         ex=cx+s*13; c.line(ex,24,ex+s*3,19,SK[2]); c.line(ex+s*1,24,ex+s*3,20,SK[3]); c.paint(ex+s*1,22,SK[1])
-    for bx in (cx-9,cx-8,cx-7): c.paint(bx,28,BLUSH)
-    for bx in (cx+7,cx+8,cx+9): c.paint(bx,28,BLUSH)
+    if not opts.get("menace"):
+        for bx in (cx-9,cx-8,cx-7): c.paint(bx,28,BLUSH)
+        for bx in (cx+7,cx+8,cx+9): c.paint(bx,28,BLUSH)
     if freckles:
         for fx,fy in ((cx-7,26),(cx-5,27),(cx+6,26),(cx+8,27),(cx,29)): c.paint(fx,fy,SK[3])
 
     # ---- face ----
-    c.line(cx-9,18,cx-3,17,HR[2]); c.paint(cx-9,19,HR[3])
-    c.line(cx+3,17,cx+9,18,HR[2]); c.paint(cx+9,19,HR[3])
+    menace = opts.get("menace"); glow = opts.get("glow_eyes")
+    if menace:
+        c.line(cx-9,17,cx-4,19,HR[3]); c.paint(cx-4,20,HR[3])     # angled-down brows (frown)
+        c.line(cx+4,19,cx+9,17,HR[3]); c.paint(cx+4,20,HR[3])
+    else:
+        c.line(cx-9,18,cx-3,17,HR[2]); c.paint(cx-9,19,HR[3])
+        c.line(cx+3,17,cx+9,18,HR[2]); c.paint(cx+9,19,HR[3])
     eyec = opts.get("eyes", rgb(112,146,92))
     for s in (-1,1):
         ox=cx+s*6
-        R(c,ox-2,20,ox+1,20,SK[3]); R(c,ox-2,21,ox+1,23,WHITE)
-        R(c,ox-1,21,ox+1,23,eyec); c.paint(ox,22,rgb(56,44,40)); c.paint(ox-1,21,WHITE)
-        c.paint(ox-2,23,SK[3]); c.paint(ox+1,23,SK[3])
+        if glow:                                                 # hollow socket + inner glow
+            R(c,ox-2,20,ox+1,23,rgb(28,34,28)); c.paint(ox,22,glow); c.paint(ox-1,22,glow)
+            c.paint(ox,21,rgb(min(255,glow[0]+40),min(255,glow[1]+40),min(255,glow[2]+30)))
+        else:
+            R(c,ox-2,20,ox+1,20,SK[3]); R(c,ox-2,21,ox+1,23,WHITE)
+            R(c,ox-1,21,ox+1,23,eyec); c.paint(ox,22,rgb(56,44,40)); c.paint(ox-1,21,WHITE)
+            c.paint(ox-2,23,SK[3]); c.paint(ox+1,23,SK[3])
+    if opts.get("scar"):
+        c.line(cx+4,18,cx+7,26,rgb(min(255,SK[2][0]+20),SK[2][1]-10,SK[2][2]-10))
     c.paint(cx-1,24,SK[1]); c.paint(cx-1,26,SK[0]); c.paint(cx+1,26,SK[3]); c.paint(cx+1,27,SK[4]); c.paint(cx,28,SK[3])
     if beard:
         for yy in range(29,36):
             for xx in range(cx-9,cx+10):
                 if (xx-cx)**2/81 + (yy-31)**2/16 <= 1.0: c.paint(xx,yy,HR[2])
         R(c,cx+5,30,cx+9,35,HR[3]); R(c,cx-2,33,cx+2,35,HR[3])
-        c.line(cx-3,31,cx+3,31,rgb(150,86,78))           # mouth in the beard
+        if opts.get("menace"):                            # bared grimace in the beard
+            c.line(cx-3,31,cx+3,31,rgb(40,30,30)); c.paint(cx-1,31,rgb(220,214,200))
+        else:
+            c.line(cx-3,31,cx+3,31,rgb(150,86,78))        # mouth in the beard
+    elif opts.get("menace"):                              # grimace: flat with down-turned corners
+        c.line(cx-3,31,cx+3,31,rgb(110,64,58)); c.paint(cx-4,32,rgb(110,64,58)); c.paint(cx+4,32,rgb(110,64,58))
+        c.paint(cx-1,31,rgb(210,204,190))                 # a bared tooth
     else:
         c.line(cx-3,31,cx+3,31,rgb(150,86,78)); c.paint(cx-4,30,rgb(150,86,78)); c.paint(cx+4,30,rgb(150,86,78))
         R(c,cx-2,32,cx+2,32,rgb(196,124,112))
