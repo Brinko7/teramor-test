@@ -152,8 +152,8 @@ PORTRAITS = [
 	("pell",         "brown", "black",  "short", "rust",  False),
 	("hadrin",       "tan",   "black",  "short", "brown", True),
 	("mara",         "pale",  "brown",  "long",  "plum",  False),
-	("elder_maelon", "pale",  "white",  "bald",  "slate", True),
-	("elkar",        "tan",   "ash",    "short", "brown", True),   # weathered ranger, greying
+	("elder_maelon", "pale",  "white",  "short", "slate", True),   # white-haired elder (sprite has hair)
+	("elkar",        "tan",   "ash",    "short", "olive", True),   # weathered ranger, greying — olive ranger leathers
 	("sorrel",       "pale",  "black",  "long",  "green", False),  # a Child of Tera, forest-cloaked
 ]
 

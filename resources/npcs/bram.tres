@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="NpcData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/npc_data.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/npc_villager.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/npc_bram.png" id="2_tex"]
 
 [resource]
 script = ExtResource("1_script")
@@ -9,7 +9,7 @@ id = &"bram"
 display_name = "Bram"
 title = "Camp Farmhand"
 sprite_texture = ExtResource("2_tex")
-tint = Color(0.95, 0.9, 0.78, 1)
+tint = Color(1, 1, 1, 1)
 met_line = "New face! I'm Bram. I keep the plots turning over — somebody's got to, eh? You ever need dirt under your nails, you come find me."
 greeting = "Back from the wilds, then? The soil missed you."
 farewell = "Go on, I've rows to weed."
