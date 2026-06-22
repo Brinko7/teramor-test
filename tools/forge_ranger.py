@@ -18,8 +18,9 @@ import struct
 import zlib
 
 SS = 2
-OW, OH = 104, 148
+OW, OH = 110, 166
 W, H = OW * SS, OH * SS
+BAYER = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]]
 
 def vnorm(v):
     x, y, z = v; m = math.sqrt(x*x+y*y+z*z) or 1.0; return (x/m, y/m, z/m)
@@ -38,24 +39,27 @@ def vnoise(x, y, s=0):
     a=_h(xi,yi,s); b=_h(xi+1,yi,s); c=_h(xi,yi+1,s); d=_h(xi+1,yi+1,s)
     return (a*(1-u)+b*u)*(1-v)+(c*(1-u)+d*u)*v
 
-# ---- punchy cel ramps (light -> dark), hand-tuned, hue-shifted by eye ----
+# ---- cel ramps (light -> dark): warm, saturated lights -> COOL desaturated
+# shadows (deliberate hue-shift), high contrast for a moody, carved read. ----
 RAMPS = {
-    "cloak":   [(104,126,86),(74,100,62),(52,76,46),(34,54,34),(22,38,24)],
-    "cloak_d": [(74,96,62),(52,74,46),(36,54,34),(24,40,26),(16,28,18)],
-    "leather": [(158,110,64),(122,82,46),(92,58,34),(64,40,22),(42,26,15)],
-    "leather_d":[(116,80,46),(88,58,34),(64,40,24),(44,28,16),(28,18,11)],
-    "tunic":   [(96,128,114),(68,100,88),(48,76,66),(33,55,48),(22,38,33)],
-    "skin":    [(236,194,156),(198,152,116),(156,112,82),(112,78,56),(76,50,36)],
-    "wood":    [(168,124,74),(128,90,52),(92,62,34),(62,40,22),(40,26,14)],
-    "metal":   [(206,212,222),(156,164,178),(110,118,134),(72,80,96),(48,54,68)],
-    "string":  [(210,206,190),(150,146,132),(96,94,84),(60,58,52)],
+    "cloak":   [(132,152,100),(88,116,76),(54,84,60),(33,57,48),(19,35,36)],
+    "cloak_d": [(100,120,78),(66,92,60),(42,66,50),(26,46,40),(14,28,30)],
+    "leather": [(182,128,74),(134,90,50),(92,58,34),(57,38,28),(31,24,26)],
+    "leather_d":[(132,90,52),(96,62,36),(64,41,26),(41,28,22),(22,18,22)],
+    "tunic":   [(108,144,128),(72,108,96),(46,80,74),(29,54,54),(16,34,40)],
+    "skin":    [(242,200,160),(204,154,116),(150,103,78),(101,68,58),(58,42,48)],
+    "wood":    [(184,136,82),(136,94,54),(92,60,34),(58,39,26),(33,25,24)],
+    "metal":   [(216,224,236),(162,172,190),(108,120,144),(68,80,106),(40,50,76)],
+    "string":  [(224,220,204),(150,148,138),(90,92,90),(50,54,58)],
 }
 EMIT = {  # emissive accents (ignore lighting; feed the bloom)
-    "eye":  (255, 206, 120),
-    "rune": (255, 178, 86),
+    "eye":  (255, 214, 132),
+    "rune": (255, 182, 92),
 }
-SELOUT = (22, 17, 16)
-RIM = (150, 186, 196)        # cool moonlight
+HILIGHT = (236, 240, 224)    # crisp lit-edge lip
+SELOUT = (20, 17, 24)        # cool-dark ink
+RIM = (150, 190, 220)        # cool moonlight back-rim
+EYE_GLOW = (255, 206, 120)   # warm light the eyes cast on the face
 EMIT_MATS = set(EMIT)
 
 R2 = 2.89; ISO = 0.45
@@ -101,8 +105,9 @@ class Field:
                 d=math.hypot(xx-x,yy-y)/r
                 if d<1: s.aoc[i]=max(s.aoc[i],(1-d)*amt)
 
-KEY=vnorm((-0.5,-0.62,0.6)); FILL=vnorm((0.7,0.1,0.45))
-NSTR=0.62/SS; AMB=0.28
+KEY=vnorm((-0.5,-0.62,0.6)); FILL=vnorm((0.66,0.12,0.5))
+BACK=vnorm((0.18,-0.55,-0.4))      # cool moon, high and behind -> rim
+NSTR=0.62/SS; AMB=0.19
 cx_g = OW/2.0
 
 def normal_at(f, x, y):
@@ -113,11 +118,14 @@ def normal_at(f, x, y):
     hd=f.hgt[i+w] if y<f.h-1 and f.cov[i+w]>0 else f.hgt[i]
     return vnorm((-(hr-hl)*0.5*NSTR, -(hd-hu)*0.5*NSTR, 1.0))
 
-def cel_index(lum, n):
-    # bold banding with a tighter highlight step
-    lum = clamp(lum, 0.0, 1.12)
-    if lum > 1.0: return 0
-    return clamp(int((1.0 - lum/1.0) * (n - 0.001)), 0, n-1)
+def _cel(lum, n, x, y):
+    """Map luminance to a band, Bayer-dithering the boundary between the two
+    nearest bands for that hand-made pixel-art gradient."""
+    cont = (1.0 - clamp(lum, 0.0, 1.0)) * (n - 1)
+    lo = int(cont); frac = cont - lo
+    thr = BAYER[y & 3][x & 3] / 16.0
+    idx = lo + (1 if frac > thr else 0)
+    return clamp(idx, 0, n - 1)
 
 def shade(f, x, y):
     i=y*f.w+x; m=f.mat[i]
@@ -127,29 +135,43 @@ def shade(f, x, y):
     ndl=max(0.0,dot(N,KEY)); ndf=max(0.0,dot(N,FILL))
     tex=0.0
     if m in ("cloak","leather","tunic","cloak_d","leather_d"):
-        tex=(vnoise(x/SS*0.7,y/SS*0.7, 5)-0.5)*0.10
-    lum=AMB + 0.82*ndl + 0.16*ndf + tex
+        tex=(vnoise(x/SS*0.7,y/SS*0.7, 5)-0.5)*0.07
+    lum=AMB + 0.86*ndl + 0.14*ndf + tex
     lum*=(1.0-f.aoc[i])
     ramp=RAMPS[m]
-    col=ramp[cel_index(lum,len(ramp))]
-    # crisp rim band on the moonlit edge
+    col=ramp[_cel(lum,len(ramp),x,y)]
+    # crisp lit-edge lip where a strongly key-facing surface meets the silhouette
     fres=(1.0-max(0.0,N[2]))
-    if fres>0.5 and (N[0]*KEY[0]+N[1]*KEY[1])>0.0 and ndl<0.6:
+    if ndl>0.82 and fres>0.34:
+        col=HILIGHT
+    # cool moonlit back-rim along the shadow-side silhouette (pops off the dark)
+    rim=fres*max(0.0,dot(N,BACK))
+    if rim>0.30 and ndl<0.7:
         col=RIM
+    # the gold gaze casts warm light onto the upper face below it
+    if m=="skin" and getattr(f,"eyes",None):
+        for (ex,ey) in f.eyes:
+            d=math.hypot((x-ex*SS), (y-ey*SS))/(7.0*SS)
+            if d<1.0 and y>=ey*SS-2:
+                g=(1.0-d)*0.55
+                col=(clamp(col[0]+EYE_GLOW[0]*g*0.5,0,255),
+                     clamp(col[1]+EYE_GLOW[1]*g*0.45,0,255),
+                     clamp(col[2]+EYE_GLOW[2]*g*0.3,0,255))
     return col, False
 
 def build():
     f=Field(W,H); cx=cx_g
-    # --- cape BEHIND only (narrower than the body, so the silhouette reads as a
-    # person with a cape, not a teardrop): a clasp-at-the-neck mantle falling back ---
-    f.ellipsoid(cx, 70, -16, 15, 38, 6, "cloak_d")
-    f.ellipsoid(cx, 108, -16, 21, 26, 6, "cloak_d")
-    # --- legs ---
+    # --- cape BEHIND, wind-swept to one side: a clasp-at-the-neck mantle that
+    # billows out and flicks a lit tail (drama + a person-shaped silhouette) ---
+    f.ellipsoid(cx+2, 72, -16, 14, 40, 6, "cloak_d")
+    f.ellipsoid(cx+8, 118, -15, 14, 32, 6, "cloak_d")
+    f.ellipsoid(cx+18, 150, -13, 9, 16, 6, "cloak")               # flicked tail (catches light)
+    # --- legs (longer, heroic stance) ---
     for s in (-1,1):
         hx=cx+s*9
-        f.capsule((hx,96,0),(hx+s*1,128,0), 8, 6, "leather_d")     # trouser/wrap
-        f.capsule((hx+s*1,126,0),(hx+s*2,144,0), 6.5, 5, "leather")# boot
-        f.ellipsoid(hx+s*2,147,4, 6.5,4.5,6, "leather")            # foot
+        f.capsule((hx,96,0),(hx+s*2,134,0), 7.5, 5.5, "leather_d")  # thigh/wrap
+        f.capsule((hx+s*2,132,0),(hx+s*3,154,0), 6, 4.5, "leather") # boot
+        f.ellipsoid(hx+s*3,157,4, 6.5,4.5,6, "leather")            # foot
     # --- torso: tunic + a leather chest harness, belt ---
     f.ellipsoid(cx, 66, 0, 17, 14, 10, "tunic")
     f.ellipsoid(cx, 64, 5, 15, 12, 10, "leather")                  # chest piece
@@ -172,19 +194,19 @@ def build():
     f.ellipsoid(cx-11, 37, 3, 4.5, 10, 6, "cloak")                # hood side falls
     f.ellipsoid(cx+11, 37, 3, 4.5, 10, 6, "cloak")
     # --- a longbow of living wood, held at the left, tall vertical silhouette ---
-    for k in range(0, 70):
-        t=k/69.0; yy=34+t*80
-        bend=math.sin(t*math.pi)*6.5
-        f.ellipsoid(cx-24-bend, yy, 4, 1.5, 1.9, 1.7, "wood")
-    f.capsule((cx-24, 36, 6), (cx-24, 112, 6), 0.7, 0.7, "string")   # bowstring
+    for k in range(0, 80):
+        t=k/79.0; yy=32+t*106
+        bend=math.sin(t*math.pi)*2.6
+        f.ellipsoid(cx-23-bend, yy, 4, 1.3, 1.9, 1.6, "wood")
+    f.capsule((cx-23, 33, 6), (cx-23, 138, 6), 0.6, 0.6, "string")   # bowstring
     return f
 
 def detail(f):
     cx=cx_g
-    # the hood throws the face into deep shadow so the gold gaze blazes out of it
-    f.crease(cx, 31, 10, 0.72)
-    f.crease(cx-4, 33, 4, 0.6); f.crease(cx+4, 33, 4, 0.6)
-    f.crease(cx, 40, 4, 0.45)
+    # the hood throws the face into near-black so the gold gaze is the only light
+    f.crease(cx, 30, 9.5, 0.88)
+    f.crease(cx, 34, 7, 0.82)
+    f.crease(cx, 40, 4, 0.55)
     f.crease(cx-13, 70, 6, 0.3); f.crease(cx+13, 70, 6, 0.3)
 
 def _stamp(f, cx, cy, r, mat):
@@ -197,8 +219,9 @@ def _stamp(f, cx, cy, r, mat):
 def emissive(f):
     cx=cx_g
     # the Tera-sap eyes: two distinct gold lamps under the cowl
+    f.eyes=[(cx-4.0,33),(cx+4.0,33)]
     for s in (-1,1):
-        _stamp(f, cx+s*4.2, 33, 1.0, "eye")
+        _stamp(f, cx+s*4.0, 33, 1.3, "eye")
     # a rune-pendant at the chest
     _stamp(f, cx, 64, 1.8, "rune")
     # glowing sap veins running up the living-wood bow
