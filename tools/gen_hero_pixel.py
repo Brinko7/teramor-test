@@ -119,7 +119,7 @@ def main():
     R(c, cx-11, 13, cx-3, 22, SK[1]); c.paint(cx-9, 15, SK[0]); c.paint(cx-8, 14, SK_HI)
     R(c, cx+8, 16, cx+13, 32, SK[3])                  # shaded right cheek
     R(c, cx+10, 20, cx+13, 30, SK[4])
-    ell(c, cx, 30, 9, 6, SK[2]); R(c, cx-6, 33, cx+6, 35, SK[3])   # jaw/chin underside
+    ell(c, cx, 31, 9, 5, SK[2]); ell(c, cx, 36, 6, 2, SK[3])       # jaw rounding + soft under-chin
     # pointed half-elf ears with inner shadow
     for s in (-1, 1):
         ex = cx + s*13
@@ -134,15 +134,15 @@ def main():
     # eyebrows (hair-toned, slightly arched)
     c.line(cx-9, 18, cx-3, 17, HR[2]); c.paint(cx-9, 19, HR[3])
     c.line(cx+3, 17, cx+9, 18, HR[2]); c.paint(cx+9, 19, HR[3])
-    # eyes: socket shadow, white, hazel iris, pupil, catchlight, lower lid
+    # eyes: clean + symmetric — lid shadow, white, hazel iris, pupil, catchlight
     for s in (-1, 1):
         ox = cx + s*6
-        R(c, ox-3, 20, ox+2, 21, SK[3])               # upper-lid shadow
-        R(c, ox-2, 21, ox+2, 24, WHITE)               # sclera
-        R(c, ox-1 if s<0 else ox, 21, ox+1 if s<0 else ox+2, 24, rgb(120,150,96))  # iris
-        c.paint(ox if s<0 else ox+1, 22, rgb(60,46,40))   # pupil
-        c.paint(ox-1 if s<0 else ox, 21, WHITE)       # catchlight
-        R(c, ox-2, 24, ox+2, 24, SK[3])               # lower lid
+        R(c, ox-2, 20, ox+1, 20, SK[3])               # upper-lid shadow
+        R(c, ox-2, 21, ox+1, 23, WHITE)               # sclera
+        R(c, ox-1, 21, ox+1, 23, rgb(112,146,92))     # hazel iris
+        c.paint(ox, 22, rgb(56,44,40))                # pupil
+        c.paint(ox-1, 21, WHITE)                       # catchlight (upper-left)
+        c.paint(ox-2, 23, SK[3]); c.paint(ox+1, 23, SK[3])   # lower-lid corners
     # nose: bridge highlight + a soft right shadow + nostril hint
     c.paint(cx-1, 24, SK[1]); c.paint(cx-1, 26, SK[0])
     c.paint(cx+1, 26, SK[3]); c.paint(cx+1, 27, SK[4]); c.paint(cx, 28, SK[3])
@@ -150,19 +150,19 @@ def main():
     c.line(cx-3, 31, cx+3, 31, rgb(150,86,78)); c.paint(cx-4, 30, rgb(150,86,78)); c.paint(cx+4, 30, rgb(150,86,78))
     R(c, cx-2, 32, cx+2, 32, rgb(196,124,112))
 
-    # ================= HAIR (tousled, layered, with flow) =================
-    ell(c, cx, 12, 15, 11, HR[2])                     # main mass
-    R(c, cx-15, 11, cx-10, 30, HR[2]); R(c, cx+10, 11, cx+15, 30, HR[3])   # side locks
-    # bangs as separated tufts dipping over the brow
-    for bx, by in ((cx-11,18),(cx-7,20),(cx-3,17),(cx+1,19),(cx+5,17),(cx+9,20),(cx+12,17)):
-        c.line(bx, 6, bx, by, HR[2]); c.paint(bx, by, HR[3])
-    # shadow under the mass + right side core
-    R(c, cx-10, 16, cx+12, 17, HR[3]); R(c, cx+9, 10, cx+15, 26, HR[4])
-    # flowing highlight strands (upper-left light)
-    for hx, hy in ((cx-9,6),(cx-5,5),(cx-1,6),(cx-11,9),(cx-7,8),(cx+3,6)):
-        c.paint(hx, hy, HR[0])
-    c.line(cx-9, 7, cx-2, 6, HR[0]); c.line(cx-12, 11, cx-9, 14, HR[1])
-    c.paint(cx-3, 4, SK_HI if False else HR[0])
+    # ================= HAIR (chunky clean locks, swept fringe) =================
+    ell(c, cx, 12, 15, 10, HR[2])                     # solid crown mass
+    R(c, cx-15, 12, cx-11, 28, HR[2]); R(c, cx+11, 12, cx+15, 28, HR[3])   # side locks
+    # swept fringe: three soft lock-dips over the forehead (a clean wavy edge)
+    ell(c, cx-8, 13, 5, 4, HR[2]); ell(c, cx, 14, 5, 4, HR[2]); ell(c, cx+8, 13, 5, 4, HR[2])
+    R(c, cx-10, 16, cx+9, 17, HR[3])                  # soft shadow tucked under the fringe
+    # right side falls into core shadow
+    ell(c, cx+8, 12, 7, 9, HR[3]); R(c, cx+11, 11, cx+15, 27, HR[4])
+    # one clean sheen band catching the upper-left light
+    ell(c, cx-5, 8, 8, 3, HR[1]); c.line(cx-10, 7, cx+1, 6, HR[0]); ell(c, cx-6, 8, 3, 2, HR[0])
+    # a couple of chunky lock separations (define strands, not a picket fence)
+    c.line(cx-4, 7, cx-6, 16, HR[4]); c.line(cx+4, 8, cx+3, 16, HR[4])
+    R(c, cx-15, 12, cx-14, 26, HR[1])                 # lit left-lock edge
 
     # ================= OUTLINES (colored, selective) =================
     c.outline(INK, diagonal=False)
