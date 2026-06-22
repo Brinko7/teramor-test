@@ -39,6 +39,11 @@ vframes = 4
 hframes = 4
 vframes = 4
 
+[node name="Beard" type="Sprite2D" parent="Preview"]
+visible = false
+hframes = 4
+vframes = 4
+
 [node name="Hair" type="Sprite2D" parent="Preview"]
 hframes = 4
 vframes = 4
@@ -94,6 +99,17 @@ theme_override_font_sizes/font_size = 10
 text = "Hair Color"
 
 [node name="HairColorRow" type="HBoxContainer" parent="Controls"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="BeardLabel" type="Label" parent="Controls"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.8, 0.82, 1)
+theme_override_font_sizes/font_size = 10
+text = "Beard"
+
+[node name="BeardRow" type="HBoxContainer" parent="Controls"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 4

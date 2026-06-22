@@ -9,6 +9,7 @@ extends Control
 const BODY_TEX := "res://assets/placeholder/char/body.png"
 const OUTFIT_TEX := "res://assets/placeholder/char/outfit_ranger.png"
 const STYLE_LABELS := {"short": "Short", "long": "Long", "spiky": "Spiky"}
+const BEARD_LABELS := {"none": "None", "stubble": "Stubble", "goatee": "Goatee", "full": "Full"}
 const WALK_FRAMES := [0, 1, 0, 2]
 const PREVIEW_FPS := 6.0
 const SELECT_BORDER := Color(0.95, 0.92, 0.7)
@@ -16,18 +17,22 @@ const SELECT_BORDER := Color(0.95, 0.92, 0.7)
 @onready var preview_body: Sprite2D = $Preview/Body
 @onready var preview_outfit: Sprite2D = $Preview/Outfit
 @onready var preview_hair: Sprite2D = $Preview/Hair
+@onready var preview_beard: Sprite2D = $Preview/Beard
 @onready var name_field: LineEdit = %NameField
 @onready var skin_row: HBoxContainer = %SkinRow
 @onready var style_row: HBoxContainer = %StyleRow
 @onready var hair_color_row: HBoxContainer = %HairColorRow
+@onready var beard_row: HBoxContainer = %BeardRow
 
 var _skin: Color = PlayerProfile.skin_tone
 var _hair_color: Color = PlayerProfile.hair_color
 var _hair_style: String = PlayerProfile.hair_style
+var _beard_style: String = PlayerProfile.beard_style
 
 var _skin_swatches: Array[Button] = []
 var _hair_swatches: Array[Button] = []
 var _style_buttons: Array[Button] = []
+var _beard_buttons: Array[Button] = []
 
 var _anim_time: float = 0.0
 
@@ -40,6 +45,7 @@ func _ready() -> void:
 	_build_skin_swatches()
 	_build_style_buttons()
 	_build_hair_swatches()
+	_build_beard_buttons()
 	_apply_preview()
 	name_field.grab_focus()
 	name_field.select_all()
@@ -50,6 +56,8 @@ func _process(delta: float) -> void:
 	preview_body.frame = frame
 	preview_outfit.frame = frame
 	preview_hair.frame = frame
+	if preview_beard.visible:
+		preview_beard.frame = frame
 
 # --- Palette construction ---------------------------------------------------
 
@@ -79,6 +87,17 @@ func _build_style_buttons() -> void:
 		button.pressed.connect(_on_style_picked.bind(style, button))
 		style_row.add_child(button)
 		_style_buttons.append(button)
+
+func _build_beard_buttons() -> void:
+	for style: String in PlayerProfile.BEARD_STYLES:
+		var button := Button.new()
+		button.text = BEARD_LABELS.get(style, style.capitalize())
+		button.toggle_mode = true
+		button.focus_mode = Control.FOCUS_NONE
+		button.button_pressed = style == _beard_style
+		button.pressed.connect(_on_beard_picked.bind(style, button))
+		beard_row.add_child(button)
+		_beard_buttons.append(button)
 
 func _make_swatch(color: Color) -> Button:
 	var button := Button.new()
@@ -111,11 +130,17 @@ func _on_style_picked(style: String, button: Button) -> void:
 		other.button_pressed = other == button
 	_apply_preview()
 
+func _on_beard_picked(style: String, button: Button) -> void:
+	_beard_style = style
+	for other: Button in _beard_buttons:
+		other.button_pressed = other == button
+	_apply_preview()
+
 func _on_name_submitted(_text: String) -> void:
 	_on_begin_pressed()
 
 func _on_begin_pressed() -> void:
-	PlayerProfile.apply(name_field.text, _skin, _hair_color, _hair_style)
+	PlayerProfile.apply(name_field.text, _skin, _hair_color, _hair_style, _beard_style)
 	GameManager.enter_world()
 
 func _on_back_pressed() -> void:
@@ -127,6 +152,13 @@ func _apply_preview() -> void:
 	preview_body.modulate = _skin
 	preview_hair.texture = load("res://assets/placeholder/char/hair_%s.png" % _hair_style) as Texture2D
 	preview_hair.modulate = _hair_color
+	if _beard_style == "none":
+		preview_beard.visible = false
+	else:
+		preview_beard.texture = load("res://assets/placeholder/char/beard_%s.png" % _beard_style) as Texture2D
+		preview_beard.modulate = _hair_color
+		preview_beard.frame = preview_hair.frame
+		preview_beard.visible = true
 
 func _highlight(buttons: Array[Button], selected: Button) -> void:
 	for button: Button in buttons:

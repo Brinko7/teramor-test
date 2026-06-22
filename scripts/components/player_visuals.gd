@@ -35,6 +35,7 @@ const STOW_DELAY := 0.12
 var _body: Sprite2D
 var _outfit: Sprite2D
 var _hair: Sprite2D
+var _beard: Sprite2D
 var _gear_layers: Dictionary
 var _weapon_pivot: Node2D
 var _weapon_sprite: Sprite2D
@@ -57,10 +58,12 @@ var _swing_tween: Tween
 func setup(body: Sprite2D, outfit: Sprite2D, hair: Sprite2D, gear_layers: Dictionary,
 		weapon_pivot: Node2D, weapon_sprite: Sprite2D,
 		shield_pivot: Node2D, shield_sprite: Sprite2D, equipment: Equipment,
-		weapon_holster: Sprite2D, shield_back: Sprite2D, attack_arm: Sprite2D) -> void:
+		weapon_holster: Sprite2D, shield_back: Sprite2D, attack_arm: Sprite2D,
+		beard: Sprite2D = null) -> void:
 	_body = body
 	_outfit = outfit
 	_hair = hair
+	_beard = beard
 	_gear_layers = gear_layers
 	_weapon_pivot = weapon_pivot
 	_weapon_sprite = weapon_sprite
@@ -80,6 +83,8 @@ func is_swinging() -> bool:
 func sync_frame(frame: int) -> void:
 	_outfit.frame = frame
 	_hair.frame = frame
+	if _beard != null and _beard.visible:
+		_beard.frame = frame
 	for layer: Sprite2D in _gear_layers.values():
 		if layer.visible:
 			layer.frame = frame

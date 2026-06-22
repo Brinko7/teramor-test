@@ -41,7 +41,13 @@ Registered in `project.godot` under `[autoload]`:
   `item_crafted`). Prefer adding a signal here over cross-wiring nodes.
 - **GameManager** — high-level flow: new game, continue, return to menu, the
   death → game-over → respawn loop, and the sleep/day-advance sequence.
-- **PlayerProfile** — chosen identity (skin/hair) from character creation.
+- **PlayerProfile** — chosen identity (name, skin tone, hair style + colour, and
+  **beard** style) from character creation, persisted via the SaveManager contract.
+  The player paper-doll reads it on spawn: skin tints the body, the hair/beard sheets
+  swap by style and tint by hair colour. The beard is a separate tintable layer
+  (`char/beard_<style>.png`, baked by `gen_char.py`'s `render_beard`); `"none"` hides
+  it. Add a cosmetic axis by extending the `*_STYLES`/palette arrays here — the
+  creation screen builds its pickers from them. Coverage: `tools/validate_customization.gd`.
 - **Story**, **Relationships**, **QuestManager** — narrative/social/quest state.
   Relationships and QuestManager are **pure data managers**: they expose state +
   signals, and the player menu renders them (no UI of their own).
