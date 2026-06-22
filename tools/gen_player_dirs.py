@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pixelforge import Canvas  # noqa: E402
 from gen_cast import SKIN, HAIR, CLOTH, LEA, GOLD, INK, WHITE, BLUSH  # noqa: E402
 import gen_player_anim as fa  # noqa: E402
-import forge_anim  # noqa: E402
+import gifutil  # noqa: E402
 
 SK = SKIN["tan"]; HR = HAIR["brown"]
 GRN = CLOTH["green"]; TR = CLOTH["slate"]; BT = CLOTH["brown"]; CRM = CLOTH["cream"]
@@ -137,8 +137,8 @@ def _walk_gif(path, frame_fn):
         m = Canvas(60,124); m.rect(0,0,m.w-1,m.h-1,(126,160,120,255))
         m.blit(frame_fn(p), (60-FW)//2, 124-FH-2, mode="over")
         comps.append(m.scaled(3))
-    pal, idx = forge_anim.quantize(comps)
-    forge_anim.write_gif(path, pal, idx, comps[0].w, comps[0].h, 12)
+    pal, idx = gifutil.quantize(comps)
+    gifutil.write_gif(path, pal, idx, comps[0].w, comps[0].h, 12)
 
 def main():
     # turnaround (mid-stride, phase 1) across all four cardinals
