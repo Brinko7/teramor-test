@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Teramor hero — Eastward-style hand-authored pixel art. A clean break from the
-procedural 3D/metaball renderers.
+"""Teramor hero — Eastward-density hand-authored pixel art.
 
-Method: deliberate 2D pixel art. Clean filled shapes, a warm COLORED outline
-(not black), soft 2-3 tone cel shading with a top-left light, and an expressive
-face. Warm, muted, cozy palette. Stdlib only (via pixelforge Canvas).
+Deliberate 2D pixel art (no renderer): clean shapes, warm COLORED outlines, and
+dense, hand-placed shading + detail in the Eastward vibe — 5-tone material ramps
+for soft volume, fabric folds, hair strands, stitched leather, and a fully
+detailed face. Warm, muted, cozy palette. Stdlib only (pixelforge Canvas).
 
 Run:  python3 tools/gen_hero_pixel.py   ->  /tmp/hero_px.png (+ scaled)
 """
@@ -15,126 +15,164 @@ from pixelforge import Canvas  # noqa: E402
 
 def rgb(r, g, b, a=255): return (r, g, b, a)
 
-# ---- warm, muted Eastward-ish palette (light -> dark per material) ----
-INK   = rgb(56, 40, 46)        # colored outline (deep warm plum-brown)
-INKL  = rgb(96, 70, 74)        # softer internal line
-SK    = [rgb(248,214,180), rgb(234,190,152), rgb(208,158,122), rgb(172,120,92)]
-BLUSH = rgb(226,150,130)
-HR    = [rgb(154,106,62), rgb(124,82,46), rgb(96,60,36), rgb(70,44,26)]
-GRN   = [rgb(128,152,98), rgb(100,126,76), rgb(76,100,58), rgb(56,76,44)]   # cloak/hood
-LEA   = [rgb(178,134,86), rgb(148,106,64), rgb(114,80,46), rgb(86,58,34)]   # leather
-CRM   = [rgb(228,210,176), rgb(200,180,146), rgb(166,146,114)]              # shirt/cream
-TRO   = [rgb(126,120,134), rgb(100,94,110), rgb(76,72,88)]                  # trousers
-BOOT  = [rgb(104,74,52), rgb(78,54,38), rgb(54,38,28)]
-MTL   = [rgb(200,204,212), rgb(154,160,172), rgb(112,118,132)]
-GOLD  = [rgb(240,200,120), rgb(206,158,80)]
+# ---- warm muted palette, 5 tones (0=highlight .. 4=core shadow) ----
+SK    = [rgb(252,222,190), rgb(240,200,164), rgb(222,176,138), rgb(188,140,106), rgb(150,104,80)]
+SK_HI = rgb(255,238,214)
+BLUSH = rgb(230,156,136)
+FRECK = rgb(198,138,104)
+HR    = [rgb(170,122,74), rgb(142,100,58), rgb(114,78,44), rgb(88,58,32), rgb(64,42,24)]
+GRN   = [rgb(150,172,116), rgb(122,146,92), rgb(98,122,72), rgb(74,98,55), rgb(54,74,42)]
+LEA   = [rgb(192,148,98), rgb(162,120,74), rgb(130,94,54), rgb(100,70,40), rgb(74,50,30)]
+CRM   = [rgb(240,226,196), rgb(216,198,164), rgb(186,166,130), rgb(150,130,100)]
+TRO   = [rgb(136,130,146), rgb(112,106,124), rgb(88,82,102), rgb(64,60,78)]
+BOOT  = [rgb(118,86,60), rgb(92,66,44), rgb(68,48,32), rgb(46,32,22)]
+GOLD  = [rgb(248,214,134), rgb(222,172,94), rgb(168,122,60)]
+INK   = rgb(50, 36, 44)          # main outline
+GRN_OL= rgb(42, 58, 36)          # cloak-colored outline
+LEA_OL= rgb(58, 38, 24)
+WHITE = rgb(250, 248, 242)
 
-W, H = 72, 96
+W, H = 84, 120
 
-def fill_ell(c, cx, cy, rx, ry, col):
-    c.ellipse(cx, cy, rx, ry, col, fill=True)
-
-def vshade(c, x0, y0, x1, y1, light, mid, dark):
-    """A soft 3-tone column fill: lit on the upper-left, core shadow lower-right."""
-    c.rect(x0, y0, x1, y1, mid)
-    c.rect(x0, y0, x0+1, y1, light)
-    c.rect(x1-1, y0, x1, y1, dark)
-    c.rect(x0, y1-1, x1, y1, dark)
+def ell(c, cx, cy, rx, ry, col): c.ellipse(cx, cy, rx, ry, col, fill=True)
+def R(c, x0, y0, x1, y1, col): c.rect(x0, y0, x1, y1, col)
 
 def main():
     c = Canvas(W, H)
-    cx = 36
+    cx = 42
 
-    # ---------- CLOAK behind the shoulders (drapes down) ----------
-    fill_ell(c, cx, 58, 23, 33, GRN[2])
-    c.rect(cx-21, 42, cx+21, 88, GRN[2])
-    c.rect(cx+9, 42, cx+21, 88, GRN[3])              # right side in shadow
-    c.rect(cx-21, 42, cx-19, 88, GRN[1])             # lit left edge
-    for fy in (50, 62, 74):                           # fold creases
-        c.line(cx-13, fy, cx-12, fy+7, GRN[3])
-        c.line(cx+3, fy+4, cx+4, fy+11, GRN[3])
-        c.line(cx-6, fy+2, cx-6, fy+8, GRN[1])
+    # ================= CLOAK (behind, draped with folds) =================
+    ell(c, cx, 70, 27, 42, GRN[3])
+    R(c, cx-25, 46, cx+25, 104, GRN[3])
+    # broad light/shadow over the drape
+    R(c, cx-25, 46, cx-22, 104, GRN[2])               # lit left edge
+    R(c, cx+12, 46, cx+25, 104, GRN[4])               # shadow right
+    # vertical fold ridges (light) + valleys (dark) — clean drape lines
+    for fx in (cx-17, cx-9, cx+3): c.line(fx, 50, fx, 102, GRN[2])
+    for fx in (cx-13, cx-4, cx+8): c.line(fx, 50, fx, 104, GRN[4])
+    # frayed lit hem
+    for hx in range(cx-24, cx+25, 3): c.paint(hx, 103, GRN[2])
 
-    # ---------- LEGS: trousers + boots ----------
+    # ================= LEGS (trousers + boots) =================
     for s in (-1, 1):
-        lx = cx + s*8
-        vshade(c, lx-5, 64, lx+4, 84, TRO[0], TRO[1], TRO[2])   # trouser
-        c.rect(lx-5, 82, lx+4, 90, BOOT[1])                      # boot
-        c.rect(lx-5, 82, lx-4, 90, BOOT[0])                      # boot lit edge
-        c.rect(lx-5, 88, lx+5, 90, BOOT[2])                      # sole
-        c.rect(lx-5, 82, lx+4, 83, BOOT[0])                      # boot cuff lip
-    c.rect(cx-2, 64, cx+1, 84, TRO[2])                           # inner-leg seam shadow
+        lx = cx + s*10
+        R(c, lx-6, 76, lx+5, 100, TRO[1])             # trouser base
+        R(c, lx-6, 76, lx-4, 100, TRO[0])             # lit outer
+        R(c, lx+2, 76, lx+5, 100, TRO[2])             # inner shadow
+        R(c, lx-6, 96, lx+5, 100, TRO[3])             # knee/hem shadow
+        for ky in (84, 92): R(c, lx-5, ky, lx+4, ky, TRO[2])   # fabric creases
+        # boot
+        R(c, lx-6, 98, lx+5, 112, BOOT[1])
+        R(c, lx-6, 98, lx-4, 112, BOOT[0])
+        R(c, lx+3, 100, lx+5, 112, BOOT[2])
+        R(c, lx-6, 98, lx+5, 99, BOOT[0])             # cuff lip
+        R(c, lx-7, 110, lx+6, 112, BOOT[3])           # sole
+        c.line(lx-3, 104, lx+2, 104, BOOT[3])         # lace line
+    R(c, cx-3, 76, cx+2, 100, TRO[3])                 # inner-leg seam
 
-    # ---------- TORSO: cream shirt under a green tunic + leather belt ----------
-    fill_ell(c, cx, 50, 16, 18, GRN[1])
-    c.rect(cx-15, 40, cx+15, 60, GRN[1])
-    c.rect(cx+6, 40, cx+15, 62, GRN[2])              # right shadow
-    c.rect(cx+12, 42, cx+15, 60, GRN[3])
-    c.rect(cx-15, 40, cx-13, 60, GRN[0])             # lit left edge
-    c.rect(cx-15, 57, cx+15, 60, GRN[2])             # hem shadow
-    # collar V of cream shirt
-    c.rect(cx-4, 38, cx+4, 43, CRM[0]); c.paint(cx, 42, CRM[2])
-    c.line(cx-4, 38, cx, 43, GRN[2]); c.line(cx+4, 38, cx, 43, GRN[2])
-    # satchel strap across the chest + a pouch
-    for yy in range(40, 62):
-        c.paint(cx-12+(yy-40)*1, yy, LEA[2]); c.paint(cx-11+(yy-40)*1, yy, LEA[3])
-    fill_ell(c, cx+12, 60, 5, 5, LEA[1]); c.rect(cx+13, 60, cx+16, 64, LEA[2])  # pouch
-    # belt
-    c.rect(cx-15, 60, cx+15, 64, LEA[2]); c.rect(cx-15, 60, cx+15, 60, LEA[1])
-    c.rect(cx-2, 60, cx+2, 64, GOLD[0]); c.paint(cx+1, 63, GOLD[1])
+    # ================= TORSO (cream shirt + green tunic + belt) =================
+    ell(c, cx, 58, 19, 21, GRN[1])
+    R(c, cx-18, 44, cx+18, 72, GRN[1])
+    # light & shadow modelling
+    R(c, cx-18, 44, cx-15, 72, GRN[0])                # lit left
+    R(c, cx+8, 44, cx+18, 74, GRN[2])
+    R(c, cx+14, 46, cx+18, 72, GRN[3])               # right core shadow
+    R(c, cx-18, 68, cx+18, 72, GRN[3])               # hem shadow
+    # chest fold creases
+    c.line(cx-9, 50, cx-5, 60, GRN[2]); c.line(cx+6, 52, cx+3, 62, GRN[3])
+    c.line(cx-12, 60, cx-9, 66, GRN[2])
+    # cream collar (V) + a laced neckline
+    R(c, cx-5, 42, cx+5, 48, CRM[1]); R(c, cx-5, 42, cx-3, 48, CRM[0])
+    c.paint(cx, 46, CRM[2]); c.paint(cx-1, 47, CRM[3])
+    c.line(cx-5, 42, cx, 48, GRN[3]); c.line(cx+5, 42, cx, 48, GRN[3])
+    for ly in (44, 46): c.paint(cx-3, ly, LEA[3]); c.paint(cx+3, ly, LEA[3])   # lacing
+    # satchel strap across the chest (stitched leather)
+    for i in range(26):
+        sx = cx-14 + i; sy = 46 + i
+        c.paint(sx, sy, LEA[2]); c.paint(sx+1, sy, LEA[3])
+        if i % 3 == 0: c.paint(sx, sy, LEA[0])        # stitch glints
+    # belt + buckle + pouch
+    R(c, cx-18, 70, cx+18, 75, LEA[2]); R(c, cx-18, 70, cx+18, 70, LEA[1])
+    R(c, cx-18, 74, cx+18, 75, LEA[4])
+    R(c, cx-3, 69, cx+3, 76, GOLD[1]); R(c, cx-3, 69, cx+3, 70, GOLD[0]); c.paint(cx+2, 74, GOLD[2])
+    ell(c, cx+15, 74, 6, 6, LEA[1]); R(c, cx+11, 72, cx+19, 75, LEA[2]); c.paint(cx+17, 76, LEA[3])  # pouch
+    c.paint(cx+15, 73, LEA[0])
 
-    # ---------- ARMS (hang at the sides, leather gloves) ----------
+    # ================= ARMS (sleeves + gloves) =================
     for s in (-1, 1):
-        ax = cx + s*16
-        vshade(c, ax-3, 42, ax+3, 57, GRN[0], GRN[1], GRN[2])   # sleeve
-        c.rect(ax-3, 55, ax+3, 58, LEA[1])                       # glove cuff
-        fill_ell(c, ax, 62, 4, 4, LEA[1])                        # glove (fist)
-        c.paint(ax+2, 64, LEA[2]); c.paint(ax+2, 63, LEA[2])     # shadow
-        c.paint(ax-2, 60, LEA[0])                                # lit knuckle
-        c.paint(ax, 62, LEA[2])                                  # knuckle line
+        ax = cx + s*19
+        R(c, ax-4, 46, ax+4, 68, GRN[1])              # sleeve
+        R(c, ax-4, 46, ax-2, 68, GRN[0]); R(c, ax+2, 46, ax+4, 68, GRN[3])
+        c.line(ax-2, 54, ax-1, 62, GRN[2])            # sleeve fold
+        R(c, ax-4, 66, ax+4, 69, LEA[2])              # glove cuff
+        ell(c, ax, 73, 5, 5, LEA[1])                  # gloved fist
+        R(c, ax-4, 71, ax-2, 75, LEA[0])              # lit edge
+        c.paint(ax+3, 75, LEA[3]); c.paint(ax+2, 74, LEA[3])
+        c.line(ax-1, 71, ax-1, 75, LEA[3])            # finger groove
+        c.line(ax+1, 71, ax+1, 75, LEA[3])
 
-    # ---------- NECK + HEAD ----------
-    c.rect(cx-4, 33, cx+3, 39, SK[2])
-    fill_ell(c, cx, 24, 12, 13, SK[1])
-    c.rect(cx-12, 16, cx-4, 30, SK[0])               # lit left of face (subtle)
-    c.rect(cx+7, 18, cx+11, 32, SK[2])               # shaded right cheek/jaw
-    c.rect(cx+9, 20, cx+11, 30, SK[3])
-    fill_ell(c, cx, 30, 8, 5, SK[1])                 # rounded chin
-    # pointed half-elf ears
+    # ================= NECK + HEAD =================
+    R(c, cx-5, 36, cx+4, 42, SK[3]); R(c, cx-5, 36, cx-3, 42, SK[2])   # neck (shadowed)
+    ell(c, cx, 23, 14, 15, SK[2])                     # head
+    # skin modelling: lit upper-left, shadow right + jaw + under-nose
+    ell(c, cx-3, 20, 9, 9, SK[1])
+    R(c, cx-11, 13, cx-3, 22, SK[1]); c.paint(cx-9, 15, SK[0]); c.paint(cx-8, 14, SK_HI)
+    R(c, cx+8, 16, cx+13, 32, SK[3])                  # shaded right cheek
+    R(c, cx+10, 20, cx+13, 30, SK[4])
+    ell(c, cx, 30, 9, 6, SK[2]); R(c, cx-6, 33, cx+6, 35, SK[3])   # jaw/chin underside
+    # pointed half-elf ears with inner shadow
     for s in (-1, 1):
-        ex = cx + s*12
-        c.line(ex, 22, ex+s*2, 19, SK[1]); c.paint(ex+s*1, 24, SK[2])
-    # blush
-    for bx in (cx-7, cx-6): c.paint(bx, 27, BLUSH)
-    for bx in (cx+6, cx+7): c.paint(bx, 27, BLUSH)
+        ex = cx + s*13
+        c.line(ex, 24, ex+s*3, 19, SK[2]); c.line(ex+s*1, 24, ex+s*3, 20, SK[3])
+        c.paint(ex+s*1, 22, SK[1])
+    # blush + freckles
+    for bx in (cx-9, cx-8, cx-7): c.paint(bx, 28, BLUSH)
+    for bx in (cx+7, cx+8, cx+9): c.paint(bx, 28, BLUSH)
+    for fx, fy in ((cx-7,26),(cx-5,27),(cx+6,26),(cx+8,27),(cx,29)): c.paint(fx, fy, FRECK)
 
-    # ---------- FACE ----------
+    # ================= FACE detail =================
+    # eyebrows (hair-toned, slightly arched)
+    c.line(cx-9, 18, cx-3, 17, HR[2]); c.paint(cx-9, 19, HR[3])
+    c.line(cx+3, 17, cx+9, 18, HR[2]); c.paint(cx+9, 19, HR[3])
+    # eyes: socket shadow, white, hazel iris, pupil, catchlight, lower lid
     for s in (-1, 1):
-        ex = cx + s*5
-        c.rect(ex-1, 21, ex+1, 24, rgb(250,248,242))             # eye white
-        c.rect(ex-1 if s<0 else ex, 22, ex if s<0 else ex+1, 24, rgb(70,52,70))  # iris
-        c.paint(ex-1 if s<0 else ex, 22, rgb(250,248,242))       # catchlight
-    c.line(cx-7, 18, cx-3, 19, HR[2]); c.line(cx+3, 19, cx+7, 18, HR[2])  # brows
-    c.paint(cx, 26, SK[2]); c.paint(cx, 27, SK[3])               # nose
-    c.line(cx-2, 30, cx+2, 30, rgb(158,92,82)); c.paint(cx, 31, rgb(190,120,108))  # mouth
+        ox = cx + s*6
+        R(c, ox-3, 20, ox+2, 21, SK[3])               # upper-lid shadow
+        R(c, ox-2, 21, ox+2, 24, WHITE)               # sclera
+        R(c, ox-1 if s<0 else ox, 21, ox+1 if s<0 else ox+2, 24, rgb(120,150,96))  # iris
+        c.paint(ox if s<0 else ox+1, 22, rgb(60,46,40))   # pupil
+        c.paint(ox-1 if s<0 else ox, 21, WHITE)       # catchlight
+        R(c, ox-2, 24, ox+2, 24, SK[3])               # lower lid
+    # nose: bridge highlight + a soft right shadow + nostril hint
+    c.paint(cx-1, 24, SK[1]); c.paint(cx-1, 26, SK[0])
+    c.paint(cx+1, 26, SK[3]); c.paint(cx+1, 27, SK[4]); c.paint(cx, 28, SK[3])
+    # mouth: a soft slight smile with a lit lower lip
+    c.line(cx-3, 31, cx+3, 31, rgb(150,86,78)); c.paint(cx-4, 30, rgb(150,86,78)); c.paint(cx+4, 30, rgb(150,86,78))
+    R(c, cx-2, 32, cx+2, 32, rgb(196,124,112))
 
-    # ---------- HAIR: tousled, framing the face ----------
-    fill_ell(c, cx, 15, 13, 9, HR[1])
-    c.rect(cx-13, 13, cx-9, 27, HR[1]); c.rect(cx+9, 13, cx+13, 27, HR[2])
-    for bx, by in ((cx-8,18),(cx-4,19),(cx,18),(cx+4,19),(cx+8,18)):
-        c.line(bx, 11, bx, by, HR[1])
-    c.rect(cx+8, 12, cx+13, 22, HR[3])               # right side in shadow
-    for hx, hy in ((cx-7,9),(cx-3,8),(cx+1,9),(cx-5,12)):   # highlight strands
+    # ================= HAIR (tousled, layered, with flow) =================
+    ell(c, cx, 12, 15, 11, HR[2])                     # main mass
+    R(c, cx-15, 11, cx-10, 30, HR[2]); R(c, cx+10, 11, cx+15, 30, HR[3])   # side locks
+    # bangs as separated tufts dipping over the brow
+    for bx, by in ((cx-11,18),(cx-7,20),(cx-3,17),(cx+1,19),(cx+5,17),(cx+9,20),(cx+12,17)):
+        c.line(bx, 6, bx, by, HR[2]); c.paint(bx, by, HR[3])
+    # shadow under the mass + right side core
+    R(c, cx-10, 16, cx+12, 17, HR[3]); R(c, cx+9, 10, cx+15, 26, HR[4])
+    # flowing highlight strands (upper-left light)
+    for hx, hy in ((cx-9,6),(cx-5,5),(cx-1,6),(cx-11,9),(cx-7,8),(cx+3,6)):
         c.paint(hx, hy, HR[0])
-    c.line(cx-7, 10, cx-1, 9, HR[0])
+    c.line(cx-9, 7, cx-2, 6, HR[0]); c.line(cx-12, 11, cx-9, 14, HR[1])
+    c.paint(cx-3, 4, SK_HI if False else HR[0])
 
-    # ---------- OUTLINE pass (colored) + a few internal separations ----------
+    # ================= OUTLINES (colored, selective) =================
     c.outline(INK, diagonal=False)
-    for s in (-1, 1):                                # arm/body separation
-        c.line(cx+s*13, 43, cx+s*13, 57, INKL)
+    # internal separations in matching colored ink
+    for s in (-1, 1):
+        c.line(cx+s*15, 47, cx+s*15, 66, GRN_OL)      # arm / body
+    c.line(cx-18, 70, cx+18, 70, LEA_OL)              # belt top edge
 
     c.save("/tmp/hero_px.png")
-    c.scaled(6).save("/tmp/hero_px_6x.png")
+    c.scaled(5).save("/tmp/hero_px_6x.png")
     print("wrote /tmp/hero_px.png (%dx%d)" % (W, H))
 
 if __name__ == "__main__":
