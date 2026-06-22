@@ -86,17 +86,18 @@ def main():
     c.paint(cx, 46, CRM[2]); c.paint(cx-1, 47, CRM[3])
     c.line(cx-5, 42, cx, 48, GRN[3]); c.line(cx+5, 42, cx, 48, GRN[3])
     for ly in (44, 46): c.paint(cx-3, ly, LEA[3]); c.paint(cx+3, ly, LEA[3])   # lacing
-    # satchel strap across the chest (stitched leather)
-    for i in range(26):
-        sx = cx-14 + i; sy = 46 + i
+    # satchel strap across the chest — clean diagonal, tucks under the belt
+    i = 0
+    while True:
+        sx = cx-13 + i; sy = 47 + i
+        if sy >= 69: break                            # stop at the belt (no stray below)
         c.paint(sx, sy, LEA[2]); c.paint(sx+1, sy, LEA[3])
-        if i % 3 == 0: c.paint(sx, sy, LEA[0])        # stitch glints
-    # belt + buckle + pouch
+        if i % 5 == 0: c.paint(sx, sy, LEA[1])        # subtle stitch glint
+        i += 1
+    # belt + buckle (clean, no pouch)
     R(c, cx-18, 70, cx+18, 75, LEA[2]); R(c, cx-18, 70, cx+18, 70, LEA[1])
     R(c, cx-18, 74, cx+18, 75, LEA[4])
     R(c, cx-3, 69, cx+3, 76, GOLD[1]); R(c, cx-3, 69, cx+3, 70, GOLD[0]); c.paint(cx+2, 74, GOLD[2])
-    ell(c, cx+15, 74, 6, 6, LEA[1]); R(c, cx+11, 72, cx+19, 75, LEA[2]); c.paint(cx+17, 76, LEA[3])  # pouch
-    c.paint(cx+15, 73, LEA[0])
 
     # ================= ARMS (sleeves + gloves) =================
     for s in (-1, 1):
