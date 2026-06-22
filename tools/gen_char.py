@@ -28,6 +28,7 @@ Dependency-free via pixelforge (stdlib zlib+struct under the hood).
 """
 
 import os
+import random
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -457,6 +458,73 @@ def _hair(hair, ox, oy, mode, style):
 
 # --- body: shared torso -----------------------------------------------------
 
+def _beard(beard, ox, oy, mode, style, bob):
+    """A facial-hair layer over the lower face — drawn in the tintable greyscale
+    HAIR ramp so the scene recolours it to the hair colour. Three styles
+    (stubble/goatee/full); the back of the head shows none. Lit upper-left."""
+    oy += bob
+    if style == "none" or mode == "back":
+        return
+    if mode == "front":
+        if style == "stubble":
+            rnd = random.Random(ox * 7 + oy * 13 + 1)
+            for dy in range(10, 15):
+                for dx in range(7, 17):
+                    if dy == 14 and not (10 <= dx <= 13):
+                        continue
+                    if dy == 13 and not (9 <= dx <= 14):
+                        continue
+                    if dy == 10 and 10 <= dx <= 13:
+                        continue
+                    if rnd.random() < 0.5:
+                        beard.paint(ox + dx, oy + dy, HAIR[3] if rnd.random() < 0.6 else HAIR[2])
+            for dx in (8, 9, 10, 13, 14, 15):
+                if rnd.random() < 0.6:
+                    beard.paint(ox + dx, oy + 11, HAIR[3])
+            return
+        if style == "full":
+            rows = [(10, 7, 9), (10, 14, 16), (11, 7, 16), (12, 8, 15),
+                    (13, 9, 14), (14, 10, 13)]
+            for dy in range(7, 11):
+                beard.paint(ox + 7, oy + dy, HAIR[1])
+                beard.paint(ox + 16, oy + dy, HAIR[3])
+        else:  # goatee: moustache + chin tuft only, cheeks bare
+            rows = [(11, 9, 10), (11, 13, 14), (12, 10, 13), (13, 10, 13), (14, 11, 12)]
+        for dy, x0, x1 in rows:
+            beard.rect(ox + x0, oy + dy, ox + x1, oy + dy, HAIR[1])
+        beard.paint(ox + 7, oy + 10, HAIR[0])      # key-light catches the left jaw
+        beard.paint(ox + 8, oy + 11, HAIR[0])
+        beard.paint(ox + 9, oy + 12, HAIR[0])
+        beard.paint(ox + 16, oy + 10, HAIR[4])     # shadow side + underside
+        beard.paint(ox + 15, oy + 11, HAIR[3])
+        beard.paint(ox + 14, oy + 12, HAIR[3])
+        beard.rect(ox + 10, oy + 14, ox + 13, oy + 14, HAIR[3])
+        return
+    # side profile (east row; west rows are mirrored): hug the jaw toward the chin
+    if style == "stubble":
+        rnd = random.Random(ox * 5 + oy * 11 + 3)
+        for dy in range(9, 14):
+            for dx in range(12, 18):
+                if dy == 13 and not (14 <= dx <= 16):
+                    continue
+                if rnd.random() < 0.5:
+                    beard.paint(ox + dx, oy + dy, HAIR[3] if rnd.random() < 0.6 else HAIR[2])
+        return
+    if style == "full":
+        rows = [(9, 12, 16), (10, 12, 17), (11, 12, 17), (12, 13, 17), (13, 14, 16)]
+        for dy in range(6, 10):
+            beard.paint(ox + 13, oy + dy, HAIR[1])     # sideburn down to the jaw
+    else:  # goatee
+        rows = [(11, 14, 16), (12, 14, 16), (13, 14, 16), (14, 14, 15)]
+    for dy, x0, x1 in rows:
+        beard.rect(ox + x0, oy + dy, ox + x1, oy + dy, HAIR[1])
+    beard.paint(ox + 12, oy + 9, HAIR[0])
+    beard.paint(ox + 13, oy + 10, HAIR[0])
+    beard.paint(ox + 17, oy + 11, HAIR[4])
+    beard.paint(ox + 16, oy + 12, HAIR[3])
+    beard.paint(ox + 15, oy + 13, HAIR[3])
+
+
 def _torso(outfit, ox, oy, pal, back):
     """The broad two-shoulder torso shared by the front and back rows: sage
     tunic, leather jerkin over the chest, belt + buckle. `back` swaps the front
@@ -711,6 +779,19 @@ BASE = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                      "..", "assets", "placeholder"))
 
 
+def render_beard(style):
+    """Bake a standalone 8-direction beard sheet (greyscale, tintable) for the
+    player paper-doll, following the same facing rows + mirrors as render_human."""
+    beard = Canvas(W, H)
+    for row, head_mode, _kind in BAKE:
+        for phase in PHASES:
+            ox, oy = phase * FW, row * FH
+            _beard(beard, ox + HEAD_DX[row], oy, head_mode, style, body_bob(phase))
+    for src, dst in MIRRORS:
+        _mirror(beard, src, dst)
+    return beard
+
+
 def save_layered_player():
     cdir = os.path.join(BASE, "char")
     skin, outfit, _ = render_human(RANGER, "short")
@@ -728,6 +809,11 @@ def save_layered_player():
         hair.rim_light(0.5, RIM_WARM)
         _selout(hair, INK_TINT)
         hair.save(os.path.join(cdir, "hair_%s.png" % style))
+    for style in ("stubble", "goatee", "full"):
+        beard = render_beard(style)
+        beard.rim_light(0.5, RIM_WARM)
+        _selout(beard, INK_TINT)
+        beard.save(os.path.join(cdir, "beard_%s.png" % style))
 
 
 def bake_sheet(pal, skin_tone, hair_color, style):

@@ -51,6 +51,7 @@ const DODGE_COOLDOWN := 0.40
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var outfit_sprite: Sprite2D = $Outfit
 @onready var hair_sprite: Sprite2D = $Hair
+@onready var beard_sprite: Sprite2D = $Beard
 @onready var gear_layers: Dictionary = {
 	ArmorItem.ArmorSlot.FEET: $GearFeet,
 	ArmorItem.ArmorSlot.LEGS: $GearLegs,
@@ -108,7 +109,7 @@ func _ready() -> void:
 	add_child(_visuals)
 	_visuals.setup(sprite, outfit_sprite, hair_sprite, gear_layers,
 		weapon_pivot, weapon_sprite, shield_pivot, shield_sprite, equipment,
-		weapon_holster, shield_back, attack_arm)
+		weapon_holster, shield_back, attack_arm, beard_sprite)
 	equipment.changed.connect(_visuals.refresh_gear)
 	equipment.changed.connect(_on_gear_changed)
 	# Progression wiring: earn XP from kills, scale Health to leveled max HP.
@@ -143,6 +144,12 @@ func _apply_appearance() -> void:
 	sprite.modulate = PlayerProfile.skin_tone
 	hair_sprite.texture = PlayerProfile.hair_texture()
 	hair_sprite.modulate = PlayerProfile.hair_color
+	var beard_tex := PlayerProfile.beard_texture()
+	beard_sprite.texture = beard_tex
+	beard_sprite.visible = beard_tex != null
+	beard_sprite.modulate = PlayerProfile.hair_color
+	if beard_tex != null:
+		beard_sprite.frame = sprite.frame
 
 func _grant_starting_kit() -> void:
 	if starting_weapon != null:

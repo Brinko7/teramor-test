@@ -94,6 +94,15 @@ hframes = 4
 vframes = 8
 frame = 0
 
+[node name="Beard" type="Sprite2D" parent="."]
+visible = false
+modulate = Color(0.376, 0.243, 0.141, 1)
+centered = false
+offset = Vector2(-12, -40)
+hframes = 4
+vframes = 8
+frame = 0
+
 [node name="GearFeet" type="Sprite2D" parent="."]
 visible = false
 centered = false
