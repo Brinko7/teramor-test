@@ -17,7 +17,7 @@ import random
 import struct
 import zlib
 
-SS = 2
+SS = 3
 OW, OH = 110, 166
 W, H = OW * SS, OH * SS
 BAYER = [[0,8,2,10],[12,4,14,6],[3,11,1,9],[15,7,13,5]]
@@ -51,10 +51,12 @@ RAMPS = {
     "wood":    [(184,136,82),(136,94,54),(92,60,34),(58,39,26),(33,25,24)],
     "metal":   [(216,224,236),(162,172,190),(108,120,144),(68,80,106),(40,50,76)],
     "string":  [(224,220,204),(150,148,138),(90,92,90),(50,54,58)],
+    "fletch":  [(156,214,200),(108,168,154),(72,122,112),(46,84,78)],   # teal feathers (cool 2nd accent)
 }
 EMIT = {  # emissive accents (ignore lighting; feed the bloom)
     "eye":  (255, 214, 132),
     "rune": (255, 182, 92),
+    "gemt": (118, 228, 204),     # cool teal gem in the leaf-clasp (secondary accent)
 }
 HILIGHT = (236, 240, 224)    # crisp lit-edge lip
 SELOUT = (20, 17, 24)        # cool-dark ink
@@ -166,6 +168,13 @@ def build():
     f.ellipsoid(cx+2, 72, -16, 14, 40, 6, "cloak_d")
     f.ellipsoid(cx+8, 118, -15, 14, 32, 6, "cloak_d")
     f.ellipsoid(cx+18, 150, -13, 9, 16, 6, "cloak")               # flicked tail (catches light)
+    # --- quiver of arrows slung over the right shoulder (teal fletching) ---
+    f.capsule((cx+12, 86, -7), (cx+16, 58, -7), 4.0, 3.4, "leather_d")   # quiver body (behind)
+    for ai in range(3):
+        ax=cx+12+ai*2.4
+        f.capsule((ax, 56, -3), (ax+6, 28, -3), 0.9, 0.8, "wood")        # arrow shaft
+        f.ellipsoid(ax+6, 28, -1, 1.7, 2.8, 1.4, "fletch")              # fletching
+        f.ellipsoid(ax+6.5, 23, -1, 1.1, 1.8, 1.2, "fletch")
     # --- legs (longer, heroic stance) ---
     for s in (-1,1):
         hx=cx+s*9
@@ -177,17 +186,26 @@ def build():
     f.ellipsoid(cx, 64, 5, 15, 12, 10, "leather")                  # chest piece
     f.ellipsoid(cx, 82, 3, 14, 8, 9, "leather_d")                  # belt/abdomen
     f.ellipsoid(cx, 86, 7, 4, 2.6, 3, "metal")                     # buckle
+    f.ellipsoid(cx-11, 88, 6, 3.6, 4.2, 3, "leather_d")            # belt pouch (left hip)
     # --- shoulders + cloak clasp + arms ---
     for s in (-1,1):
         f.ellipsoid(cx+s*16, 54, 2, 9, 8, 8, "cloak")              # cloak over shoulders
         f.capsule((cx+s*16,58,1),(cx+s*19,82,1), 6, 5, "tunic")    # upper arm
         f.capsule((cx+s*19,80,1),(cx+s*21,100,2), 5, 4, "leather") # bracer
+        f.ellipsoid(cx+s*20, 90, 5, 1.1, 1.1, 1.1, "metal")        # bracer stud
         f.ellipsoid(cx+s*22,103,3, 4.5,4.5,4, "skin")              # hand
-    f.ellipsoid(cx, 50, 8, 4, 3, 3, "metal")                       # leaf clasp (metal)
+    # leaf-shaped cloak clasp (two leaf halves + a teal gem set in emissive)
+    f.ellipsoid(cx-2, 50, 8, 2.4, 3.4, 2, "metal")
+    f.ellipsoid(cx+2, 50, 8, 2.4, 3.4, 2, "metal")
+    f.ellipsoid(cx, 49, 9, 1.5, 1.7, 1.4, "metal")
     # --- neck + head, recessed so the hood shadows it ---
     f.ellipsoid(cx, 44, 3, 4.5, 4, 4, "skin")
     f.ellipsoid(cx, 33, 6, 9, 11, 7, "skin")                       # face (sits inside hood)
     f.ellipsoid(cx, 36, 8, 7, 7, 5, "skin")                        # face front plane
+    # pointed half-elf ears at the hood's edge (catch the cool rim)
+    for s in (-1,1):
+        f.ellipsoid(cx+s*9, 35, 7, 1.8, 3.2, 2.0, "skin")
+        f.ellipsoid(cx+s*10, 31, 7, 1.0, 2.2, 1.4, "skin")         # pointed tip
     # --- the HOOD: a tighter cowl framing the shadowed face ---
     f.ellipsoid(cx, 29, 2, 11.5, 13, 8, "cloak")                   # hood mass
     f.ellipsoid(cx-1, 18, 0, 6, 9, 7, "cloak_d")                  # peaked crown
@@ -208,6 +226,10 @@ def detail(f):
     f.crease(cx, 34, 7, 0.82)
     f.crease(cx, 40, 4, 0.55)
     f.crease(cx-13, 70, 6, 0.3); f.crease(cx+13, 70, 6, 0.3)
+    # cloak drape folds + bracer straps (fabric/leather detail)
+    f.crease(cx+7, 104, 4, 0.24); f.crease(cx+13, 134, 5, 0.26)
+    f.crease(cx-3, 116, 4, 0.2); f.crease(cx+2, 150, 5, 0.22)
+    f.crease(cx-21, 92, 3, 0.26); f.crease(cx+21, 92, 3, 0.26)
 
 def _stamp(f, cx, cy, r, mat):
     for yy in range(int((cy-r)*SS), int((cy+r)*SS)+1):
@@ -222,6 +244,7 @@ def emissive(f):
     f.eyes=[(cx-4.0,33),(cx+4.0,33)]
     for s in (-1,1):
         _stamp(f, cx+s*4.0, 33, 1.3, "eye")
+    _stamp(f, cx, 49.5, 1.1, "gemt")            # teal gem in the leaf-clasp
     # a rune-pendant at the chest
     _stamp(f, cx, 64, 1.8, "rune")
     # glowing sap veins running up the living-wood bow
