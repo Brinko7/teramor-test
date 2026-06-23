@@ -41,7 +41,15 @@ func _run() -> void:
 			_err("prop %s missing or wrong size (want %dx%d)" % [p[0], p[1], p[2]])
 		else:
 			print("  [ok] %s %dx%d" % [p[0], p[1], p[2]])
-	# 3. slice scene instantiates: y-sorted Entities with player + props
+	# 3. gear overlay sheets share the body geometry (336x960, 8 dirs x 4 phases)
+	for g in ["res://assets/remaster/armor_leather.png", "res://assets/remaster/armor_plate.png",
+			"res://assets/remaster/weapon_sword.png", "res://assets/remaster/weapon_ember.png"]:
+		var tex := load(g) as Texture2D
+		if tex == null or tex.get_width() != 336 or tex.get_height() != 960:
+			_err("gear overlay %s missing or not 336x960" % g)
+		else:
+			print("  [ok] %s 336x960 (overlay layer)" % g)
+	# 4. slice scene instantiates: y-sorted Entities with the layered paper-doll
 	var scene := load(SLICE) as PackedScene
 	if scene == null or not scene.can_instantiate():
 		_err("remaster_slice.tscn missing / cannot instantiate")
@@ -49,20 +57,22 @@ func _run() -> void:
 		var inst := scene.instantiate()
 		var ents := inst.get_node_or_null("Entities") as Node2D
 		var spr := inst.get_node_or_null("Entities/Player/Sprite") as Sprite2D
+		var armor := inst.get_node_or_null("Entities/Player/Armor") as Sprite2D
+		var weapon := inst.get_node_or_null("Entities/Player/Weapon") as Sprite2D
 		if ents == null or not ents.y_sort_enabled:
 			_err("slice has no y-sorted Entities root")
-		elif spr == null:
-			_err("slice has no Entities/Player/Sprite")
+		elif spr == null or armor == null or weapon == null:
+			_err("slice player is not a layered paper-doll (Sprite/Armor/Weapon)")
 		elif spr.texture == null or not spr.texture.resource_path.ends_with("player_walk.png"):
 			_err("slice sprite not wired to the player sheet")
-		elif spr.hframes != 4 or spr.vframes != 8:
-			_err("slice sprite frames are %dx%d, want 4x8" % [spr.hframes, spr.vframes])
+		elif spr.hframes != 4 or spr.vframes != 8 or armor.hframes != 4 or weapon.hframes != 4:
+			_err("slice paper-doll layers must all be 4x8 frames")
 		elif inst.get_node_or_null("Entities/Player/Camera2D") == null:
 			_err("slice has no follow Camera2D")
 		elif ents.get_node_or_null("Cottage") == null or ents.get_node_or_null("Bram") == null:
 			_err("slice missing baked props (cottage / NPC)")
 		else:
-			print("  [ok] slice scene: y-sorted entities, player + props wired")
+			print("  [ok] slice scene: y-sorted entities, layered paper-doll + props")
 		inst.free()
 	if _fail == 0:
 		print("\nRESULT: PASS — remaster slice assets + scene are wired")
