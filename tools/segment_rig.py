@@ -27,7 +27,9 @@ from gen_cast import SKIN, HAIR, CLOTH, LEA, GOLD, SILV, INK, WHITE, BLUSH  # no
 
 FW, FH = 84, 120
 EYE = (96, 132, 92, 255); MOUTH = (150, 86, 78, 255); DARK = (52, 40, 38, 255)
+SCAR = (216, 176, 150, 255); WARPAINT = (150, 52, 48, 255)
 SMALL = CLOTH["cream"]
+BUILD = {"slim": -3, "average": 0, "broad": 5}
 
 # ============================================================================
 # Skeleton — rest joints per view, and the walk that bends them.
@@ -97,6 +99,7 @@ def _ramp_from(col):
 
 DEFAULT = {
 	"skin": SKIN["tan"], "hair": HAIR["brown"], "hair_style": "short", "beard": "none",
+	"build": "average", "mark": "none", "mark_col": WARPAINT,
 	"cloak": [(86,108,92,255),(66,86,72,255),(50,68,56,255),(36,52,42,255),(26,38,30,255)],
 	"jerkin": LEA, "tunic": CLOTH["cream"], "trouser": CLOTH["slate"], "boots": CLOTH["brown"],
 }
@@ -182,37 +185,42 @@ def base_arms(c, J, view, SK):
 
 # ---- head + face, per view ----
 
-def base_head(c, J, view, SK, HR, style, beard):
+def base_head(c, J, view, SK, HR, style, beard, mark="none", mark_col=WARPAINT):
 	hx, hy = J["head"]
 	if view == "back":
 		_head_back(c, hx, hy, SK, HR, style); return
 	if view == "side":
-		_head_side(c, hx, hy, SK, HR, style, beard); return
-	_head_front(c, hx, hy, SK, HR, style, beard)
+		_head_side(c, hx, hy, SK, HR, style, beard, mark, mark_col); return
+	_head_front(c, hx, hy, SK, HR, style, beard, mark, mark_col)
 
 def _neck(c, cx, ny, SK):
 	c.rect(cx - 4, ny, cx + 3, ny + 7, SK[3]); c.rect(cx - 4, ny, cx - 3, ny + 7, SK[2])
 	c.rect(cx + 2, ny, cx + 3, ny + 7, SK[4])
 
-def _head_front(c, cx, cy, SK, HR, style, beard):
+def _head_front(c, cx, cy, SK, HR, style, beard, mark, mark_col):
 	_neck(c, cx, cy + 9, SK)
 	c.ellipse(cx, cy, 11, 12, SK[2]); c.ellipse(cx - 3, cy - 2, 7, 7, SK[1])      # face + lit cheek
 	c.ellipse(cx, cy + 6, 8, 4, SK[2]); c.ellipse(cx, cy + 10, 5, 2, SK[3])       # jaw/chin
+	c.paint(cx - 8, cy + 3, SK[3]); c.paint(cx + 8, cy + 3, SK[3])                # cheekbone shade
 	for s in (-1, 1):                                                              # ears
 		ex = cx + s * 11; c.line(ex, cy + 1, ex + s * 2, cy - 3, SK[2]); c.paint(ex + s, cy, SK[1])
-	for bx in (cx - 7, cx - 6, cx + 6, cx + 7): c.paint(bx, cy + 4, BLUSH)
-	# brows + eyes + nose + mouth
-	c.line(cx - 8, cy - 4, cx - 3, cy - 5, HR[2]); c.line(cx + 3, cy - 5, cx + 8, cy - 4, HR[2])
+	# level brows (calm + confident, not a frown) set well above the eyes
+	c.line(cx - 8, cy - 5, cx - 4, cy - 5, HR[3]); c.line(cx + 4, cy - 5, cx + 8, cy - 5, HR[3])
+	# almond eyes: lid-shadow, sclera, iris, pupil, glint
 	for s in (-1, 1):
 		ox = cx + s * 5
-		c.rect(ox - 2, cy - 2, ox + 1, cy - 2, SK[3]); c.rect(ox - 2, cy - 1, ox + 1, cy + 1, WHITE)
-		c.rect(ox - 1, cy - 1, ox + 1, cy + 1, EYE); c.paint(ox, cy, DARK); c.paint(ox - 1, cy - 1, WHITE)
-	c.paint(cx - 1, cy + 2, SK[1]); c.paint(cx - 1, cy + 4, SK[0]); c.paint(cx + 1, cy + 4, SK[3])
-	c.line(cx - 2, cy + 7, cx + 2, cy + 7, MOUTH); c.paint(cx - 3, cy + 6, MOUTH); c.paint(cx + 3, cy + 6, MOUTH)
+		c.rect(ox - 2, cy - 2, ox + 2, cy - 2, SK[3])                              # upper lid
+		c.rect(ox - 2, cy - 1, ox + 2, cy + 1, WHITE)                              # sclera
+		c.rect(ox - 1, cy - 1, ox + 1, cy + 1, EYE); c.paint(ox, cy, DARK)         # iris + pupil
+		c.paint(ox - 1, cy - 1, WHITE); c.paint(ox + s * 2, cy + 1, SK[3])         # glint + outer corner
+	# nose + calm neutral mouth with a soft lower lip
+	c.paint(cx - 1, cy + 2, SK[1]); c.paint(cx - 1, cy + 4, SK[0]); c.paint(cx, cy + 5, SK[3]); c.paint(cx + 1, cy + 4, SK[3])
+	c.line(cx - 2, cy + 7, cx + 2, cy + 7, MOUTH); c.paint(cx, cy + 8, SK[1])
+	_face_mark(c, cx, cy, mark, mark_col, "front")
 	_beard(c, cx, cy, HR, beard, "front")
 	_hair_front(c, cx, cy, HR, style)
 
-def _head_side(c, cx, cy, SK, HR, style, beard):
+def _head_side(c, cx, cy, SK, HR, style, beard, mark, mark_col):
 	# neck tucked under the skull (no craning), head mass over the spine
 	c.rect(cx - 3, cy + 9, cx + 3, cy + 17, SK[3]); c.rect(cx + 2, cy + 9, cx + 3, cy + 17, SK[2])
 	c.ellipse(cx, cy, 10, 12, SK[2]); c.ellipse(cx + 2, cy + 1, 7, 8, SK[1])      # skull + lit cheek
@@ -221,12 +229,24 @@ def _head_side(c, cx, cy, SK, HR, style, beard):
 	c.paint(cx + 8, cy + 4, SK[2])                                                 # philtrum
 	c.ellipse(cx + 3, cy + 9, 5, 3, SK[2]); c.paint(cx + 6, cy + 8, SK[3])         # chin set back
 	c.ellipse(cx - 3, cy + 1, 2, 3, SK[2]); c.paint(cx - 3, cy + 1, SK[3])         # ear
-	c.paint(cx + 6, cy + 5, BLUSH); c.paint(cx + 7, cy + 5, BLUSH)
-	c.line(cx + 4, cy - 2, cx + 7, cy - 3, HR[2])                                  # brow
+	c.line(cx + 4, cy - 4, cx + 8, cy - 4, HR[3])                                  # level brow
 	c.rect(cx + 5, cy, cx + 7, cy + 1, WHITE); c.paint(cx + 7, cy, EYE); c.paint(cx + 6, cy, DARK)
-	c.line(cx + 5, cy + 7, cx + 8, cy + 7, MOUTH)
+	c.line(cx + 5, cy + 7, cx + 8, cy + 7, MOUTH); c.paint(cx + 6, cy + 8, SK[1])
+	_face_mark(c, cx, cy, mark, mark_col, "side")
 	_beard(c, cx, cy, HR, beard, "side")
 	_hair_side(c, cx, cy, HR, style)
+
+def _face_mark(c, cx, cy, mark, col, view):
+	"""Optional badass face cosmetic: a scar or a stripe of war-paint."""
+	if mark == "scar":
+		if view == "side":
+			c.line(cx + 6, cy - 3, cx + 8, cy + 4, SCAR); return
+		c.line(cx + 4, cy - 4, cx + 6, cy + 3, SCAR); c.paint(cx + 5, cy, SCAR)
+	elif mark == "warpaint":
+		if view == "side":
+			c.rect(cx + 4, cy - 1, cx + 9, cy + 1, col); return
+		c.rect(cx - 8, cy - 1, cx + 8, cy + 1, col)                                # band across the eyes
+		c.paint(cx, cy - 1, col); c.paint(cx - 9, cy, col); c.paint(cx + 9, cy, col)
 
 def _head_back(c, cx, cy, SK, HR, style):
 	c.rect(cx - 4, cy + 9, cx + 3, cy + 14, SK[3])                                 # nape
@@ -236,43 +256,75 @@ def _head_back(c, cx, cy, SK, HR, style):
 # ---- hair styles (short / long / spiky) + beard ----
 
 def _hair_front(c, cx, cy, HR, style):
+	if style == "bald":
+		c.rect(cx - 12, cy - 3, cx - 9, cy + 3, HR[3]); c.rect(cx + 9, cy - 3, cx + 12, cy + 3, HR[4])  # side ring
+		return
+	pulled = style in ("ponytail", "bun")
 	c.ellipse(cx, cy - 8, 12, 8, HR[2])                                            # crown
 	c.rect(cx - 12, cy - 8, cx - 9, cy + 3, HR[2]); c.rect(cx + 9, cy - 8, cx + 12, cy + 3, HR[3])
-	for hxp in (cx - 7, cx, cx + 7): c.ellipse(hxp, cy - 7, 4, 4, HR[2])           # fringe lumps
-	c.rect(cx - 9, cy - 5, cx + 8, cy - 4, HR[3]); c.ellipse(cx + 7, cy - 8, 6, 7, HR[3])
+	if pulled:                                                                     # slicked back, centre part
+		c.line(cx, cy - 13, cx, cy - 6, HR[3]); c.ellipse(cx - 4, cy - 10, 6, 4, HR[1])
+		c.rect(cx - 9, cy - 5, cx + 8, cy - 5, HR[3])
+	else:
+		for hxp in (cx - 7, cx, cx + 7): c.ellipse(hxp, cy - 7, 4, 4, HR[2])       # fringe lumps
+		c.rect(cx - 9, cy - 5, cx + 8, cy - 4, HR[3]); c.ellipse(cx + 7, cy - 8, 6, 7, HR[3])
 	c.ellipse(cx - 4, cy - 11, 7, 3, HR[1]); c.line(cx - 8, cy - 12, cx + 1, cy - 13, HR[0])  # sheen
-	c.line(cx - 3, cy - 12, cx - 5, cy - 5, HR[4]); c.line(cx + 4, cy - 11, cx + 3, cy - 5, HR[4])
+	if not pulled:
+		c.line(cx - 3, cy - 12, cx - 5, cy - 5, HR[4]); c.line(cx + 4, cy - 11, cx + 3, cy - 5, HR[4])
 	if style == "spiky":
 		for sx, sh in ((cx - 8, -6), (cx - 3, -8), (cx + 2, -8), (cx + 7, -6)):
 			c.line(sx, cy - 8, sx + 1, cy - 8 + sh, HR[2]); c.paint(sx, cy - 8 + sh, HR[1])
-	if style == "long":
+	elif style == "long":
 		c.rect(cx - 13, cy - 2, cx - 9, cy + 20, HR[2]); c.rect(cx - 13, cy - 2, cx - 12, cy + 20, HR[1])
 		c.rect(cx + 9, cy - 2, cx + 13, cy + 20, HR[3]); c.rect(cx + 12, cy - 2, cx + 13, cy + 20, HR[4])
 		c.line(cx - 11, cy + 4, cx - 11, cy + 18, HR[3]); c.line(cx + 11, cy + 4, cx + 11, cy + 18, HR[2])
+	elif style == "bun":
+		c.ellipse(cx, cy - 13, 4, 4, HR[2]); c.ellipse(cx, cy - 13, 3, 3, HR[1])   # top-knot bun peeking up
 
 def _hair_side(c, cx, cy, HR, style):
+	if style == "bald":
+		c.ellipse(cx - 4, cy - 1, 4, 5, HR[3]); return                            # a wisp over the ear
+	pulled = style in ("ponytail", "bun")
 	c.ellipse(cx, cy - 8, 11, 8, HR[2]); c.rect(cx - 11, cy - 8, cx - 6, cy + 4, HR[3])
-	c.ellipse(cx + 5, cy - 7, 6, 5, HR[2]); c.paint(cx + 8, cy - 4, HR[3])
+	if pulled:
+		c.ellipse(cx - 1, cy - 10, 7, 4, HR[1])
+	else:
+		c.ellipse(cx + 5, cy - 7, 6, 5, HR[2]); c.paint(cx + 8, cy - 4, HR[3])
 	c.ellipse(cx - 3, cy - 11, 6, 3, HR[1]); c.line(cx - 8, cy - 12, cx + 1, cy - 13, HR[0])
 	if style == "spiky":
 		for sx, sh in ((cx - 6, -6), (cx, -8), (cx + 5, -6)):
 			c.line(sx, cy - 8, sx - 1, cy - 8 + sh, HR[2]); c.paint(sx - 1, cy - 8 + sh, HR[1])
-	if style == "long":
+	elif style == "long":
 		c.rect(cx - 11, cy - 2, cx - 6, cy + 22, HR[2]); c.rect(cx - 11, cy - 2, cx - 10, cy + 22, HR[1])
 		c.line(cx - 8, cy + 4, cx - 8, cy + 20, HR[3])
+	elif style == "ponytail":                                                     # tail streaming back
+		c.rect(cx - 13, cy - 6, cx - 9, cy + 12, HR[2]); c.rect(cx - 13, cy - 6, cx - 12, cy + 12, HR[1])
+		c.ellipse(cx - 11, cy + 12, 3, 4, HR[3])
+	elif style == "bun":
+		c.ellipse(cx - 9, cy - 6, 4, 4, HR[2]); c.ellipse(cx - 9, cy - 6, 3, 3, HR[1])
 
 def _hair_back(c, cx, cy, HR, style):
+	if style == "bald":
+		c.rect(cx - 12, cy - 2, cx - 9, cy + 4, HR[3]); c.rect(cx + 9, cy - 2, cx + 12, cy + 4, HR[4]); return
+	pulled = style in ("ponytail", "bun")
 	c.ellipse(cx, cy - 4, 12, 13, HR[2]); c.ellipse(cx, cy - 8, 12, 9, HR[2])
 	c.rect(cx - 12, cy - 8, cx - 8, cy + 6, HR[2]); c.rect(cx + 8, cy - 8, cx + 12, cy + 6, HR[3])
-	for h in (cx - 8, cx - 3, cx + 2, cx + 7): c.line(h, cy - 8, h, cy + 6, HR[3])
+	if not pulled:
+		for h in (cx - 8, cx - 3, cx + 2, cx + 7): c.line(h, cy - 8, h, cy + 6, HR[3])
 	c.ellipse(cx - 4, cy - 11, 8, 3, HR[1]); c.line(cx - 8, cy - 12, cx + 2, cy - 13, HR[0])
 	if style == "spiky":
 		for sx in (cx - 8, cx - 3, cx + 2, cx + 7):
 			c.line(sx, cy - 9, sx, cy - 14, HR[2]); c.paint(sx, cy - 14, HR[1])
-	if style == "long":
+	elif style == "long":
 		c.rect(cx - 12, cy + 4, cx + 12, cy + 24, HR[2])
 		c.rect(cx - 12, cy + 4, cx - 10, cy + 24, HR[1]); c.rect(cx + 10, cy + 4, cx + 12, cy + 24, HR[3])
 		for h in (cx - 7, cx, cx + 7): c.line(h, cy + 6, h, cy + 23, HR[3])
+	elif style == "ponytail":                                                     # a bound tail down the spine
+		c.rect(cx - 2, cy - 9, cx + 2, cy - 7, HR[4])                             # tie
+		c.rect(cx - 3, cy + 6, cx + 3, cy + 26, HR[2]); c.rect(cx - 3, cy + 6, cx - 2, cy + 26, HR[1])
+		c.rect(cx + 2, cy + 6, cx + 3, cy + 26, HR[3]); c.ellipse(cx, cy + 26, 3, 4, HR[3])
+	elif style == "bun":
+		c.ellipse(cx, cy - 8, 5, 5, HR[2]); c.ellipse(cx - 1, cy - 9, 3, 3, HR[1]); c.line(cx - 4, cy - 8, cx + 4, cy - 8, HR[4])
 
 def _beard(c, cx, cy, HR, beard, view):
 	if beard == "none":
@@ -415,6 +467,11 @@ def compose(view, phase, opts=None, dressed=True, weapon=None, cloak=True):
 	SK = o["skin"]; HR = o["hair"]
 	c = Canvas(FW, FH)
 	J = resolve(view, phase)
+	# body build widens/narrows the shoulders (and the arms ride them out)
+	bw = BUILD.get(o["build"], 0)
+	if bw and view != "side":
+		for k, s in (("shoulder_l", -1), ("shoulder_r", 1), ("hand_l", -1), ("hand_r", 1)):
+			J[k] = (J[k][0] + s * bw, J[k][1])
 	if dressed and cloak:
 		cloak_back(c, J, view, o["cloak"])
 	base_legs(c, J, view, SK)
@@ -424,7 +481,7 @@ def compose(view, phase, opts=None, dressed=True, weapon=None, cloak=True):
 		garment_trousers(c, J, view, o["trouser"])
 		garment_boots(c, J, view, o["boots"])
 		garment_jerkin(c, J, view, o["jerkin"], o["tunic"], SK)
-	base_head(c, J, view, SK, HR, o["hair_style"], o["beard"])
+	base_head(c, J, view, SK, HR, o["hair_style"], o["beard"], o["mark"], o["mark_col"])
 	if dressed and cloak:
 		cloak_collar(c, J, view, o["cloak"])
 	if weapon is not None:
@@ -469,9 +526,18 @@ def main():
 		{"skin": SKIN["deep"], "hair": HAIR["black"], "hair_style": "long"},
 	]
 	_row([compose("front", 1, o) for o in looks]).save("/tmp/segment_custom.png")
+	# every hair style, front (short / long / spiky / ponytail / bun / bald)
+	styles = ["short", "long", "spiky", "ponytail", "bun", "bald"]
+	_row([compose("front", 0, {"hair_style": s}) for s in styles]).save("/tmp/segment_hair.png")
+	# body builds + face marks
+	axes = [
+		{"build": "slim"}, {"build": "average"}, {"build": "broad", "beard": "full"},
+		{"mark": "scar"}, {"mark": "warpaint"}, {"mark": "warpaint", "mark_col": (40, 60, 120, 255)},
+	]
+	_row([compose("front", 1, o) for o in axes]).save("/tmp/segment_axes.png")
 	for v in ("front", "side"):
 		_row([compose(v, p, None) for p in range(4)]).save("/tmp/walk_%s.png" % v)
-	print("wrote /tmp/segment_turn.png + /tmp/segment_custom.png + walk strips")
+	print("wrote turn + custom + hair + axes + walk strips")
 
 if __name__ == "__main__":
 	main()
