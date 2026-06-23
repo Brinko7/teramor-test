@@ -77,9 +77,24 @@ yourself.** The hook is the **mystery and the belonging**, never a money-shot. T
 the Great Tree, is the *deep* payoff: glimpsed in fragments, obscured by atmosphere,
 never handed over early.
 
-**Standing — the trust meter (the narrative engine).** A reputation with the order,
-distinct from per-NPC hearts, raised by proving loyalty (their quests, keeping their
-secrets, defending the camp, *not* selling them to the kingdoms). It gates three things:
+**Two mysteries, two paces — and they converge.**
+- **The personal (your hook).** Your father, **Elkar**, walked into the Deepwood and
+  didn't return — and the deeper you go, the clearer it gets that your *mother* was no
+  ordinary woman. **The first hour ends on this:** *where is he, and what am I?* The
+  early-to-mid payoff is the thing the world calls a myth — **the elves endure**, in the
+  Glade, and your blood is half theirs. (Lands on the existing **Elven Glade** location;
+  recasts "hybrid" — what the crowns hunt — as *human-elf*.)
+- **The cosmic (the slow burn).** What Tera is, why her dome is failing, what the order
+  has sworn to protect. Gated hard behind Standing; payoff *late*. The threads converge:
+  your half-elven blood is **why** Tera matters to you — and why both the order and the
+  crowns want you. The personal reveal feeds the cosmic one.
+
+**Standing — the trust meter (the narrative engine), and it's *invisible*.** No bar, no
+number. The player *feels* their standing with the order through what NPCs will share,
+which "not yet" topics open, which doors unlock, how a guard greets them. It is raised by
+proving loyalty (their quests, defending the camp, keeping their secrets) and **spent or
+lost** by the opposite — currying favour with a hybrid-abducting crown *costs* you here.
+Tension is the point: you can't max everything. It gates three things:
 - **Lore** — what NPCs will tell you (the ladder below).
 - **Access** — deeper camp areas, the archive, restricted regions, the Wilds approach.
 - **The main story** — chapters advance on Standing thresholds, not just kill counts.
@@ -88,16 +103,35 @@ This **deepens existing systems** (Story flags + Relationships + QuestManager) r
 than adding a toy: one `Standing` value the Story director and dialogue `topics`
 already know how to gate on.
 
-**The lore ladder (drip, don't dump):**
-- **Stranger (0):** deflection — "that's not for you to know." Small tests. You don't
-  even learn the order's true name yet.
-- **Initiate:** the basics — there *is* something at the heart of the wilds worth dying
-  for; the kingdoms hunt hybrids; your father knew these people.
-- **Trusted:** real history — the curse, the Withered, what the order has lost; the
-  first hints that Tera is more than a place.
-- **Sworn:** the truth — what Tera is, what's killing her, what the player's blood means.
+**The lore ladder (drip, don't dump — personal thread *italic*, cosmic thread plain):**
+- **Stranger (0):** deflection — "that's not for you to know." Small tests; the order
+  won't even name itself. *You're chasing your father's trail with nothing but a name.*
+- **Initiate:** the kingdoms hunt people like you; there's something in the wilds worth
+  dying for. *Your father knew these people — and they knew your mother.*
+- **Trusted:** the curse, the Withered, what the order has lost. ***The personal payoff:
+  the elves are real, they endure in the Glade, and you are half theirs.***
+- **Sworn:** the truth of Tera — the failing dome, and what your half-elven blood means
+  to her.
 - **Tera's payoff:** the **Great Tree reveal**, earned, as a late capstone — the
   emotional climax the whole burn withheld.
+
+### Standing — system design (draft)
+
+**Invisible by design.** No HUD element. Standing is read entirely through the world:
+*topic unlocks* (lines that were greyed/"not yet" open up, NPCs volunteer more), *access*
+(doors, the archive, camp depth, the Wilds-approach gate), and *warmth* (greetings,
+portrait expression, a guard standing down).
+
+- **Raises it:** completing order quests; defending the camp (once raids exist); dialogue
+  choices that *keep* the secret; helping/gifting members (feeds off `Relationships`);
+  recovering relics/lore for the archive.
+- **Lowers / spends it:** siding with a crown (kingdom reputation often *opposes*
+  Standing); leaking the order; failing to defend the camp; specific story choices.
+- **Mechanically:** one persisted `Standing` int on `Story` with named thresholds
+  (Stranger / Initiate / Trusted / Sworn); `topics` and `StoryChapter` gate on
+  `Story.standing >= TIER`; dialogue choices call `Story.adjust_standing(±n)`. A handful
+  of pivotal chapters *require* a tier to advance — that requirement **is** the pacing of
+  the slow burn. No UI; it's all diegetic.
 
 **⚠ Re-gate the early reveal (action item).** Today `wilds_reveal` shows Tera looming
 on the *first* Cursed Wilds crossing — too soon under this design. Rework it so the
