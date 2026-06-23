@@ -24,7 +24,9 @@ from pixelforge import Canvas  # noqa: E402
 import segment_rig as S  # noqa: E402
 from gen_cast import SKIN  # noqa: E402
 
-FW, FH, COLS = S.FW, S.FH, 4
+FW, FH = S.FW, S.FH
+WALK_COLS, ATK_COLS, DRAW_COLS = 4, 4, 3
+COLS = WALK_COLS + ATK_COLS + DRAW_COLS   # 4 walk, 4 melee-swing, 3 bow-draw frames
 OUTDIR = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "assets", "remaster", "char"))
 # DirUtil 4-row cardinal order: down / up / left / right  (left = mirror of side)
 LAYOUT = [("front", False), ("back", False), ("side", True), ("side", False)]
@@ -46,14 +48,20 @@ def _mirror(src):
 def bake(name, parts, opts, mode="walk"):
 	sheet = Canvas(FW * COLS, FH * 4)
 	for r, (view, mir) in enumerate(LAYOUT):
-		for p in range(COLS):
-			cell = S.compose(view, p, opts, True, mode=mode, parts=parts)
+		for col in range(COLS):
+			# cols 0-3 walk/idle; cols 4-7 melee swing; cols 8-10 bow draw.
+			if col < WALK_COLS:
+				cell = S.compose(view, col, opts, True, mode=mode, parts=parts)
+			elif col < WALK_COLS + ATK_COLS:
+				cell = S.compose(view, col - WALK_COLS, opts, True, mode="attack", parts=parts)
+			else:
+				cell = S.compose(view, col - WALK_COLS - ATK_COLS, opts, True, mode="draw", parts=parts)
 			if mir:
 				cell = _mirror(cell)
-			sheet.blit(cell, p * FW, r * FH, mode="over")
+			sheet.blit(cell, col * FW, r * FH, mode="over")
 	os.makedirs(OUTDIR, exist_ok=True)
 	sheet.save(os.path.join(OUTDIR, name))
-	print("wrote char/%s (%dx%d)" % (name, sheet.w, sheet.h))
+	print("wrote char/%s (%dx%d, %d cols)" % (name, sheet.w, sheet.h, COLS))
 
 
 def main():

@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="NpcData" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/npc_data.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/npc_wrenna.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/remaster/cast/npc_wrenna.png" id="2_tex"]
 
 [resource]
 script = ExtResource("1_script")

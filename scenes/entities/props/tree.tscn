@@ -1,10 +1,10 @@
 [gd_scene load_steps=4 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/placeholder/tree.png" id="1_tex"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/tree_a.png" id="1_tex"]
 [ext_resource type="Script" path="res://scripts/tree.gd" id="2_tree"]
 
 [sub_resource type="RectangleShape2D" id="shape"]
-size = Vector2(12, 8)
+size = Vector2(22, 12)
 
 [node name="Tree" type="StaticBody2D"]
 y_sort_enabled = true
@@ -12,7 +12,7 @@ script = ExtResource("2_tree")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 centered = false
-offset = Vector2(-28, -92)
+offset = Vector2(-64, -294)
 texture = ExtResource("1_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]

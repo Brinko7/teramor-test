@@ -21,10 +21,17 @@ extends Node
 
 ## Sideways gap between the main hand (weapon) and off hand (shield), measured
 ## perpendicular to the aim direction so the two never overlap.
-const HAND_SEPARATION := 5.0
-## Anchor for both hands in local space (roughly chest height on the 84x120 model,
-## whose feet sit at the body origin).
-const HAND_ANCHOR := Vector2(0, -44)
+const HAND_SEPARATION := 4.0
+## Pivot for the swinging arm in local space: ~shoulder height on the 84x120 hero
+## (whose feet sit at the body origin). The attack arm rotates here and reaches out
+## to the fist; the weapon grips at the fist beyond it.
+const HAND_ANCHOR := Vector2(0, -74)
+## Melee anticipation: the weapon cocks back for WINDUP, sweeps across the aim, then
+## settles over RECOVER — the wind-up/follow-through that makes a hit feel weighty.
+const WINDUP := 0.06
+const RECOVER := 0.10
+## How far the bow is hauled back toward the body on a draw before it looses.
+const BOW_PULL := 11.0
 ## Held-item draw order relative to the body sprite (z 0): in front for most aims,
 ## behind the player when aiming north so the gear reads as held on the far side.
 const HAND_Z_FRONT := 5
@@ -109,6 +116,8 @@ func refresh_gear() -> void:
 	var weapon: WeaponItem = _equipment.get_weapon() if _equipment != null else null
 	if weapon != null and weapon.held_texture() != null:
 		_weapon_sprite.texture = weapon.held_texture()
+		_weapon_sprite.centered = false
+		_weapon_sprite.offset = weapon.hold_offset
 		_weapon_sprite.position.x = weapon.hold_distance
 	_weapon_sprite.visible = false
 	_attack_arm.visible = false
@@ -196,14 +205,12 @@ func _pose_weapon(aim_angle: float, perp: Vector2, flip: bool) -> void:
 	var has_held: bool = weapon != null and weapon.held_texture() != null
 	var has_stow: bool = weapon != null and weapon.stow_texture != null
 	if _weapon_drawn:
+		# An attack tween (swing_melee / draw_bow) owns the arm + weapon's rotation
+		# and position for its whole duration — don't fight it from here, just keep
+		# the layers shown.
 		_weapon_holster.visible = false
 		_weapon_sprite.visible = has_held
-		_attack_arm.visible = has_held and legacy_body_overlays
-		if has_held and not _swinging:
-			_weapon_pivot.position = HAND_ANCHOR + perp * HAND_SEPARATION
-			_weapon_pivot.rotation = aim_angle
-			_weapon_sprite.flip_v = flip
-			_attack_arm.flip_v = flip
+		_attack_arm.visible = has_held
 	elif not legacy_body_overlays:
 		# remaster model: stowed weapon isn't drawn on the body; hide until an attack.
 		_weapon_holster.visible = false
@@ -230,14 +237,21 @@ func swing_melee(weapon: WeaponItem, aim: Vector2) -> void:
 	_draw_weapon()
 	_swinging = true
 	_weapon_pivot.position = HAND_ANCHOR + perp * HAND_SEPARATION
-	_weapon_pivot.rotation = base - arc
+	_weapon_sprite.position.x = weapon.hold_distance
 	_weapon_sprite.flip_v = aim.x < 0.0
 	_attack_arm.flip_v = aim.x < 0.0
+	# Cock the arm back behind the aim, hold a beat (anticipation), sweep fast across
+	# the aim, then settle forward (follow-through) before re-stowing.
+	_weapon_pivot.rotation = base - arc * 1.15
 	if _swing_tween != null and _swing_tween.is_valid():
 		_swing_tween.kill()
 	_swing_tween = create_tween()
-	_swing_tween.tween_property(_weapon_pivot, "rotation", base + arc, dur)
+	_swing_tween.tween_interval(WINDUP)
+	_swing_tween.tween_property(_weapon_pivot, "rotation", base + arc, dur) \
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	_swing_tween.tween_callback(func() -> void: _swinging = false)
+	_swing_tween.tween_property(_weapon_pivot, "rotation", base + arc * 0.45, RECOVER) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	_swing_tween.tween_interval(STOW_DELAY)
 	_swing_tween.tween_callback(_stow_weapon)
 
@@ -268,25 +282,30 @@ func swing_tool(icon: Texture2D, aim: Vector2) -> void:
 		_weapon_sprite.texture = restore
 		_stow_weapon())
 
-## Brief kickback on the held weapon when a ranged shot is fired. Draws the bow
-## from the back, kicks it, then re-stows.
-func recoil(aim: Vector2) -> void:
+## Draw the bow back toward the body (the pull), then thrust forward as the arrow
+## looses — the satisfying "nock, draw, release". The arrow is spawned by player.gd
+## at the loose, timed to the forward snap (BOW_DRAW_TIME).
+func draw_bow(aim: Vector2) -> void:
 	var weapon: WeaponItem = _equipment.get_weapon() if _equipment != null else null
 	if weapon == null or weapon.held_texture() == null:
 		return
 	var perp: Vector2 = Vector2(-aim.y, aim.x)
+	var rest: Vector2 = HAND_ANCHOR + perp * HAND_SEPARATION
 	_draw_weapon()
-	_weapon_pivot.position = HAND_ANCHOR + perp * HAND_SEPARATION
+	_swinging = false
 	_weapon_pivot.rotation = aim.angle()
+	_weapon_sprite.position.x = weapon.hold_distance
 	_weapon_sprite.flip_v = aim.x < 0.0
 	_attack_arm.flip_v = aim.x < 0.0
-	var rest_x: float = weapon.hold_distance
-	_weapon_sprite.position.x = rest_x
+	_weapon_pivot.position = rest
 	if _swing_tween != null and _swing_tween.is_valid():
 		_swing_tween.kill()
 	_swing_tween = create_tween()
-	_swing_tween.tween_property(_weapon_sprite, "position:x", rest_x - 4.0, 0.05)
-	_swing_tween.tween_property(_weapon_sprite, "position:x", rest_x, 0.12)
+	_swing_tween.tween_property(_weapon_pivot, "position", rest - aim * BOW_PULL, 0.12) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)         # draw back
+	_swing_tween.tween_property(_weapon_pivot, "position", rest + aim * 5.0, 0.05) \
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)         # loose: snap forward
+	_swing_tween.tween_property(_weapon_pivot, "position", rest, 0.08)   # settle
 	_swing_tween.tween_interval(STOW_DELAY)
 	_swing_tween.tween_callback(_stow_weapon)
 
@@ -297,6 +316,8 @@ func _draw_weapon() -> void:
 	var weapon: WeaponItem = _equipment.get_weapon() if _equipment != null else null
 	var has_held: bool = weapon != null and weapon.held_texture() != null
 	_weapon_sprite.visible = has_held
+	# Tools (the only remaining caller of this path) don't show the floating forearm on
+	# the remaster rig — melee + bow now swing the body's own arm via baked frames.
 	_attack_arm.visible = has_held and legacy_body_overlays
 
 ## Return the weapon to its holster once the attack animation settles. Visibility

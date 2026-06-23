@@ -10,6 +10,6 @@ script = ExtResource("1_townsfolk")
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_tex")
 centered = false
-offset = Vector2(-12, -40)
+offset = Vector2(-42, -116)
 hframes = 4
-vframes = 8
+vframes = 4

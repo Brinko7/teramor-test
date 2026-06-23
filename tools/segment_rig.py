@@ -79,12 +79,82 @@ WALK = [
 # Idle "breathing": the upper body lifts a hair mid-cycle, feet planted.
 IDLE_BOB = [0, 1, 1, 0]
 
+# Melee swing — 4 attack frames that move the weapon HAND (hand_r) through a
+# wind-up -> strike -> follow-through arc; the arm + its sleeve follow the joint, so
+# the whole body does the swing. `hand_r` is the absolute target for that frame;
+# `bob` drops the upper body into the strike (weighty), `lean` shifts it that way,
+# `off` swings the off-hand for counterbalance. Per view (front/side/back).
+ATTACK = {
+	"front": [
+		{"hand_r": (76, 26), "bob": -2, "lean": 3,  "off": (30, 76)},   # wind-up: blade cocked overhead-right
+		{"hand_r": (40, 54), "bob": 5,  "lean": -3, "off": (18, 66)},   # STRIKE: swept down across centre, body drops
+		{"hand_r": (20, 82), "bob": 2,  "lean": -4, "off": (22, 74)},   # follow-through: far low-left
+		{"hand_r": (56, 78), "bob": 0,  "lean": 0,  "off": (24, 80)},   # recover toward rest
+	],
+	"side": [
+		{"hand_r": (38, 24), "bob": -2, "lean": -3, "off": (38, 76)},   # wind-up: raised high overhead-back
+		{"hand_r": (70, 52), "bob": 5,  "lean": 5,  "off": (42, 68)},   # STRIKE: big chop forward-down
+		{"hand_r": (66, 84), "bob": 2,  "lean": 3,  "off": (39, 76)},   # follow-through low-forward
+		{"hand_r": (49, 78), "bob": 0,  "lean": 0,  "off": (37, 80)},   # recover
+	],
+	"back": [
+		{"hand_r": (76, 26), "bob": -2, "lean": 3,  "off": (30, 76)},
+		{"hand_r": (40, 54), "bob": 5,  "lean": -3, "off": (18, 66)},
+		{"hand_r": (20, 82), "bob": 2,  "lean": -4, "off": (22, 74)},
+		{"hand_r": (56, 78), "bob": 0,  "lean": 0,  "off": (24, 80)},
+	],
+}
+
+# Bow draw — 3 frames: nock, full draw, loose. The bow HAND (hand_r) holds the bow
+# out toward the aim; the OFF hand (hand_l) hauls the string back to the cheek, then
+# releases forward. The bow overlay draws the bow + string + arrow at these joints,
+# so the string visibly pulls back. (`bob`/`lean` shift the upper body into the draw.)
+DRAW = {
+	"front": [
+		{"hand_r": (60, 52), "hand_l": (47, 54), "bob": 0, "lean": 0},   # nock
+		{"hand_r": (62, 50), "hand_l": (38, 42), "bob": 0, "lean": 1},   # full draw: string to the chin
+		{"hand_r": (62, 52), "hand_l": (54, 54), "bob": 0, "lean": 0},   # loose
+	],
+	"side": [
+		{"hand_r": (64, 50), "hand_l": (50, 48), "bob": 0, "lean": 0},
+		{"hand_r": (68, 48), "hand_l": (33, 40), "bob": 0, "lean": 1},   # string drawn to the cheek
+		{"hand_r": (68, 50), "hand_l": (52, 48), "bob": 0, "lean": 0},
+	],
+	"back": [
+		{"hand_r": (60, 52), "hand_l": (47, 54), "bob": 0, "lean": 0},
+		{"hand_r": (62, 50), "hand_l": (38, 42), "bob": 0, "lean": 1},
+		{"hand_r": (62, 52), "hand_l": (54, 54), "bob": 0, "lean": 0},
+	],
+}
+
 def resolve(view, phase, mode="walk"):
 	J = {k: list(v) for k, v in JOINTS[view].items()}
 	if mode == "idle":
 		bob = IDLE_BOB[phase % len(IDLE_BOB)]
 		for k in ("head", "neck", "chest", "shoulder_l", "shoulder_r"):
 			J[k][1] -= bob                                       # chest + head rise on the breath
+		return {k: (int(round(v[0])), int(round(v[1]))) for k, v in J.items()}
+	if mode == "attack":
+		a = ATTACK[view][phase % len(ATTACK[view])]
+		J["hand_r"] = list(a["hand_r"]); J["hand_l"] = list(a["off"])
+		drop = a["bob"]; lean = a["lean"]
+		# the whole upper body drops + leans into the strike (feet stay planted)
+		for k in ("head", "neck", "chest", "shoulder_l", "shoulder_r", "pelvis", "hip_l", "hip_r"):
+			J[k][1] += drop
+		for k in ("head", "neck", "chest", "shoulder_l", "shoulder_r"):
+			J[k][0] += lean
+		# the weapon shoulder tracks the hand a little so the arm reads connected
+		rest_hr = JOINTS[view]["hand_r"][0]
+		J["shoulder_r"][0] += 1 if a["hand_r"][0] > rest_hr else -1
+		return {k: (int(round(v[0])), int(round(v[1]))) for k, v in J.items()}
+	if mode == "draw":
+		a = DRAW[view][phase % len(DRAW[view])]
+		J["hand_r"] = list(a["hand_r"]); J["hand_l"] = list(a["hand_l"])
+		drop = a["bob"]; lean = a["lean"]
+		for k in ("head", "neck", "chest", "shoulder_l", "shoulder_r", "pelvis"):
+			J[k][1] += drop
+		for k in ("head", "neck", "chest", "shoulder_l", "shoulder_r"):
+			J[k][0] += lean
 		return {k: (int(round(v[0])), int(round(v[1]))) for k, v in J.items()}
 	l_lift, r_lift, bob, swing, near_dx, far_dx = WALK[phase]
 	for k in ("head", "neck", "chest", "shoulder_l", "shoulder_r", "hand_l", "hand_r", "pelvis"):
@@ -866,6 +936,17 @@ def compose(view, phase, opts=None, dressed=True, weapon=None, shield=None, draw
 	run on the full composite so per-layer bakes stay ink-clean for stacking."""
 	o = look(opts)
 	SK = o["skin"]; HR = o["hair"]; SET = ARMOR.get(o["armor"], ARMOR["ranger"])
+	# Per-character colour overrides: keep an armour set's piece STYLES (jerkin /
+	# robe / greaves...) but recolour its ramps, so the whole cast can share one
+	# rig yet read as individuals (a mustard-tunic farmer vs a green-cloak ranger).
+	# A `"cloak": None` override drops the cloak entirely. Backward-compatible:
+	# no existing caller sets these keys.
+	_ov = ("cloak", "tunic", "trouser", "boot", "body", "metal", "tabard")
+	if any(k in o for k in _ov):
+		SET = dict(SET)
+		for k in _ov:
+			if k in o:
+				SET[k] = o[k]
 	full = parts is None
 	P = ALL_PARTS if full else set(parts)
 	c = Canvas(FW, FH)

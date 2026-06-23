@@ -782,9 +782,10 @@ Headless coverage: `tools/validate_wildlife.gd`.
 
 > The single source of truth for how Teramor looks. Every sprite — generated or
 > sourced — must obey the **scale grid** and sit on the **grounded palette**.
-> The scale grid exists because we shipped a bug where the player rendered as big
-> as a house; never reintroduce it. When in doubt, generate at these sizes and
-> verify in-engine with a screenshot.
+> The scale grid is pinned to the **remaster hero** (the 84×120 `segment_rig`
+> model): everything in the world is sized so it reads correctly *next to that
+> hero*. When in doubt, generate at these sizes and verify in-engine with a
+> screenshot.
 
 ### Mood
 **Grounded & naturalistic serious fantasy.** Muted, earthy, slightly desaturated.
@@ -793,25 +794,40 @@ stone. NOT the bright candy palette of Stardew/Sprout-Lands, and NOT heavy
 cartoon outlines. Soft top-left key light, cool ambient shadow. Saturation stays
 low except for deliberate story accents (embers, magic, blight).
 
-### The scale grid (non-negotiable)
-The world is built on a **16 px tile**. Everything is sized in tiles so relative
-proportions read correctly. The governing rule: **a one-story door is about one
-character tall (~40 px / 2.5 tiles).** Buildings tower over the player; trees
-tower over buildings.
+### The scale grid (the remaster grid — non-negotiable)
+The world is built on a **32 px tile**, pinned to the **remaster hero** (the
+84×120 `segment_rig` model). Everything is sized so relative proportions read
+against that hero. Governing rule: **a one-story door is about one hero tall
+(~110–120 px / ~3.5 tiles); buildings tower over the hero, trees tower over
+buildings.**
 
-| Thing | Footprint / size (px) | In tiles | Notes |
+> **History (the migration in progress).** The original grid was a 16 px tile /
+> 24×40 humanoid. The hero remaster (84×120, "Eastward-class", `segment_rig.py` +
+> `assets/remaster/`) tripled the character, so the whole world is being migrated
+> up to match: terrain tile 16→32, and props / buildings / NPCs / animals / enemies
+> re-baked ~3× at the new hand-pixel fidelity (`gen_cast.py` is the parametrized
+> cast foundation; `gen_world.py` the world foundation). **Until a scene is
+> migrated it may still hold old-scale art — that mismatch is the bug we're closing,
+> not the target.** Never author new art at the old 16 / 24×40 grid.
+
+| Thing | Size (px) | In tiles | Notes |
 |---|---|---|---|
-| **Tile** | 16×16 | 1×1 | the base unit |
-| **Player / humanoid frame** | 24×40 | 1.5×2.5 | KEEP — paper-doll + gear overlays tuned to this |
-| Small prop (rock, bush, crate) | 16–28 wide | 1–1.75 | foot-anchored |
-| Cottage / small house | 64×72 | 4×4.5 | door ≈ 40 tall |
-| Town house | 72×88 | 4.5×5.5 | |
-| Big / 2-story building | 80–96 × 112–128 | up to 6×8 | tavern, chapel, hall |
-| Tree | 48–64 wide × 64–96 tall | up to 4×6 | canopy towers over roofs |
-| World scene | 640×480 | 40×30 | standard town/area canvas |
+| **Tile** | 32×32 | 1×1 | the base unit (`grass32.png`) |
+| **Hero / humanoid frame** | 84×120 | ~2.6×3.75 | LOCKED — paper-doll + gear tuned to it; foot-anchor `offset (-42,-116)`, 4 dirs × 4 walk frames |
+| Small prop (rock, bush, crate, stump) | 28–56 wide | 1–1.75 | foot-anchored |
+| Cottage / cabin | ~180×210 | ~5.5×6.5 | door ≈ 110 tall (the hero ducks through) |
+| Town house | ~200×260 | ~6×8 | |
+| Big / 2-story building | 240–300 × 320–440 | up to ~9×14 | tavern, chapel, hall |
+| Tree | 96–130 wide × 220–300 tall | up to ~9 tall | canopy towers over roofs |
+| Animal (wolf / dog / deer) | 64–110 wide | 2–3.5 | up from the old 24 px |
+| World scene (standard) | ~1280×960 | 40×30 | 2× the old canvas (the tile doubled) |
+| Vast area | ~2560×1920 | 80×60 | the open frontier |
 
-If a new sprite would break the "door ≈ one character" sanity check, it's wrong —
-resize it, don't ship it.
+If a new sprite breaks the "door ≈ one hero" sanity check, it's wrong — resize it,
+don't ship it. **The camera does the zoom** (no `scale` on world Sprite2Ds); tune
+each scene's gameplay zoom against a screenshot — the 3× sprites generally want the
+camera pulled a little *out* from the old per-scene values (interiors especially,
+which were 2.0).
 
 ### Foot-anchoring convention (depth + placement)
 Sprites are authored so the **visual base sits at the node origin**, which makes

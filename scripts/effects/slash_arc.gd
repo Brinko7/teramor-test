@@ -10,9 +10,9 @@ class_name SlashArc
 var dir: Vector2 = Vector2.RIGHT
 var by_player: bool = true
 
-const RADIUS := 16.0
-const SPAN := deg_to_rad(115.0)
-const LIFE := 0.16
+const RADIUS := 42.0
+const SPAN := deg_to_rad(120.0)
+const LIFE := 0.18
 
 var _t: float = 0.0
 var _color: Color = Color.WHITE
@@ -38,4 +38,4 @@ func _draw() -> void:
 	var lead: float = lerpf(-SPAN * 0.5, SPAN * 0.5, _t)
 	var tail: float = lead - SPAN * 0.5
 	var r: float = lerpf(RADIUS * 0.7, RADIUS * 1.15, _t)
-	draw_arc(Vector2.ZERO, r, tail, lead, 12, col, 2.5, true)
+	draw_arc(Vector2.ZERO, r, tail, lead, 18, col, 5.0, true)

@@ -1,16 +1,16 @@
 [gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemy_wolf.gd" id="1_wolf"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/enemies/enemy_wolf.png" id="2_sheet"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/wolf.png" id="2_sheet"]
 [ext_resource type="Script" path="res://scripts/health.gd" id="3_health"]
 [ext_resource type="Resource" path="res://resources/items/raw_meat.tres" id="4_meat"]
 [ext_resource type="Resource" path="res://resources/items/hide.tres" id="5_hide"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_feet"]
-size = Vector2(10, 6)
+size = Vector2(28, 12)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_touch"]
-size = Vector2(14, 14)
+size = Vector2(44, 30)
 
 [node name="EnemyWolf" type="CharacterBody2D" groups=["enemy"]]
 collision_layer = 4
@@ -30,7 +30,7 @@ loot_chance = 0.55
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 centered = false
-offset = Vector2(-12, -22)
+offset = Vector2(-34, -60)
 texture = ExtResource("2_sheet")
 hframes = 4
 vframes = 4

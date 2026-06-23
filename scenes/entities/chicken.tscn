@@ -1,23 +1,23 @@
 [gd_scene load_steps=3 format=3 uid="uid://b8critterchick01"]
 
 [ext_resource type="Script" path="res://scripts/critter.gd" id="1_critter"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/critter_chicken.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/chicken.png" id="2_tex"]
 
 [node name="Chicken" type="Node2D"]
 y_sort_enabled = true
 script = ExtResource("1_critter")
 move_speed = 13.0
-wander_radius = 24.0
+wander_radius = 36.0
 pause_min = 0.6
 pause_max = 2.4
 idle_peck = true
 skittish = true
-flush_radius = 26.0
-flee_speed = 64.0
+flush_radius = 36.0
+flee_speed = 80.0
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture = ExtResource("2_tex")
 centered = false
-offset = Vector2(-9, -18)
+offset = Vector2(-14, -26)
 hframes = 4
 vframes = 4

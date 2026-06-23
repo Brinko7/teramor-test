@@ -1,7 +1,7 @@
 [gd_scene load_steps=25 format=3]
 
 [ext_resource type="Script" path="res://scripts/prologue.gd" id="0_prologue"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="1_grass"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/grass32.png" id="1_grass"]
 [ext_resource type="Script" path="res://scripts/day_night.gd" id="2_daynight"]
 [ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="3_player"]
 [ext_resource type="PackedScene" path="res://scenes/entities/npc.tscn" id="4_npc"]
@@ -22,96 +22,97 @@
 [ext_resource type="Resource" path="res://resources/npcs/elkar.tres" id="19_elkar"]
 
 [sub_resource type="RectangleShape2D" id="wall_h"]
-size = Vector2(480, 16)
+size = Vector2(960, 16)
 
 [sub_resource type="RectangleShape2D" id="wall_v"]
-size = Vector2(16, 320)
+size = Vector2(16, 640)
 
 [sub_resource type="RectangleShape2D" id="wall_v_top"]
-size = Vector2(16, 150)
+size = Vector2(16, 250)
 
 [sub_resource type="RectangleShape2D" id="wall_v_bot"]
-size = Vector2(16, 130)
+size = Vector2(16, 230)
 
 [sub_resource type="RectangleShape2D" id="exit_shape"]
 size = Vector2(28, 40)
 
 [node name="Prologue" type="Node2D"]
 script = ExtResource("0_prologue")
+map_size = Vector2i(960, 640)
 
 [node name="Ground" type="Sprite2D" parent="."]
 texture_repeat = 2
 centered = false
 texture = ExtResource("1_grass")
 region_enabled = true
-region_rect = Rect2(0, 0, 480, 320)
+region_rect = Rect2(0, 0, 960, 640)
 
 [node name="Walls" type="StaticBody2D" parent="."]
 
 [node name="WallTop" type="CollisionShape2D" parent="Walls"]
-position = Vector2(240, 8)
+position = Vector2(480, 8)
 shape = SubResource("wall_h")
 
 [node name="WallBottom" type="CollisionShape2D" parent="Walls"]
-position = Vector2(240, 312)
+position = Vector2(480, 632)
 shape = SubResource("wall_h")
 
 [node name="WallLeft" type="CollisionShape2D" parent="Walls"]
-position = Vector2(8, 160)
+position = Vector2(8, 320)
 shape = SubResource("wall_v")
 
 [node name="WallRightTop" type="CollisionShape2D" parent="Walls"]
-position = Vector2(472, 80)
+position = Vector2(952, 155)
 shape = SubResource("wall_v_top")
 
 [node name="WallRightBottom" type="CollisionShape2D" parent="Walls"]
-position = Vector2(472, 255)
+position = Vector2(952, 515)
 shape = SubResource("wall_v_bot")
 
 [node name="Entities" type="Node2D" parent="."]
 y_sort_enabled = true
 
 [node name="Cabin" parent="Entities" instance=ExtResource("8_cabin")]
-position = Vector2(108, 150)
+position = Vector2(190, 250)
 
 [node name="Tree1" parent="Entities" instance=ExtResource("9_tree")]
-position = Vector2(280, 92)
+position = Vector2(560, 170)
 
 [node name="Tree2" parent="Entities" instance=ExtResource("9_tree")]
-position = Vector2(340, 80)
+position = Vector2(700, 150)
 
 [node name="Tree3" parent="Entities" instance=ExtResource("9_tree")]
-position = Vector2(412, 96)
+position = Vector2(840, 210)
 
 [node name="Tree4" parent="Entities" instance=ExtResource("9_tree")]
-position = Vector2(70, 110)
+position = Vector2(150, 420)
 
 [node name="FarmPlot1" parent="Entities" instance=ExtResource("12_plot")]
-position = Vector2(150, 238)
+position = Vector2(300, 470)
 
 [node name="FarmPlot2" parent="Entities" instance=ExtResource("12_plot")]
-position = Vector2(176, 238)
+position = Vector2(352, 470)
 
 [node name="SeedPickup" parent="Entities" instance=ExtResource("10_pickup")]
-position = Vector2(150, 264)
+position = Vector2(300, 524)
 item = ExtResource("11_seeds")
 count = 4
 
 [node name="Player" parent="Entities" instance=ExtResource("3_player")]
-position = Vector2(210, 252)
+position = Vector2(430, 500)
 
 [node name="Elkar" parent="Entities" instance=ExtResource("4_npc")]
-position = Vector2(232, 196)
+position = Vector2(500, 380)
 data = ExtResource("19_elkar")
 
 [node name="Wolf1" parent="Entities" instance=ExtResource("5_wolf")]
-position = Vector2(338, 132)
+position = Vector2(690, 300)
 
 [node name="Wolf2" parent="Entities" instance=ExtResource("5_wolf")]
-position = Vector2(396, 156)
+position = Vector2(780, 360)
 
 [node name="ExitToTown" parent="Entities" instance=ExtResource("6_tz")]
-position = Vector2(462, 172)
+position = Vector2(936, 360)
 target_scene = "res://scenes/world/town.tscn"
 target_spawn = "from_road"
 
@@ -119,7 +120,7 @@ target_spawn = "from_road"
 shape = SubResource("exit_shape")
 
 [node name="RoadSign" parent="Entities" instance=ExtResource("7_sign")]
-position = Vector2(436, 150)
+position = Vector2(864, 332)
 text = "To Cleeve's Landing"
 
 [node name="DayNight" type="CanvasModulate" parent="."]

@@ -1,9 +1,10 @@
-[gd_resource type="Resource" script_class="WeaponItem" load_steps=5 format=3]
+[gd_resource type="Resource" script_class="WeaponItem" load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://scripts/items/weapon_item.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/items/sword_rusty.png" id="2_icon"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/items/sword_hold.png" id="3_hold"]
+[ext_resource type="Texture2D" path="res://assets/remaster/combat/sword_hold.png" id="3_hold"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/items/sheath_sword.png" id="4_stow"]
+[ext_resource type="Texture2D" path="res://assets/remaster/char/weapon_sword_atk.png" id="5_atk"]
 
 [resource]
 script = ExtResource("1_script")
@@ -18,6 +19,8 @@ damage = 5
 attack_duration = 0.18
 attack_cooldown = 0.35
 hold_texture = ExtResource("3_hold")
-hold_distance = 11.0
-swing_arc = 1.2
+hold_distance = 40.0
+swing_arc = 1.3
+hold_offset = Vector2(0, -8)
+attack_sheet = ExtResource("5_atk")
 stow_texture = ExtResource("4_stow")

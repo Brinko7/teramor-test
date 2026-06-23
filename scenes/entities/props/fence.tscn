@@ -1,18 +1,18 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/placeholder/fence.png" id="1_tex"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/fence.png" id="1_tex"]
 
 [sub_resource type="RectangleShape2D" id="shape"]
-size = Vector2(16, 8)
+size = Vector2(40, 12)
 
 [node name="Fence" type="StaticBody2D"]
 y_sort_enabled = true
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 centered = false
-offset = Vector2(-8, -18)
+offset = Vector2(0, -32)
 texture = ExtResource("1_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -5)
+position = Vector2(20, -6)
 shape = SubResource("shape")

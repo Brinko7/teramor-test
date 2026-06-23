@@ -1,9 +1,9 @@
 [gd_scene load_steps=3 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/placeholder/chapel.png" id="1_tex"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/chapel.png" id="1_tex"]
 
 [sub_resource type="RectangleShape2D" id="shape"]
-size = Vector2(54, 16)
+size = Vector2(230, 36)
 
 [node name="Chapel" type="StaticBody2D"]
 y_sort_enabled = true
@@ -12,9 +12,9 @@ collision_mask = 0
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 centered = false
-offset = Vector2(-36, -112)
+offset = Vector2(-120, -416)
 texture = ExtResource("1_tex")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -8)
+position = Vector2(0, -18)
 shape = SubResource("shape")

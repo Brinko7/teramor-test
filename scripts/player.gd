@@ -29,8 +29,19 @@ const WALK_FRAMES := [0, 1, 2, 3]
 ## compiles — avoids the editor's "DirUtil not declared" partial-reload error.
 const DIR_UTIL := preload("res://scripts/dir_util.gd")
 
-## How far the melee hitbox sits from the player along the aim direction.
-const HITBOX_REACH := 14.0
+## How far the melee hitbox sits from the player along the aim direction (scaled to
+## the 84x120 hero's reach), and the bow's draw time before the arrow looses.
+const HITBOX_REACH := 42.0
+const BOW_DRAW_TIME := 0.12
+## Melee swing played as body frames (cols 4-7 of the 8-col sheet): wind-up, strike,
+## follow-through, recover. Per-frame durations; the hit + slash + lunge land on the
+## STRIKE frame so damage connects exactly when the blade sweeps across.
+const ATTACK_FRAME_TIME: Array[float] = [0.07, 0.07, 0.06, 0.08]
+const ATTACK_STRIKE_FRAME := 1
+## Bow draw played as body frames (cols 8-10): nock, draw-back, loose. The arrow
+## fires on the loose frame, so it leaves the bow exactly as the string snaps forward.
+const DRAW_FRAME_TIME: Array[float] = [1.5, 2.5, 0.6]
+const DRAW_LOOSE_FRAME := 2
 
 ## Combat-feel tunables: melee knockback dealt to foes, and the player's own
 ## forward lunge on a melee swing.
@@ -58,6 +69,9 @@ const DODGE_COOLDOWN := 0.40
 @onready var collar_sprite: Sprite2D = $Collar
 ## Helm layer (over the hair) for armour sets that include one.
 @onready var helm_sprite: Sprite2D = $Helm
+## Melee weapon overlay (the blade riding the swinging hand) — cols 4-7 of the
+## 8-col sheet, synced to the body's attack frame. Hidden except mid-swing.
+@onready var weapon_overlay: Sprite2D = $WeaponOverlay
 @onready var gear_layers: Dictionary = {
 	ArmorItem.ArmorSlot.FEET: $GearFeet,
 	ArmorItem.ArmorSlot.LEGS: $GearLegs,
@@ -87,6 +101,14 @@ var _facing_row: int = 0
 var _aim: Vector2 = Vector2.DOWN
 var _anim_time: float = 0.0
 var _attack_timer: float = 0.0
+## Melee swing animation: true mid-swing, the elapsed time into it, whether the hit
+## has already landed this swing, and the committed swing direction.
+var _attacking: bool = false
+var _attack_time: float = 0.0
+var _attack_struck: bool = false
+var _attack_aim: Vector2 = Vector2.DOWN
+## True when the current attack is a bow draw (cols 8-10) rather than a melee swing.
+var _ranged: bool = false
 var _cooldown_timer: float = 0.0
 var _invuln_timer: float = 0.0
 var _blocking: bool = false
@@ -219,6 +241,9 @@ func _physics_process(delta: float) -> void:
 
 	if Input.is_action_just_pressed("dodge") and _can_dodge():
 		_start_dodge()
+
+	if _attacking:
+		_update_attack_anim(delta)
 
 	# Only the melee path enables the hitbox; ranged attacks never do, so gate
 	# the scan on monitoring to avoid querying a disabled area.
@@ -383,11 +408,13 @@ func _emit_footstep(delta: float, moving: bool) -> void:
 		Events.step_puff.emit(global_position)
 
 func _update_facing(dir: Vector2) -> void:
-	if dir == Vector2.ZERO:
-		return
+	if _attacking or dir == Vector2.ZERO:
+		return  # facing is committed to the swing direction while attacking
 	_facing_row = DIR_UTIL.row_for(dir, sprite.vframes)
 
 func _update_animation(delta: float, moving: bool) -> void:
+	if _attacking:
+		return  # the swing owns every layer's frame while it plays
 	if moving:
 		_anim_time += delta * anim_fps
 	else:
@@ -434,21 +461,66 @@ func _current_weapon() -> WeaponItem:
 
 func _start_attack() -> void:
 	var weapon: WeaponItem = _current_weapon()
-	_attack_timer = weapon.attack_duration if weapon != null else attack_duration
 	_cooldown_timer = weapon.attack_cooldown if weapon != null else attack_cooldown
+	# Both melee and ranged play as body frames: melee swings the blade (cols 4-7),
+	# ranged draws the bow (cols 8-10). _update_attack_anim drives the frames and
+	# lands the hit (melee strike) / looses the arrow (bow release) on the key frame.
+	_attacking = true
+	_attack_time = 0.0
+	_attack_struck = false
+	_attack_aim = _aim  # commit the aim + facing for the duration of this attack
+	_ranged = weapon != null and weapon.is_ranged()
+	_facing_row = DIR_UTIL.row_for(_aim, sprite.vframes)
+	if weapon != null and weapon.attack_sheet != null:
+		weapon_overlay.texture = weapon.attack_sheet
+		weapon_overlay.visible = true
+	else:
+		weapon_overlay.visible = false
 
-	if weapon != null and weapon.is_ranged():
-		_fire_projectile(weapon)
-		_visuals.recoil(_aim)
-		return
-
-	_hit_enemies.clear()
-	hitbox.position = _aim * HITBOX_REACH
-	hitbox.monitoring = true
-	hitbox_shape.disabled = false
-	_lunge = _aim * LUNGE_SPEED  # weighty step into the swing
-	_visuals.swing_melee(weapon, _aim)
-	Events.melee_swung.emit(global_position + _aim * HITBOX_REACH + Vector2(0, -10), _aim, true)
+## Advance the melee swing: drive every paper-doll layer to the current attack column
+## and, on the strike frame, open the hitbox + spawn the slash + lunge (once).
+func _update_attack_anim(delta: float) -> void:
+	_attack_time += delta
+	var times: Array[float] = DRAW_FRAME_TIME if _ranged else ATTACK_FRAME_TIME
+	var base_col: int = 8 if _ranged else 4
+	var total: float = 0.0
+	for d: float in times:
+		total += d
+	var acc: float = 0.0
+	var idx: int = times.size() - 1
+	for i in times.size():
+		acc += times[i]
+		if _attack_time < acc:
+			idx = i
+			break
+	var frame: int = _facing_row * sprite.hframes + (base_col + idx)
+	sprite.frame = frame
+	cloak_back_sprite.frame = frame
+	collar_sprite.frame = frame
+	helm_sprite.frame = frame
+	weapon_overlay.frame = frame
+	_visuals.sync_frame(frame)
+	if _ranged:
+		# Loose the arrow on the release frame — it leaves as the string snaps forward.
+		if not _attack_struck and idx >= DRAW_LOOSE_FRAME:
+			_attack_struck = true
+			var bow: WeaponItem = _current_weapon()
+			if bow != null:
+				_fire_projectile(bow)
+			_lunge = -_attack_aim * 18.0  # slight recoil step
+	elif not _attack_struck and idx >= ATTACK_STRIKE_FRAME:
+		# Land the hit + slash + lunge on the strike frame.
+		_attack_struck = true
+		_hit_enemies.clear()
+		hitbox.position = _attack_aim * HITBOX_REACH
+		hitbox.monitoring = true
+		hitbox_shape.disabled = false
+		_attack_timer = ATTACK_FRAME_TIME[ATTACK_STRIKE_FRAME] + ATTACK_FRAME_TIME[ATTACK_STRIKE_FRAME + 1]
+		_lunge = _attack_aim * LUNGE_SPEED  # weighty step into the strike
+		Events.melee_swung.emit(global_position + _attack_aim * (HITBOX_REACH + 12.0) + Vector2(0, -46), _attack_aim, true)
+	if _attack_time >= total:
+		_attacking = false
+		weapon_overlay.visible = false
 
 func _fire_projectile(weapon: WeaponItem) -> void:
 	var arrow := ARROW_SCENE.instantiate() as Projectile
@@ -502,6 +574,8 @@ func _start_dodge() -> void:
 	_dodge_cd = DODGE_DURATION + DODGE_COOLDOWN
 	_lunge = Vector2.ZERO
 	_end_attack()
+	_attacking = false  # dodge-cancels a swing
+	weapon_overlay.visible = false
 	Events.player_dodged.emit(global_position)
 	Events.step_puff.emit(global_position)
 
@@ -562,6 +636,8 @@ func _sync_abilities() -> void:
 
 func _on_died() -> void:
 	_end_attack()
+	_attacking = false
+	weapon_overlay.visible = false
 	modulate = Color(0.5, 0.5, 0.5)
 	GameManager.player_died()
 

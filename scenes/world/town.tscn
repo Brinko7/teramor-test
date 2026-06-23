@@ -1,6 +1,6 @@
 [gd_scene load_steps=53 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="1_grass"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/grass32.png" id="1_grass"]
 [ext_resource type="TileSet" path="res://assets/tilesets/terrain.tres" id="2_tileset"]
 [ext_resource type="Script" path="res://scripts/town_terrain.gd" id="3_town"]
 [ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="4_player"]
@@ -54,29 +54,32 @@
 [ext_resource type="Texture2D" path="res://assets/placeholder/npc_gossip.png" id="56_gossip"]
 
 [sub_resource type="RectangleShape2D" id="exit_shape"]
-size = Vector2(96, 28)
+size = Vector2(192, 48)
 
 [sub_resource type="RectangleShape2D" id="door_shape"]
-size = Vector2(30, 22)
+size = Vector2(56, 40)
 
 [sub_resource type="RectangleShape2D" id="wall_h_top"]
-size = Vector2(960, 16)
+size = Vector2(1920, 16)
 
 [sub_resource type="RectangleShape2D" id="wall_v"]
-size = Vector2(16, 720)
+size = Vector2(16, 1440)
 
 [sub_resource type="RectangleShape2D" id="wall_h_bottom"]
-size = Vector2(416, 16)
+size = Vector2(832, 16)
 
 [node name="Town" type="Node2D"]
 script = ExtResource("3_town")
+town_width = 1920
+town_height = 1440
+map_size = Vector2i(1920, 1440)
 
 [node name="Ground" type="Sprite2D" parent="."]
 texture_repeat = 2
 centered = false
 texture = ExtResource("1_grass")
 region_enabled = true
-region_rect = Rect2(0, 0, 960, 720)
+region_rect = Rect2(0, 0, 1920, 1440)
 
 [node name="Terrain" type="TileMapLayer" parent="."]
 tile_set = ExtResource("2_tileset")
@@ -84,23 +87,23 @@ tile_set = ExtResource("2_tileset")
 [node name="Walls" type="StaticBody2D" parent="."]
 
 [node name="WallTop" type="CollisionShape2D" parent="Walls"]
-position = Vector2(480, 8)
+position = Vector2(960, 8)
 shape = SubResource("wall_h_top")
 
 [node name="WallLeft" type="CollisionShape2D" parent="Walls"]
-position = Vector2(8, 360)
+position = Vector2(8, 720)
 shape = SubResource("wall_v")
 
 [node name="WallRight" type="CollisionShape2D" parent="Walls"]
-position = Vector2(952, 360)
+position = Vector2(1912, 720)
 shape = SubResource("wall_v")
 
 [node name="WallBottomLeft" type="CollisionShape2D" parent="Walls"]
-position = Vector2(216, 712)
+position = Vector2(432, 1432)
 shape = SubResource("wall_h_bottom")
 
 [node name="WallBottomRight" type="CollisionShape2D" parent="Walls"]
-position = Vector2(744, 712)
+position = Vector2(1488, 1432)
 shape = SubResource("wall_h_bottom")
 
 [node name="Entities" type="Node2D" parent="."]
@@ -110,204 +113,204 @@ y_sort_enabled = true
 count = 9
 
 [node name="Chapel" parent="Entities" instance=ExtResource("34_chapel")]
-position = Vector2(250, 165)
+position = Vector2(300, 490)
 
 [node name="Blacksmith" parent="Entities" instance=ExtResource("33_smith")]
-position = Vector2(720, 165)
+position = Vector2(1560, 470)
 
 [node name="TownhouseNW" parent="Entities" instance=ExtResource("32_townhouse")]
-position = Vector2(130, 170)
+position = Vector2(120, 470)
 
 [node name="TownhouseNE" parent="Entities" instance=ExtResource("32_townhouse")]
-position = Vector2(840, 170)
+position = Vector2(1800, 470)
 
 [node name="Shop" parent="Entities" instance=ExtResource("6_shop")]
-position = Vector2(180, 250)
+position = Vector2(240, 660)
 
 [node name="Tavern" parent="Entities" instance=ExtResource("17_tavern")]
-position = Vector2(760, 250)
+position = Vector2(1680, 660)
 
 [node name="Well" parent="Entities" instance=ExtResource("7_well")]
-position = Vector2(480, 330)
+position = Vector2(960, 760)
 
 [node name="Dog" parent="Entities" instance=ExtResource("42_dog")]
-position = Vector2(430, 372)
+position = Vector2(880, 820)
 
 [node name="Bird1" parent="Entities" instance=ExtResource("43_bird")]
-position = Vector2(452, 350)
+position = Vector2(920, 790)
 
 [node name="Bird2" parent="Entities" instance=ExtResource("43_bird")]
-position = Vector2(474, 360)
+position = Vector2(955, 805)
 
 [node name="Bird3" parent="Entities" instance=ExtResource("43_bird")]
-position = Vector2(498, 348)
+position = Vector2(988, 788)
 
 [node name="Bird4" parent="Entities" instance=ExtResource("43_bird")]
-position = Vector2(512, 366)
+position = Vector2(1010, 812)
 
 [node name="Bird5" parent="Entities" instance=ExtResource("43_bird")]
-position = Vector2(488, 376)
+position = Vector2(975, 830)
 
 [node name="Stall1" parent="Entities" instance=ExtResource("35_stall")]
-position = Vector2(390, 300)
+position = Vector2(780, 700)
 
 [node name="Stall2" parent="Entities" instance=ExtResource("35_stall")]
-position = Vector2(575, 300)
+position = Vector2(1100, 700)
 
 [node name="Stall3" parent="Entities" instance=ExtResource("35_stall")]
-position = Vector2(390, 400)
+position = Vector2(780, 860)
 
 [node name="Stall4" parent="Entities" instance=ExtResource("35_stall")]
-position = Vector2(575, 400)
+position = Vector2(1100, 860)
 
 [node name="Signpost" parent="Entities" instance=ExtResource("8_sign")]
-position = Vector2(445, 430)
+position = Vector2(920, 940)
 text = "Cleeve's Landing"
 
 [node name="ShopSign" parent="Entities" instance=ExtResource("8_sign")]
-position = Vector2(250, 232)
+position = Vector2(360, 620)
 text = "Smith & Goods"
 
 [node name="TavernSign" parent="Entities" instance=ExtResource("8_sign")]
-position = Vector2(812, 232)
+position = Vector2(1750, 620)
 text = "The Tavern"
 
 [node name="RoadHomeSign" parent="Entities" instance=ExtResource("8_sign")]
-position = Vector2(528, 686)
+position = Vector2(1000, 1390)
 text = "The forest road"
 
 [node name="HiddenTrail" parent="Entities" instance=ExtResource("40_explore")]
-position = Vector2(836, 96)
+position = Vector2(1760, 160)
 biome_path = "res://resources/world/biomes/deepwood.tres"
 tier = 1
 journey_to = &"settlement_camp"
 require_flag = &"trail_revealed"
 
 [node name="TownhouseS1" parent="Entities" instance=ExtResource("32_townhouse")]
-position = Vector2(160, 540)
+position = Vector2(180, 1040)
 
 [node name="TownhouseS2" parent="Entities" instance=ExtResource("32_townhouse")]
-position = Vector2(320, 560)
+position = Vector2(440, 1060)
 
 [node name="HouseS3" parent="Entities" instance=ExtResource("5_cabin")]
-position = Vector2(650, 560)
+position = Vector2(1480, 1060)
 
 [node name="TownhouseS4" parent="Entities" instance=ExtResource("32_townhouse")]
-position = Vector2(820, 540)
+position = Vector2(1740, 1040)
 
 [node name="Lamp1" parent="Entities" instance=ExtResource("36_lamp")]
-position = Vector2(440, 232)
+position = Vector2(880, 590)
 
 [node name="Lamp2" parent="Entities" instance=ExtResource("36_lamp")]
-position = Vector2(520, 232)
+position = Vector2(1040, 590)
 
 [node name="Lamp3" parent="Entities" instance=ExtResource("36_lamp")]
-position = Vector2(440, 452)
+position = Vector2(880, 940)
 
 [node name="Lamp4" parent="Entities" instance=ExtResource("36_lamp")]
-position = Vector2(520, 452)
+position = Vector2(1040, 940)
 
 [node name="Lamp5" parent="Entities" instance=ExtResource("36_lamp")]
-position = Vector2(440, 612)
+position = Vector2(880, 1220)
 
 [node name="Lamp6" parent="Entities" instance=ExtResource("36_lamp")]
-position = Vector2(520, 612)
+position = Vector2(1040, 1220)
 
 [node name="Barrel1" parent="Entities" instance=ExtResource("10_barrel")]
-position = Vector2(210, 238)
+position = Vector2(350, 640)
 
 [node name="Crate1" parent="Entities" instance=ExtResource("11_crate")]
-position = Vector2(146, 236)
+position = Vector2(160, 640)
 
 [node name="Barrel2" parent="Entities" instance=ExtResource("10_barrel")]
-position = Vector2(688, 206)
+position = Vector2(1480, 470)
 
 [node name="Crate2" parent="Entities" instance=ExtResource("11_crate")]
-position = Vector2(752, 210)
+position = Vector2(1630, 460)
 
 [node name="Crate3" parent="Entities" instance=ExtResource("11_crate")]
-position = Vector2(356, 292)
+position = Vector2(710, 720)
 
 [node name="Barrel3" parent="Entities" instance=ExtResource("10_barrel")]
-position = Vector2(606, 296)
+position = Vector2(1220, 720)
 
 [node name="Fence1" parent="Entities" instance=ExtResource("9_fence")]
-position = Vector2(96, 562)
+position = Vector2(100, 1070)
 
 [node name="Fence2" parent="Entities" instance=ExtResource("9_fence")]
-position = Vector2(112, 562)
+position = Vector2(140, 1070)
 
 [node name="Fence3" parent="Entities" instance=ExtResource("9_fence")]
-position = Vector2(128, 562)
+position = Vector2(180, 1070)
 
 [node name="TreeT1" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(60, 42)
+position = Vector2(60, 80)
 
 [node name="TreeT2" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(150, 44)
+position = Vector2(220, 80)
 
 [node name="TreeT3" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(260, 42)
+position = Vector2(480, 82)
 
 [node name="TreeT4" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(360, 46)
+position = Vector2(700, 84)
 
 [node name="TreeT5" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(600, 44)
+position = Vector2(1200, 82)
 
 [node name="TreeT6" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(700, 42)
+position = Vector2(1440, 80)
 
 [node name="TreeT7" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(820, 46)
+position = Vector2(1700, 84)
 
 [node name="TreeT8" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(910, 44)
+position = Vector2(1860, 80)
 
 [node name="TreeL1" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(28, 150)
+position = Vector2(32, 280)
 
 [node name="TreeL2" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(30, 280)
+position = Vector2(30, 560)
 
 [node name="TreeL3" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(28, 400)
+position = Vector2(32, 840)
 
 [node name="TreeL4" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(30, 640)
+position = Vector2(30, 1260)
 
 [node name="TreeR1" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(932, 150)
+position = Vector2(1888, 280)
 
 [node name="TreeR2" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(930, 280)
+position = Vector2(1890, 560)
 
 [node name="TreeR3" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(932, 400)
+position = Vector2(1888, 840)
 
 [node name="TreeR4" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(930, 640)
+position = Vector2(1890, 1260)
 
 [node name="TreeB1" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(90, 694)
+position = Vector2(100, 1380)
 
 [node name="TreeB2" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(230, 690)
+position = Vector2(320, 1380)
 
 [node name="TreeB3" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(360, 692)
+position = Vector2(580, 1382)
 
 [node name="TreeB4" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(610, 690)
+position = Vector2(1340, 1380)
 
 [node name="TreeB5" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(760, 694)
+position = Vector2(1600, 1382)
 
 [node name="TreeB6" parent="Entities" instance=ExtResource("12_tree")]
-position = Vector2(890, 692)
+position = Vector2(1820, 1380)
 
 [node name="Guard" parent="Entities" instance=ExtResource("14_npc")]
-position = Vector2(480, 610)
+position = Vector2(960, 1270)
 speaker_name = "Gate Warden"
 lines = PackedStringArray("Keep your steel loose on the south road.", "Bandits have grown bold since the patrols thinned out.")
 home_waypoint = "home_s4"
@@ -320,7 +323,7 @@ schedule = {
 sprite_texture = ExtResource("50_warden")
 
 [node name="Villager" parent="Entities" instance=ExtResource("14_npc")]
-position = Vector2(430, 360)
+position = Vector2(870, 800)
 speaker_name = "Townswoman"
 lines = PackedStringArray("Wolves came right up to the fences last week. It isn't natural.", "If you're after work, Bram keeps the board at the Stag well stocked.")
 home_waypoint = "home_s1"
@@ -333,7 +336,7 @@ schedule = {
 sprite_texture = ExtResource("51_townswoman")
 
 [node name="Child" parent="Entities" instance=ExtResource("14_npc")]
-position = Vector2(520, 380)
+position = Vector2(1040, 830)
 speaker_name = "Town Child"
 lines = PackedStringArray("Are you a real ranger? Like Elkar?", "He used to carve me little foxes. I hope he comes home.")
 home_waypoint = "home_s1"
@@ -349,7 +352,7 @@ sprite_texture = ExtResource("52_child")
 scale = Vector2(0.8, 0.8)
 
 [node name="Smith" parent="Entities" instance=ExtResource("14_npc")]
-position = Vector2(720, 215)
+position = Vector2(1560, 520)
 speaker_name = "Dorn, the Smith"
 lines = PackedStringArray("Mind the sparks. Forge runs hot all day.", "Bring me good ore and I'll make you steel worth carrying into the Deepwood.")
 home_waypoint = "home_ne"
@@ -362,7 +365,7 @@ schedule = {
 sprite_texture = ExtResource("53_smith")
 
 [node name="Cleric" parent="Entities" instance=ExtResource("14_npc")]
-position = Vector2(250, 220)
+position = Vector2(300, 540)
 speaker_name = "Sister Lywen"
 lines = PackedStringArray("Tera keeps her children, even in the dark of the Deepwood.", "Light a candle for Elkar when you can. Hope is its own kind of armor.")
 home_waypoint = "chapel_door"
@@ -375,7 +378,7 @@ schedule = {
 sprite_texture = ExtResource("54_cleric")
 
 [node name="Vendor" parent="Entities" instance=ExtResource("14_npc")]
-position = Vector2(575, 345)
+position = Vector2(1100, 760)
 speaker_name = "Pell the Grocer"
 lines = PackedStringArray("Fresh roots, river fish, summer apples — best prices in Cleeve's Landing!", "Folk still come to market, wolves or no. A town's got to eat.")
 home_waypoint = "home_s3"
@@ -388,7 +391,7 @@ schedule = {
 sprite_texture = ExtResource("55_grocer")
 
 [node name="Gossip" parent="Entities" instance=ExtResource("14_npc")]
-position = Vector2(440, 360)
+position = Vector2(870, 770)
 speaker_name = "Old Hesta"
 lines = PackedStringArray("In my day the Deepwood stayed in the Deepwood. Now look at it.", "You've your father's stride, child. Folk notice such things.")
 home_waypoint = "home_nw"
@@ -401,83 +404,83 @@ schedule = {
 sprite_texture = ExtResource("56_gossip")
 
 [node name="Player" parent="Entities" instance=ExtResource("4_player")]
-position = Vector2(480, 650)
+position = Vector2(960, 1310)
 
 [node name="Waypoints" type="Node2D" parent="."]
 
 [node name="plaza_well" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(440, 360)
+position = Vector2(880, 780)
 
 [node name="plaza_center" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(505, 372)
+position = Vector2(960, 800)
 
 [node name="market_w" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(388, 348)
+position = Vector2(780, 760)
 
 [node name="market_e" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(575, 348)
+position = Vector2(1100, 760)
 
 [node name="market_s" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(480, 448)
+position = Vector2(960, 930)
 
 [node name="tavern_door" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(738, 300)
+position = Vector2(1620, 700)
 
 [node name="tavern_in" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(760, 312)
+position = Vector2(1680, 720)
 
 [node name="tavern_step" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(716, 306)
+position = Vector2(1570, 700)
 
 [node name="shop_front" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(180, 300)
+position = Vector2(240, 720)
 
 [node name="chapel_door" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(250, 218)
+position = Vector2(300, 540)
 
 [node name="chapel_yard" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(305, 205)
+position = Vector2(420, 510)
 
 [node name="forge" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(720, 218)
+position = Vector2(1560, 520)
 
 [node name="gate" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(480, 615)
+position = Vector2(960, 1280)
 
 [node name="home_nw" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(130, 218)
+position = Vector2(120, 510)
 
 [node name="home_ne" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(840, 218)
+position = Vector2(1800, 510)
 
 [node name="home_s1" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(160, 588)
+position = Vector2(180, 1090)
 
 [node name="home_s2" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(320, 608)
+position = Vector2(440, 1110)
 
 [node name="home_s3" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(650, 608)
+position = Vector2(1480, 1110)
 
 [node name="home_s4" type="Marker2D" parent="Waypoints" groups=["npc_waypoint"]]
-position = Vector2(820, 588)
+position = Vector2(1740, 1090)
 
 [node name="Spawns" type="Node2D" parent="."]
 
 [node name="from_road" type="Marker2D" parent="Spawns" groups=["spawn"]]
-position = Vector2(480, 650)
+position = Vector2(960, 1310)
 
 [node name="from_settlement" type="Marker2D" parent="Spawns" groups=["spawn"]]
-position = Vector2(480, 650)
+position = Vector2(960, 1310)
 
 [node name="to_shop" type="Marker2D" parent="Spawns" groups=["spawn"]]
-position = Vector2(180, 284)
+position = Vector2(240, 700)
 
 [node name="to_tavern" type="Marker2D" parent="Spawns" groups=["spawn"]]
-position = Vector2(760, 284)
+position = Vector2(1680, 700)
 
 [node name="ExitToRoad" parent="." instance=ExtResource("13_tz")]
-position = Vector2(480, 706)
+position = Vector2(960, 1412)
 target_scene = "res://scenes/world/road.tscn"
 target_spawn = "from_town"
 
@@ -485,7 +488,7 @@ target_spawn = "from_town"
 shape = SubResource("exit_shape")
 
 [node name="ShopDoor" parent="." instance=ExtResource("13_tz")]
-position = Vector2(180, 258)
+position = Vector2(240, 666)
 target_scene = "res://scenes/world/shop_interior.tscn"
 target_spawn = "from_town"
 
@@ -493,7 +496,7 @@ target_spawn = "from_town"
 shape = SubResource("door_shape")
 
 [node name="TavernDoor" parent="." instance=ExtResource("13_tz")]
-position = Vector2(760, 258)
+position = Vector2(1680, 666)
 target_scene = "res://scenes/world/tavern_interior.tscn"
 target_spawn = "from_town"
 
