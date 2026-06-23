@@ -31,23 +31,38 @@ func _run() -> void:
 		_err("grass32.png missing or not 32x32")
 	else:
 		print("  [ok] grass32.png 32x32 seamless tile")
-	# 2. slice scene instantiates with a player sprite wired to the sheet
+	# 2. baked props present + correctly sized (foot-anchored sprites)
+	for p in [["res://assets/remaster/cottage.png", 150, 185],
+			["res://assets/remaster/tree.png", 92, 128],
+			["res://assets/remaster/npc_bram.png", 84, 120],
+			["res://assets/remaster/npc_wrenna.png", 84, 120]]:
+		var tex := load(p[0]) as Texture2D
+		if tex == null or tex.get_width() != p[1] or tex.get_height() != p[2]:
+			_err("prop %s missing or wrong size (want %dx%d)" % [p[0], p[1], p[2]])
+		else:
+			print("  [ok] %s %dx%d" % [p[0], p[1], p[2]])
+	# 3. slice scene instantiates: y-sorted Entities with player + props
 	var scene := load(SLICE) as PackedScene
 	if scene == null or not scene.can_instantiate():
 		_err("remaster_slice.tscn missing / cannot instantiate")
 	else:
 		var inst := scene.instantiate()
-		var spr := inst.get_node_or_null("Player/Sprite") as Sprite2D
-		if spr == null:
-			_err("slice has no Player/Sprite")
+		var ents := inst.get_node_or_null("Entities") as Node2D
+		var spr := inst.get_node_or_null("Entities/Player/Sprite") as Sprite2D
+		if ents == null or not ents.y_sort_enabled:
+			_err("slice has no y-sorted Entities root")
+		elif spr == null:
+			_err("slice has no Entities/Player/Sprite")
 		elif spr.texture == null or not spr.texture.resource_path.ends_with("player_walk.png"):
 			_err("slice sprite not wired to the player sheet")
 		elif spr.hframes != 4 or spr.vframes != 8:
 			_err("slice sprite frames are %dx%d, want 4x8" % [spr.hframes, spr.vframes])
-		elif inst.get_node_or_null("Player/Camera2D") == null:
+		elif inst.get_node_or_null("Entities/Player/Camera2D") == null:
 			_err("slice has no follow Camera2D")
+		elif ents.get_node_or_null("Cottage") == null or ents.get_node_or_null("Bram") == null:
+			_err("slice missing baked props (cottage / NPC)")
 		else:
-			print("  [ok] slice scene: player sprite + camera wired")
+			print("  [ok] slice scene: y-sorted entities, player + props wired")
 		inst.free()
 	if _fail == 0:
 		print("\nRESULT: PASS — remaster slice assets + scene are wired")

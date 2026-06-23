@@ -7,14 +7,18 @@ extends Node2D
 ##
 ## Sheet layout matches bake_player.py: 4 cols (walk phases) x 8 rows (facings
 ## S, SE, E, NE, N, NW, W, SW). Walk cycles phases [0,1,0,2]; idle holds phase 0.
+##
+## The player and the baked props (cottage / trees / NPCs) all live under a
+## y-sorted Entities node and are foot-anchored, so they depth-sort by their feet
+## as the player walks behind or in front of them.
 
 const SPEED := 96.0
 const WALK := [0, 1, 0, 2]
 ## Octant (0=E,1=SE,..7=NE) -> sheet row (0=S,1=SE,2=E,3=NE,4=N,5=NW,6=W,7=SW).
 const ROW_BY_OCT := [2, 1, 0, 7, 6, 5, 4, 3]
 
-@onready var _sprite: Sprite2D = $Player/Sprite
-@onready var _player: Node2D = $Player
+@onready var _sprite: Sprite2D = $Entities/Player/Sprite
+@onready var _player: Node2D = $Entities/Player
 
 var _facing := 0
 var _anim := 0.0
