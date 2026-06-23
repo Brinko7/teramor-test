@@ -1,8 +1,9 @@
-# Teramor — Depth Roadmap
+# Teramor — Game Director's Roadmap
 
-> Where we're taking this, and why it can win. A living doc: edit as the game finds
-> itself. Grounded in the systems that already exist (see `CLAUDE.md`) so every line
-> is a next step, not a wish.
+> The plan to make this a **hit**, not just a complete game. A living doc: edit as the
+> game finds itself. Grounded in the systems that already exist (see `CLAUDE.md`) so
+> every line is a next step, not a wish. Read the **director's thesis** and the
+> **narrative spine** first — they set the priorities everything else serves.
 
 ## The hook (what makes Teramor *singular*)
 
@@ -18,6 +19,96 @@ you're fighting *for*, and — now that you can **recruit its members** — it's
 that visibly *grows because of you*. That's the emotional engine. Everything below
 deepens one of three pillars: **the living camp**, **the dangerous world**, and
 **the cohesion** that makes judges call a game "complete."
+
+And the thing that ties the warmth to the dread is a **secret**: the camp is a cell
+of the **Children of Tera**, an order that has survived by trusting no one. You are
+*vetted, not embraced*. The story is the slow burn of earning in.
+
+---
+
+## The director's thesis (what makes it a *hit*, not just complete)
+
+> One line: **"Cozy meets cursed."** A hunted hybrid earns a place in a secret order
+> at the edge of a dying world — builds a home that thrives while they push into the
+> dark, and uncovers, slowly, what they really are.
+
+Four player fantasies, each owned by systems we already have:
+
+1. **Earn your home** — farm / craft / recruit / automate; the camp grows tents → town.
+2. **Push the dark** — mouse-aimed combat, builds, biomes, bosses, the Wilds threshold.
+3. **Belong to something secret** — trust, lore, the Children of Tera, the road to Tera.
+4. **Be someone** — the remaster character model + wardrobe + build expression.
+
+### The path to a hit (phased)
+
+- **Phase 0 — Finish the hero (now).** The remaster model + wardrobe is our marquee
+  asset; get it fully playable in-world (live player on the 4-dir paper-doll, gear /
+  weapon / idle), then equipped armour visibly swaps the *set*. Blocks everything
+  visual. *(Step 1 — creator + layers — is merged; the live player is next.)*
+- **Phase 1 — The killer first hour (the demo).** Prologue → Cleeve's Landing → vetted
+  into the order, tuned to a tight 45–60 min that teaches the four verbs, lands the
+  **mystery + belonging** hook and one memorable miniboss, and **ends on a question** —
+  *no Tera reveal.* This is the Steam / Next Fest demo.
+- **Phase 2 — Depth payoff.** Bosses + ability synergy + enemy ecology; visible camp
+  growth + more roles; heart events + romance; and the **Standing / lore ladder** on,
+  so trust visibly unlocks story.
+- **Phase 3 — World & content.** Real destinations from the rumoured map, festivals
+  with activities, contracts / rescues, the mid-story beats.
+- **Phase 4 — Endgame & retention.** Deeper Wilds tiers, camp prestige, NG+, the codex
+  tail — and the deliberate big bet: **co-op**.
+- **Phase 5 — Ship it.** Steam page + wishlist drive, the demo, controller + Steam
+  Deck, a trailer cut around "cozy vs cursed," accessibility.
+
+**Director's standing orders:** *no new systems for a while* — deepen and connect what
+exists. Perfect one hour before broadening the world. Conviction reads on screen.
+
+---
+
+## Narrative spine — the slow burn (trust, secrecy, earned lore)
+
+> *The change that makes the story pull for 30+ hours: the world's biggest truths are
+> withheld, then earned.*
+
+The Children of Tera are a **secret order**, not a welcome wagon. They survived the
+hybrid-abducting kingdoms by trusting no one — least of all a stranger. So the player
+is **vetted, not embraced**, and the world's deepest truths — what Tera is, why the
+dome is failing, what the player's blood means — are **revealed only as you prove
+yourself.** The hook is the **mystery and the belonging**, never a money-shot. Tera,
+the Great Tree, is the *deep* payoff: glimpsed in fragments, obscured by atmosphere,
+never handed over early.
+
+**Standing — the trust meter (the narrative engine).** A reputation with the order,
+distinct from per-NPC hearts, raised by proving loyalty (their quests, keeping their
+secrets, defending the camp, *not* selling them to the kingdoms). It gates three things:
+- **Lore** — what NPCs will tell you (the ladder below).
+- **Access** — deeper camp areas, the archive, restricted regions, the Wilds approach.
+- **The main story** — chapters advance on Standing thresholds, not just kill counts.
+
+This **deepens existing systems** (Story flags + Relationships + QuestManager) rather
+than adding a toy: one `Standing` value the Story director and dialogue `topics`
+already know how to gate on.
+
+**The lore ladder (drip, don't dump):**
+- **Stranger (0):** deflection — "that's not for you to know." Small tests. You don't
+  even learn the order's true name yet.
+- **Initiate:** the basics — there *is* something at the heart of the wilds worth dying
+  for; the kingdoms hunt hybrids; your father knew these people.
+- **Trusted:** real history — the curse, the Withered, what the order has lost; the
+  first hints that Tera is more than a place.
+- **Sworn:** the truth — what Tera is, what's killing her, what the player's blood means.
+- **Tera's payoff:** the **Great Tree reveal**, earned, as a late capstone — the
+  emotional climax the whole burn withheld.
+
+**⚠ Re-gate the early reveal (action item).** Today `wilds_reveal` shows Tera looming
+on the *first* Cursed Wilds crossing — too soon under this design. Rework it so the
+first crossing sells **dread and blight** (the Withered, a wrong sky, something on the
+horizon you *can't quite resolve*), with Tera deliberately **obscured by haze/distance**;
+move the full reveal to a Standing/Story-gated late beat. (`scripts/wilds_reveal.gd`,
+`gen_wilds_reveal.py`, `validate_wilds_reveal.gd`.)
+
+**Tell it diegetically:** locked dialogue topics ("not yet"), overheard fragments, an
+**archive/relics** you earn access to, documents that unlock as Standing rises, NPCs who
+say *more* each tier. Elder Maelon and the hooded Sorrel are the gatekeepers.
 
 ---
 
@@ -65,11 +156,16 @@ The telegraph→dodge→punish core is good. Make it *deep*:
 
 ## Pillar 4 — Narrative & consequence
 
+- **The Standing spine (see "Narrative spine" above).** The order's trust meter is the
+  main engine — it gates lore, access, and chapter advancement, and it's the reason the
+  Great Tree reveal can be a *late* payoff. Build this before more one-off quests.
 - **Branching via the Story director.** `StoryChapter` resources already chain;
   add **choices that set flags** which later chapters read — divergent beats, not
-  just a line of dialogue.
+  just a line of dialogue. The sharpest choice: how loyal you stay to the order vs the
+  kingdoms (which feeds Standing).
 - **Faction reputation** (Hollenmark / Plint / Terakin) that gates prices, quests,
-  and endings. The world is already three kingdoms + a frontier — give them memory.
+  and endings — *separate from* Children-of-Tera Standing, and often in tension with it
+  (currying favour with a crown that abducts hybrids costs you with the order).
 
 ## Pillar 5 — Cozy breadth (the "just one more day" texture)
 
@@ -105,11 +201,13 @@ The telegraph→dodge→punish core is good. Make it *deep*:
   - ✅ **Depth & vistas, PR1 (done)** — a **forest canopy**: `CanopyFX` drifts dappled
     overhead shade across wooded areas (data-driven via `BiomeData.has_canopy`, fades
     at night) so you read as moving *under* a thick canopy. `tools/validate_canopy.gd`.
-  - ✅ **Depth & vistas, PR2 (done)** — the **Great Tree reveal cutscene**: the camera
-    can't show sky above the maps (`limit_top = 0`), so instead of a persistent horizon,
-    the first crossing into the Cursed Wilds plays a one-time cinematic of Tera looming
-    in the far distance above the forest (`scripts/wilds_reveal.gd`, art by
-    `gen_wilds_reveal.py`). `tools/validate_wilds_reveal.gd`.
+  - ⚠️ **Depth & vistas, PR2 (built, now NEEDS REWORK)** — the **wilds reveal cutscene**
+    (`scripts/wilds_reveal.gd`, art by `gen_wilds_reveal.py`) plays a one-time cinematic
+    of Tera looming over the forest on the *first* Cursed Wilds crossing. Per the new
+    **narrative spine**, that's too early: keep the cinematic *machinery*, but the first
+    crossing must show **dread, not Tera** (blight + a horizon you can't resolve), and the
+    actual Great-Tree reveal moves to a late Standing/Story-gated beat.
+    `tools/validate_wilds_reveal.gd`.
 
 ## Pillar 7 — Identity & polish (where awards are won or lost)
 
@@ -203,8 +301,19 @@ and none depends on another landing first. Rough priority:
     Children of Tera (ch2 → ch3_children → ch4 awakening). The open road stays sealed
     until discovery (new `require_flag` gating on explore/transition zones), and
     `continue_game` now reloads your last location. `tools/validate_recruitment.gd`.
+- **🎯 Finish the hero (Phase 0)** — *in progress.* The remaster character model +
+  wardrobe is the marquee asset; step 1 (paper-doll layers + character creator on the
+  4-dir model) is **merged**. Next: the **live in-world player** onto the same layers
+  (body/hair/beard/outfit/cloak, walk + idle, drawn↔stowed weapon/shield), then
+  **equipped armour visibly swaps the set** (ranger → iron/plate/rogue/robe). Blocks
+  every visual sell.
+- **🎯 The Standing / lore spine (Pillar 4)** — the trust meter + lore ladder that makes
+  the slow burn real and lets the Great Tree stay a *late* payoff. The highest-leverage
+  narrative work; everything story-shaped should hang off it.
+- **🎯 Re-gate the wilds reveal** — rework `wilds_reveal` so the first Cursed Wilds
+  crossing sells dread (not Tera); move the Great-Tree reveal to a late Standing beat.
 - **A Codex / almanac tab** (Pillar 8 QoL) — discovered crops/fish/monsters/people as
-  a `player_menu` tab; the completionist hook.
+  a `player_menu` tab; the completionist hook (also a natural home for *unlocked lore*).
 - **Camp construction round 3** (Pillar 1) — visible camp tiers: swap props in
   `settlement.tscn` by upgrade level so the camp *looks* like it grew; a kitchen/forge
   building gating cook/smith roles.
@@ -215,8 +324,9 @@ and none depends on another landing first. Rough priority:
 - **Boss polish & a second boss** (Pillar 3) — a dedicated boss health bar (HUD),
   bespoke Colossus art, and a second pattern (a ranged/summon phase).
 
-Pick the pillar that excites *you* most; conviction reads on screen. The **Elkar
-opening** is now in: the prologue (PR A) makes the father a present mentor who teaches
-you and then goes missing, and the secret-camp slice (PR B) turns the Children of Tera
-into an order you uncover by trekking a hidden trail and are recruited into — the
-tone-setting first fifteen minutes now play start to finish.
+**Director's call on sequence:** finish **Phase 0** (the hero in-world — it's in flight
+and unblocks the whole visual pitch), then turn on the **Standing spine** so the slow
+burn has its engine, then re-gate the reveal. After that, Phase 1: perfect the first
+hour into the demo. The tone-setting opening already plays start to finish (the Elkar
+prologue + the secret-camp trail); the work now is making the *new hero* the one who
+walks it, and making the order's trust something you can *feel* climbing.
