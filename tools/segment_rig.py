@@ -38,8 +38,8 @@ SMALL = CLOTH["cream"]   # smallclothes (the only thing the bare base "wears")
 JOINTS = {
 	"front": {
 		"head": (42, 23), "neck": (42, 40), "chest": (42, 55), "pelvis": (42, 73),
-		"shoulder_l": (25, 47), "shoulder_r": (59, 47),
-		"hand_l": (24, 84), "hand_r": (60, 84),
+		"shoulder_l": (22, 46), "shoulder_r": (62, 46),
+		"hand_l": (23, 84), "hand_r": (61, 84),
 		"hip_l": (36, 74), "hip_r": (48, 74),
 		"foot_l": (35, 112), "foot_r": (49, 112),
 	},
@@ -52,8 +52,8 @@ JOINTS = {
 	},
 	"back": {
 		"head": (42, 23), "neck": (42, 40), "chest": (42, 55), "pelvis": (42, 73),
-		"shoulder_l": (25, 47), "shoulder_r": (59, 47),
-		"hand_l": (24, 84), "hand_r": (60, 84),
+		"shoulder_l": (22, 46), "shoulder_r": (62, 46),
+		"hand_l": (23, 84), "hand_r": (61, 84),
 		"hip_l": (36, 74), "hip_r": (48, 74),
 		"foot_l": (35, 112), "foot_r": (49, 112),
 	},
@@ -126,19 +126,28 @@ def base_torso(c, J, view):
 	cx, cy = J["chest"]; px, py = J["pelvis"]
 	sl = J["shoulder_l"]; sr = J["shoulder_r"]
 	if view == "side":
+		# torso in profile: a forward chest up top tapering back to the waist,
+		# so the body carries mass under the head instead of a flat slab.
 		c.ellipse(cx, cy + 2, 8, 17, SK[2], fill=True)
-		c.rect(cx - 6, sl[1], cx + 7, py, SK[2]); c.rect(cx + 5, sl[1], cx + 7, py, SK[1])
-		c.rect(cx - 6, sl[1], cx - 4, py, SK[3])
+		c.rect(cx - 6, sl[1], cx + 8, cy + 1, SK[2])               # chest (pushed forward)
+		c.rect(cx - 5, cy + 1, cx + 6, py, SK[2])                  # waist (tucks back)
+		c.rect(cx + 6, sl[1], cx + 8, cy + 1, SK[1])               # lit chest front
+		c.rect(cx + 4, cy + 1, cx + 6, py, SK[1])                  # lit belly front
+		c.rect(cx - 6, sl[1], cx - 4, py, SK[3])                   # shaded back
 		return
 	w = (sr[0] - sl[0]) // 2
-	c.ellipse(cx, cy + 2, w, 17, SK[2], fill=True)
-	c.rect(sl[0], sl[1], sr[0], py, SK[2])
-	c.rect(sl[0], sl[1], sl[0] + 3, py, SK[1])          # lit left
-	c.rect(sr[0] - 3, sl[1], sr[0], py, SK[3])          # shaded right
-	c.ellipse(cx, cy, w - 3, 10, SK[1], fill=True)      # chest highlight
+	# tapered trunk — broad shoulders narrowing to the waist (a capable V build)
+	for y in range(sl[1], py + 1):
+		t = (y - sl[1]) / max(1, py - sl[1])
+		half = int(round(w * (1.0 - 0.30 * t)))         # ~30% taper to the waist
+		half -= max(0, 2 - (y - sl[1]))                 # round the shoulder caps
+		c.rect(cx - half, y, cx + half, y, SK[2])
+		c.rect(cx - half, y, cx - half + 2, y, SK[1])   # lit left edge
+		c.rect(cx + half - 2, y, cx + half, y, SK[3])   # shaded right edge
+	c.ellipse(cx, cy - 1, w - 4, 9, SK[1], fill=True)   # chest/pec highlight
 	if view == "front":
-		c.line(cx, cy - 3, cx, py - 2, SK[3])
-		c.paint(cx - 4, cy + 6, SK[3]); c.paint(cx + 4, cy + 6, SK[3])
+		c.line(cx, cy - 3, cx, py - 2, SK[3])           # sternum line
+		c.paint(cx - 5, cy + 6, SK[3]); c.paint(cx + 5, cy + 6, SK[3])  # pec shade
 
 def base_arms(c, J, view):
 	for side in ("l", "r"):
@@ -187,21 +196,29 @@ def _head_front(c, cx, cy):
 	c.line(cx - 4, cy - 16, cx - 6, cy - 7, HR[4]); c.line(cx + 4, cy - 15, cx + 3, cy - 7, HR[4])
 
 def _head_side(c, cx, cy):
-	c.rect(cx + 1, cy + 14, cx + 6, cy + 20, SK[3])                 # neck
-	c.ellipse(cx - 1, cy, 11, 13, SK[2], fill=True); c.ellipse(cx + 3, cy + 1, 8, 10, SK[1], fill=True)
-	c.rect(cx + 9, cy - 2, cx + 11, cy + 8, SK[1])                  # forward face plane
-	c.paint(cx + 12, cy + 3, SK[1]); c.paint(cx + 12, cy + 4, SK[2]); c.paint(cx + 11, cy + 5, SK[3])  # nose
-	c.ellipse(cx + 5, cy + 11, 5, 3, SK[2], fill=True); c.paint(cx + 8, cy + 11, SK[3])                  # jaw
-	c.line(cx - 2, cy, cx - 5, cy - 5, SK[2]); c.paint(cx - 3, cy - 1, SK[3])                            # ear
-	c.paint(cx + 8, cy + 6, BLUSH); c.paint(cx + 9, cy + 6, BLUSH)
-	c.line(cx + 6, cy - 1, cx + 9, cy - 2, HR[2])                   # brow
-	c.rect(cx + 7, cy + 1, cx + 9, cy + 2, WHITE); c.paint(cx + 9, cy + 1, EYE); c.paint(cx + 8, cy + 1, (56, 44, 40, 255))
-	c.line(cx + 8, cy + 8, cx + 11, cy + 8, MOUTH); c.paint(cx + 9, cy + 9, (196, 124, 112, 255))
-	# hair (crown + back fall + forward sweep)
-	c.ellipse(cx - 1, cy - 11, 12, 9, HR[2], fill=True); c.rect(cx - 12, cy - 11, cx - 8, cy + 7, HR[3])
-	c.ellipse(cx + 6, cy - 11, 6, 5, HR[2], fill=True); c.paint(cx + 10, cy - 7, HR[3]); c.paint(cx + 11, cy - 6, HR[4])
-	c.ellipse(cx - 4, cy - 15, 7, 3, HR[1], fill=True); c.line(cx - 9, cy - 16, cx + 2, cy - 17, HR[0])
-	c.rect(cx - 12, cy - 11, cx - 11, cy + 3, HR[1])
+	# neck — a short, sturdy column tucked UNDER the skull (not craned forward),
+	# leaning a touch forward into the shoulders the way a real neck does.
+	c.rect(cx - 3, cy + 12, cx + 3, cy + 22, SK[3]); c.rect(cx - 3, cy + 12, cx - 2, cy + 22, SK[4])
+	c.rect(cx + 2, cy + 12, cx + 3, cy + 22, SK[2])                 # lit front of throat
+	# skull — centered over the spine; only the FACE profile reads forward.
+	c.ellipse(cx, cy, 11, 13, SK[2], fill=True)
+	c.ellipse(cx + 2, cy + 1, 8, 10, SK[1], fill=True)             # lit cheek
+	# face profile: forehead -> brow -> nose -> lip -> chin, gently stepped
+	c.rect(cx + 8, cy - 3, cx + 10, cy + 7, SK[1])                 # forehead/cheek plane
+	c.paint(cx + 11, cy + 2, SK[1]); c.paint(cx + 11, cy + 3, SK[2]); c.paint(cx + 10, cy + 4, SK[3])  # nose tip
+	c.paint(cx + 8, cy + 5, SK[2])                                 # philtrum, receding under the nose
+	c.ellipse(cx + 3, cy + 11, 6, 3, SK[2], fill=True)            # chin/jaw mass (set back from the nose)
+	c.paint(cx + 6, cy + 10, SK[3]); c.paint(cx + 7, cy + 9, SK[3])                                     # jaw shade
+	c.ellipse(cx - 3, cy + 1, 2, 3, SK[2], fill=True); c.paint(cx - 3, cy + 1, SK[3])                   # ear, set back
+	c.paint(cx + 7, cy + 6, BLUSH); c.paint(cx + 8, cy + 6, BLUSH)
+	c.line(cx + 5, cy - 1, cx + 8, cy - 2, HR[2])                  # brow
+	c.rect(cx + 6, cy + 1, cx + 8, cy + 2, WHITE); c.paint(cx + 8, cy + 1, EYE); c.paint(cx + 7, cy + 1, (56, 44, 40, 255))
+	c.line(cx + 6, cy + 8, cx + 9, cy + 8, MOUTH); c.paint(cx + 7, cy + 9, (196, 124, 112, 255))
+	# hair — crown, back fall, forward sweep over the brow
+	c.ellipse(cx, cy - 11, 12, 9, HR[2], fill=True); c.rect(cx - 12, cy - 11, cx - 7, cy + 8, HR[3])
+	c.ellipse(cx + 6, cy - 10, 6, 5, HR[2], fill=True); c.paint(cx + 9, cy - 6, HR[3]); c.paint(cx + 10, cy - 5, HR[4])
+	c.ellipse(cx - 3, cy - 15, 7, 3, HR[1], fill=True); c.line(cx - 9, cy - 16, cx + 2, cy - 17, HR[0])
+	c.rect(cx - 12, cy - 11, cx - 11, cy + 4, HR[1])
 
 # ============================================================================
 # Apparel layers — garments that ride the same joints. (Novice outfit for now.)
