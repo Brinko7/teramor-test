@@ -33,7 +33,7 @@ def bake(name, dressed):
 	sheet = Canvas(FW * COLS, FH * ROWS)
 	for r, (view, mir) in enumerate(LAYOUT):
 		for p in range(COLS):
-			cell = S.compose(view, p, dressed)
+			cell = S.compose(view, p, None, dressed)
 			if mir:
 				cell = _mirror(cell)
 			sheet.blit(cell, p * FW, r * FH, mode="over")
