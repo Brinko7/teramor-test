@@ -1,13 +1,18 @@
-[gd_scene load_steps=4 format=3 uid="uid://btrmslice01"]
+[gd_scene load_steps=8 format=3 uid="uid://btrmslice01"]
 
 [ext_resource type="Script" path="res://scripts/remaster_slice.gd" id="1_slice"]
 [ext_resource type="Texture2D" path="res://assets/remaster/player_walk.png" id="2_sheet"]
 [ext_resource type="Texture2D" path="res://assets/remaster/grass32.png" id="3_grass"]
+[ext_resource type="Texture2D" path="res://assets/remaster/cottage.png" id="4_cottage"]
+[ext_resource type="Texture2D" path="res://assets/remaster/tree.png" id="5_tree"]
+[ext_resource type="Texture2D" path="res://assets/remaster/npc_bram.png" id="6_bram"]
+[ext_resource type="Texture2D" path="res://assets/remaster/npc_wrenna.png" id="7_wrenna"]
 
 [node name="RemasterSlice" type="Node2D"]
 script = ExtResource("1_slice")
 
 [node name="Ground" type="Sprite2D" parent="."]
+texture_filter = 1
 texture_repeat = 2
 centered = false
 position = Vector2(-960, -720)
@@ -15,9 +20,56 @@ texture = ExtResource("3_grass")
 region_enabled = true
 region_rect = Rect2(0, 0, 1920, 1440)
 
-[node name="Player" type="Node2D" parent="."]
+[node name="Entities" type="Node2D" parent="."]
+texture_filter = 1
+y_sort_enabled = true
 
-[node name="Sprite" type="Sprite2D" parent="Player"]
+[node name="Cottage" type="Sprite2D" parent="Entities"]
+y_sort_enabled = true
+centered = false
+offset = Vector2(-75, -180)
+position = Vector2(-210, -30)
+texture = ExtResource("4_cottage")
+
+[node name="TreeA" type="Sprite2D" parent="Entities"]
+y_sort_enabled = true
+centered = false
+offset = Vector2(-46, -126)
+position = Vector2(190, -70)
+texture = ExtResource("5_tree")
+
+[node name="TreeB" type="Sprite2D" parent="Entities"]
+y_sort_enabled = true
+centered = false
+offset = Vector2(-46, -126)
+position = Vector2(270, 40)
+texture = ExtResource("5_tree")
+
+[node name="TreeC" type="Sprite2D" parent="Entities"]
+y_sort_enabled = true
+centered = false
+offset = Vector2(-46, -126)
+position = Vector2(-300, 70)
+texture = ExtResource("5_tree")
+
+[node name="Bram" type="Sprite2D" parent="Entities"]
+y_sort_enabled = true
+centered = false
+offset = Vector2(-42, -112)
+position = Vector2(-70, 10)
+texture = ExtResource("6_bram")
+
+[node name="Wrenna" type="Sprite2D" parent="Entities"]
+y_sort_enabled = true
+centered = false
+offset = Vector2(-42, -112)
+position = Vector2(100, 60)
+texture = ExtResource("7_wrenna")
+
+[node name="Player" type="Node2D" parent="Entities"]
+y_sort_enabled = true
+
+[node name="Sprite" type="Sprite2D" parent="Entities/Player"]
 texture_filter = 1
 centered = false
 offset = Vector2(-42, -112)
@@ -25,7 +77,7 @@ texture = ExtResource("2_sheet")
 hframes = 4
 vframes = 8
 
-[node name="Camera2D" type="Camera2D" parent="Player"]
+[node name="Camera2D" type="Camera2D" parent="Entities/Player"]
 position = Vector2(0, -44)
 position_smoothing_enabled = true
 position_smoothing_speed = 9.0
