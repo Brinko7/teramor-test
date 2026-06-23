@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://btrmslice01"]
+[gd_scene load_steps=12 format=3 uid="uid://btrmslice01"]
 
 [ext_resource type="Script" path="res://scripts/remaster_slice.gd" id="1_slice"]
 [ext_resource type="Texture2D" path="res://assets/remaster/player_walk.png" id="2_sheet"]
@@ -7,6 +7,8 @@
 [ext_resource type="Texture2D" path="res://assets/remaster/tree.png" id="5_tree"]
 [ext_resource type="Texture2D" path="res://assets/remaster/npc_bram.png" id="6_bram"]
 [ext_resource type="Texture2D" path="res://assets/remaster/npc_wrenna.png" id="7_wrenna"]
+[ext_resource type="Texture2D" path="res://assets/remaster/armor_plate.png" id="8_armor"]
+[ext_resource type="Texture2D" path="res://assets/remaster/weapon_sword.png" id="9_weapon"]
 
 [node name="RemasterSlice" type="Node2D"]
 script = ExtResource("1_slice")
@@ -77,7 +79,32 @@ texture = ExtResource("2_sheet")
 hframes = 4
 vframes = 8
 
+[node name="Armor" type="Sprite2D" parent="Entities/Player"]
+texture_filter = 1
+centered = false
+offset = Vector2(-42, -112)
+texture = ExtResource("8_armor")
+hframes = 4
+vframes = 8
+
+[node name="Weapon" type="Sprite2D" parent="Entities/Player"]
+texture_filter = 1
+centered = false
+offset = Vector2(-42, -112)
+texture = ExtResource("9_weapon")
+hframes = 4
+vframes = 8
+
 [node name="Camera2D" type="Camera2D" parent="Entities/Player"]
 position = Vector2(0, -44)
 position_smoothing_enabled = true
 position_smoothing_speed = 9.0
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Hint" type="Label" parent="HUD"]
+offset_left = 6.0
+offset_top = 4.0
+offset_right = 320.0
+offset_bottom = 22.0
+text = "Arrows: move    1: cycle armour    2: cycle weapon"
