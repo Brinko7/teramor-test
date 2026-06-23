@@ -13,5 +13,6 @@ icon = ExtResource("2_icon")
 max_stack = 1
 value = 75
 armor_slot = 1
+armor_set = &"iron"
 defense = 4
 overlay_sheet = ExtResource("3_overlay")

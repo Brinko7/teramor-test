@@ -16,5 +16,6 @@ rarity = 3
 bonus_max_hp = 20
 bonus_spell = 2
 armor_slot = 1
+armor_set = &"plate"
 defense = 5
 overlay_sheet = ExtResource("3_overlay")

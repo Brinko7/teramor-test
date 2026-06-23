@@ -56,6 +56,8 @@ const DODGE_COOLDOWN := 0.40
 ## Remaster cloak layers: the cape behind the body and the mantle/collar over it.
 @onready var cloak_back_sprite: Sprite2D = $CloakBack
 @onready var collar_sprite: Sprite2D = $Collar
+## Helm layer (over the hair) for armour sets that include one.
+@onready var helm_sprite: Sprite2D = $Helm
 @onready var gear_layers: Dictionary = {
 	ArmorItem.ArmorSlot.FEET: $GearFeet,
 	ArmorItem.ArmorSlot.LEGS: $GearLegs,
@@ -119,6 +121,7 @@ func _ready() -> void:
 	# only). Phase 0b restores visible gear as full armour-set swaps.
 	_visuals.legacy_body_overlays = false
 	equipment.changed.connect(_visuals.refresh_gear)
+	equipment.changed.connect(_apply_armor_set)
 	equipment.changed.connect(_on_gear_changed)
 	# Progression wiring: earn XP from kills, scale Health to leveled max HP.
 	Events.enemy_killed.connect(_on_enemy_killed)
@@ -129,6 +132,7 @@ func _ready() -> void:
 	_home_position = global_position
 	PlayerProfile.changed.connect(_apply_appearance)
 	_apply_appearance()
+	_apply_armor_set()
 	_grant_starting_kit()
 	# Top off to the full pool now that starting gear (and its HP affixes) is on.
 	health.health = health.max_health
@@ -160,6 +164,33 @@ func _apply_appearance() -> void:
 	beard_sprite.modulate = PlayerProfile.hair_color
 	if beard_tex != null:
 		beard_sprite.frame = sprite.frame
+
+## The equipped chest (BODY) piece drives the visible armour SET: its `armor_set`
+## swaps the outfit / helm / cloak layers to that set's baked sheets. No chest, or an
+## untagged one, shows the default ranger kit. Helm and cloak layers hide for sets
+## that lack them.
+func _apply_armor_set() -> void:
+	var chest: ArmorItem = equipment.get_armor(ArmorItem.ArmorSlot.BODY) if equipment != null else null
+	var set_id: String = "ranger"
+	if chest != null and chest.armor_set != &"":
+		set_id = String(chest.armor_set)
+	_set_layer(outfit_sprite, "outfit_%s" % set_id, "outfit_ranger")
+	_set_layer(helm_sprite, "helm_%s" % set_id, "")
+	_set_layer(cloak_back_sprite, "cloakback_%s" % set_id, "")
+	_set_layer(collar_sprite, "collar_%s" % set_id, "")
+
+## Point a paper-doll layer at `char/<name>.png`. If it's missing, use `fallback`
+## (or hide the layer when fallback is empty). Keeps the frame synced.
+func _set_layer(layer: Sprite2D, layer_name: String, fallback: String) -> void:
+	var path := PlayerProfile.REMASTER_CHAR + layer_name + ".png"
+	if not ResourceLoader.exists(path):
+		path = (PlayerProfile.REMASTER_CHAR + fallback + ".png") if fallback != "" else ""
+	if path == "" or not ResourceLoader.exists(path):
+		layer.visible = false
+		return
+	layer.texture = load(path) as Texture2D
+	layer.visible = true
+	layer.frame = sprite.frame
 
 func _grant_starting_kit() -> void:
 	if starting_weapon != null:
@@ -365,6 +396,7 @@ func _update_animation(delta: float, moving: bool) -> void:
 	sprite.frame = _facing_row * sprite.hframes + col
 	cloak_back_sprite.frame = sprite.frame
 	collar_sprite.frame = sprite.frame
+	helm_sprite.frame = sprite.frame
 	_visuals.sync_frame(sprite.frame)
 
 # --- Equipped-gear visuals --------------------------------------------------

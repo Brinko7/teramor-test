@@ -7,6 +7,11 @@ enum ArmorSlot { HEAD, BODY, FEET, OFFHAND, LEGS }
 
 @export var armor_slot: ArmorSlot = ArmorSlot.BODY
 @export var defense: int = 1
+## Which remaster armour SET this piece shows as on the body. Only the BODY (chest)
+## piece drives the look: equipping it swaps the player's outfit/helm/cloak layers to
+## `assets/remaster/char/{outfit,helm,cloakback,collar}_<armor_set>.png`. Empty = the
+## default "ranger" kit. Known sets: ranger / rogue / iron / plate / robe.
+@export var armor_set: StringName = &""
 ## 64x128 sheet matching the player's 4x4 layout, drawn over the body and
 ## synced to the body's animation frame. Used by BODY/HEAD/FEET pieces.
 @export var overlay_sheet: Texture2D
