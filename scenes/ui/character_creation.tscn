@@ -28,8 +28,12 @@ text = "Create Your Ranger"
 horizontal_alignment = 1
 
 [node name="Preview" type="Node2D" parent="."]
-position = Vector2(118, 152)
-scale = Vector2(4, 4)
+position = Vector2(116, 150)
+scale = Vector2(1.9, 1.9)
+
+[node name="CloakBack" type="Sprite2D" parent="Preview"]
+hframes = 4
+vframes = 4
 
 [node name="Body" type="Sprite2D" parent="Preview"]
 hframes = 4
@@ -45,6 +49,10 @@ hframes = 4
 vframes = 4
 
 [node name="Hair" type="Sprite2D" parent="Preview"]
+hframes = 4
+vframes = 4
+
+[node name="Collar" type="Sprite2D" parent="Preview"]
 hframes = 4
 vframes = 4
 

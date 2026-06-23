@@ -6,18 +6,23 @@ extends Control
 ## The skin/hair palettes are read from PlayerProfile so adding a tone or colour
 ## there is enough to surface it here.
 
-const BODY_TEX := "res://assets/placeholder/char/body.png"
-const OUTFIT_TEX := "res://assets/placeholder/char/outfit_ranger.png"
-const STYLE_LABELS := {"short": "Short", "long": "Long", "spiky": "Spiky"}
+## The remaster character is a stack of tintable paper-doll layers baked from the
+## segment rig (assets/remaster/char/). The body is one full-colour sheet per skin
+## tone; hair/beard are neutral grey tinted by hair colour; the ranger outfit +
+## cloak are fixed. All 4-direction, 84x120; the preview walks the front row.
+const CHAR := "res://assets/remaster/char/"
+const STYLE_LABELS := {"short": "Short", "long": "Long", "spiky": "Spiky", "ponytail": "Ponytail", "bun": "Bun", "bald": "Bald"}
 const BEARD_LABELS := {"none": "None", "stubble": "Stubble", "goatee": "Goatee", "full": "Full"}
-const WALK_FRAMES := [0, 1, 0, 2]
-const PREVIEW_FPS := 6.0
+const WALK_FRAMES := [0, 1, 2, 3]
+const PREVIEW_FPS := 7.0
 const SELECT_BORDER := Color(0.95, 0.92, 0.7)
 
+@onready var preview_cloak: Sprite2D = $Preview/CloakBack
 @onready var preview_body: Sprite2D = $Preview/Body
 @onready var preview_outfit: Sprite2D = $Preview/Outfit
 @onready var preview_hair: Sprite2D = $Preview/Hair
 @onready var preview_beard: Sprite2D = $Preview/Beard
+@onready var preview_collar: Sprite2D = $Preview/Collar
 @onready var name_field: LineEdit = %NameField
 @onready var skin_row: HBoxContainer = %SkinRow
 @onready var style_row: HBoxContainer = %StyleRow
@@ -38,8 +43,9 @@ var _anim_time: float = 0.0
 
 func _ready() -> void:
 	get_tree().paused = false
-	preview_body.texture = load(BODY_TEX) as Texture2D
-	preview_outfit.texture = load(OUTFIT_TEX) as Texture2D
+	preview_outfit.texture = load(CHAR + "outfit_ranger.png") as Texture2D
+	preview_cloak.texture = load(CHAR + "cloakback_ranger.png") as Texture2D
+	preview_collar.texture = load(CHAR + "collar_ranger.png") as Texture2D
 	name_field.text = PlayerProfile.char_name
 	name_field.text_submitted.connect(_on_name_submitted)
 	_build_skin_swatches()
@@ -53,9 +59,8 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	_anim_time += delta * PREVIEW_FPS
 	var frame: int = WALK_FRAMES[int(_anim_time) % WALK_FRAMES.size()]
-	preview_body.frame = frame
-	preview_outfit.frame = frame
-	preview_hair.frame = frame
+	for layer: Sprite2D in [preview_cloak, preview_body, preview_outfit, preview_hair, preview_collar]:
+		layer.frame = frame
 	if preview_beard.visible:
 		preview_beard.frame = frame
 
@@ -149,16 +154,20 @@ func _on_back_pressed() -> void:
 # --- Preview / helpers ------------------------------------------------------
 
 func _apply_preview() -> void:
-	preview_body.modulate = _skin
-	preview_hair.texture = load("res://assets/placeholder/char/hair_%s.png" % _hair_style) as Texture2D
+	preview_body.texture = load(CHAR + "body_%s.png" % _skin_tone_name()) as Texture2D
+	preview_hair.texture = load(CHAR + "hair_%s.png" % _hair_style) as Texture2D
 	preview_hair.modulate = _hair_color
 	if _beard_style == "none":
 		preview_beard.visible = false
 	else:
-		preview_beard.texture = load("res://assets/placeholder/char/beard_%s.png" % _beard_style) as Texture2D
+		preview_beard.texture = load(CHAR + "beard_%s.png" % _beard_style) as Texture2D
 		preview_beard.modulate = _hair_color
 		preview_beard.frame = preview_hair.frame
 		preview_beard.visible = true
+
+## The chosen skin maps to the nearest baked body sheet (fair/tan/brown/deep).
+func _skin_tone_name() -> String:
+	return PlayerProfile.skin_tone_name_for(_skin)
 
 func _highlight(buttons: Array[Button], selected: Button) -> void:
 	for button: Button in buttons:

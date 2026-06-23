@@ -13,6 +13,10 @@ const BEARD_STYLES: Array[String] = ["none", "stubble", "goatee", "full"]
 const SKIN_TONES: Array[Color] = [
 	Color("f4d6b8"), Color("e2b286"), Color("a6724e"), Color("6e4a32"),
 ]
+## Names of the baked body sheets (assets/remaster/char/body_<name>.png), aligned
+## index-for-index with SKIN_TONES. The remaster model picks a body sheet by tone
+## rather than modulating one greyscale body, so the face/eyes stay right.
+const SKIN_TONE_NAMES: Array[String] = ["fair", "tan", "brown", "deep"]
 const HAIR_COLORS: Array[Color] = [
 	Color("2c2624"), Color("603e22"), Color("d8b262"),
 	Color("7e3a24"), Color("b0b2b8"), Color("e0e0e4"),
@@ -26,6 +30,23 @@ var beard_style: String = "none"
 
 func _ready() -> void:
 	add_to_group("persistent")
+
+## The body sheet name for the chosen skin tone (nearest of SKIN_TONES). Used by
+## the remaster paper-doll, which swaps body sheets instead of modulating.
+func skin_tone_name() -> String:
+	return skin_tone_name_for(skin_tone)
+
+## Nearest baked body-sheet name for an arbitrary colour (creator + player share it).
+func skin_tone_name_for(col: Color) -> String:
+	var best := 0
+	var best_d := INF
+	for i in SKIN_TONES.size():
+		var c: Color = SKIN_TONES[i]
+		var d: float = (c.r - col.r) ** 2 + (c.g - col.g) ** 2 + (c.b - col.b) ** 2
+		if d < best_d:
+			best_d = d
+			best = i
+	return SKIN_TONE_NAMES[best]
 
 func hair_texture() -> Texture2D:
 	return load("res://assets/placeholder/char/hair_%s.png" % hair_style) as Texture2D

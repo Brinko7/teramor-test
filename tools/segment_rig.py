@@ -233,19 +233,31 @@ def base_arms(c, J, view, SK):
 
 # ---- head + face, per view ----
 
-def base_head(c, J, view, SK, HR, style, beard, mark="none", mark_col=WARPAINT):
+def base_head(c, J, view, SK, HR, mark="none", mark_col=WARPAINT):
+	"""The bare head: skull, face + an optional mark. Hair/beard are separate
+	layers (draw_hair / draw_beard) so the character creator can swap + tint them."""
 	hx, hy = J["head"]
 	if view == "back":
-		_head_back(c, hx, hy, SK, HR, style); return
+		_head_back(c, hx, hy, SK); return
 	if view == "side":
-		_head_side(c, hx, hy, SK, HR, style, beard, mark, mark_col); return
-	_head_front(c, hx, hy, SK, HR, style, beard, mark, mark_col)
+		_head_side(c, hx, hy, SK, HR, mark, mark_col); return
+	_head_front(c, hx, hy, SK, HR, mark, mark_col)
+
+def draw_hair(c, J, view, HR, style):
+	hx, hy = J["head"]
+	(_hair_back if view == "back" else _hair_side if view == "side" else _hair_front)(c, hx, hy, HR, style)
+
+def draw_beard(c, J, view, HR, beard):
+	if view == "back" or beard == "none":
+		return
+	hx, hy = J["head"]
+	_beard(c, hx, hy, HR, beard, view)
 
 def _neck(c, cx, ny, SK):
 	c.rect(cx - 4, ny, cx + 3, ny + 7, SK[3]); c.rect(cx - 4, ny, cx - 3, ny + 7, SK[2])
 	c.rect(cx + 2, ny, cx + 3, ny + 7, SK[4])
 
-def _head_front(c, cx, cy, SK, HR, style, beard, mark, mark_col):
+def _head_front(c, cx, cy, SK, HR, mark, mark_col):
 	_neck(c, cx, cy + 9, SK)
 	c.ellipse(cx, cy, 11, 12, SK[2]); c.ellipse(cx - 3, cy - 2, 7, 7, SK[1])      # face + lit cheek
 	c.ellipse(cx, cy + 6, 8, 4, SK[2]); c.ellipse(cx, cy + 10, 5, 2, SK[3])       # jaw/chin
@@ -265,10 +277,8 @@ def _head_front(c, cx, cy, SK, HR, style, beard, mark, mark_col):
 	c.paint(cx - 1, cy + 2, SK[1]); c.paint(cx - 1, cy + 4, SK[0]); c.paint(cx, cy + 5, SK[3]); c.paint(cx + 1, cy + 4, SK[3])
 	c.line(cx - 2, cy + 7, cx + 2, cy + 7, MOUTH); c.paint(cx, cy + 8, SK[1])
 	_face_mark(c, cx, cy, mark, mark_col, "front")
-	_beard(c, cx, cy, HR, beard, "front")
-	_hair_front(c, cx, cy, HR, style)
 
-def _head_side(c, cx, cy, SK, HR, style, beard, mark, mark_col):
+def _head_side(c, cx, cy, SK, HR, mark, mark_col):
 	# neck tucked under the skull (no craning), head mass over the spine
 	c.rect(cx - 3, cy + 9, cx + 3, cy + 17, SK[3]); c.rect(cx + 2, cy + 9, cx + 3, cy + 17, SK[2])
 	c.ellipse(cx, cy, 10, 12, SK[2]); c.ellipse(cx + 2, cy + 1, 7, 8, SK[1])      # skull + lit cheek
@@ -281,8 +291,6 @@ def _head_side(c, cx, cy, SK, HR, style, beard, mark, mark_col):
 	c.rect(cx + 5, cy, cx + 7, cy + 1, WHITE); c.paint(cx + 7, cy, EYE); c.paint(cx + 6, cy, DARK)
 	c.line(cx + 5, cy + 7, cx + 8, cy + 7, MOUTH); c.paint(cx + 6, cy + 8, SK[1])
 	_face_mark(c, cx, cy, mark, mark_col, "side")
-	_beard(c, cx, cy, HR, beard, "side")
-	_hair_side(c, cx, cy, HR, style)
 
 def _face_mark(c, cx, cy, mark, col, view):
 	"""Optional badass face cosmetic: a scar or a stripe of war-paint."""
@@ -296,10 +304,9 @@ def _face_mark(c, cx, cy, mark, col, view):
 		c.rect(cx - 8, cy - 1, cx + 8, cy + 1, col)                                # band across the eyes
 		c.paint(cx, cy - 1, col); c.paint(cx - 9, cy, col); c.paint(cx + 9, cy, col)
 
-def _head_back(c, cx, cy, SK, HR, style):
+def _head_back(c, cx, cy, SK):
 	c.rect(cx - 4, cy + 9, cx + 3, cy + 14, SK[3])                                 # nape
 	c.ellipse(cx, cy, 11, 12, SK[3])                                               # back of skull (shade)
-	_hair_back(c, cx, cy, HR, style)
 
 # ---- hair styles (short / long / spiky) + beard ----
 
@@ -851,9 +858,16 @@ def stow_weapon_hip(c, J, view, wid):
 # Compositor
 # ============================================================================
 
-def compose(view, phase, opts=None, dressed=True, weapon=None, shield=None, drawn=True, mode="walk"):
+ALL_PARTS = frozenset({"cloak_back", "body", "outfit", "helm", "cloak_collar", "hair", "beard", "gear"})
+
+def compose(view, phase, opts=None, dressed=True, weapon=None, shield=None, drawn=True, mode="walk", parts=None):
+	"""Render the model. `parts` (a subset of ALL_PARTS) renders just those layers
+	for the paper-doll bake; None = the full composite. `outline`/`rim_light` only
+	run on the full composite so per-layer bakes stay ink-clean for stacking."""
 	o = look(opts)
 	SK = o["skin"]; HR = o["hair"]; SET = ARMOR.get(o["armor"], ARMOR["ranger"])
+	full = parts is None
+	P = ALL_PARTS if full else set(parts)
 	c = Canvas(FW, FH)
 	J = resolve(view, phase, mode)
 	# body build widens/narrows the shoulders (and the arms ride them out)
@@ -865,38 +879,47 @@ def compose(view, phase, opts=None, dressed=True, weapon=None, shield=None, draw
 	back_view = (view == "back")
 	stow_w = weapon if (weapon is not None and not drawn) else None
 	stow_s = shield if (shield is not None and not drawn) else None
-	if show_cloak:
+	if show_cloak and "cloak_back" in P:
 		cloak_back(c, J, view, SET["cloak"])
 	# stowed back-gear sits BEHIND the body from the front/side (peeks past the edges)
-	if not back_view:
+	if "gear" in P and not back_view:
 		if stow_s is not None:
 			stow_shield(c, J, view, stow_s)
 		if stow_w is not None and stow_w in BACK_WEAPONS:
 			stow_weapon_back(c, J, view, stow_w)
-	base_legs(c, J, view, SK)
-	base_torso(c, J, view, SK)
-	base_arms(c, J, view, SK)
-	if dressed:
+	if "body" in P:
+		base_legs(c, J, view, SK)
+		base_torso(c, J, view, SK)
+		base_arms(c, J, view, SK)
+	if dressed and "outfit" in P:
 		draw_outfit(c, J, view, SET, SK)
-	# from behind, the same back-gear rides ON TOP of the back
-	if back_view:
-		if stow_s is not None:
-			stow_shield(c, J, view, stow_s)
-		if stow_w is not None and stow_w in BACK_WEAPONS:
-			stow_weapon_back(c, J, view, stow_w)
-	# a hip scabbard sits in front of the body in every view
-	if stow_w is not None and stow_w not in BACK_WEAPONS:
-		stow_weapon_hip(c, J, view, stow_w)
-	base_head(c, J, view, SK, HR, o["hair_style"], o["beard"], o["mark"], o["mark_col"])
-	if dressed:
+	if "gear" in P:
+		# from behind, the same back-gear rides ON TOP of the back
+		if back_view:
+			if stow_s is not None:
+				stow_shield(c, J, view, stow_s)
+			if stow_w is not None and stow_w in BACK_WEAPONS:
+				stow_weapon_back(c, J, view, stow_w)
+		# a hip scabbard sits in front of the body in every view
+		if stow_w is not None and stow_w not in BACK_WEAPONS:
+			stow_weapon_hip(c, J, view, stow_w)
+	if "body" in P:
+		base_head(c, J, view, SK, HR, o["mark"], o["mark_col"])
+	if "beard" in P:
+		draw_beard(c, J, view, HR, o["beard"])
+	if "hair" in P:
+		draw_hair(c, J, view, HR, o["hair_style"])
+	if dressed and "helm" in P:
 		draw_helm(c, J, view, SET)
-	if show_cloak:
+	if show_cloak and "cloak_collar" in P:
 		cloak_collar(c, J, view, SET["cloak"])
-	# drawn (in-hand / on-arm) gear
-	if drawn and shield is not None:
-		held_shield(c, J, view, shield)
-	if drawn and weapon is not None:
-		held_weapon(c, J, view, weapon)
+	if "gear" in P:
+		if drawn and shield is not None:
+			held_shield(c, J, view, shield)
+		if drawn and weapon is not None:
+			held_weapon(c, J, view, weapon)
+	# rim-light + ink each (sub)layer so it reads against the world and stacks
+	# cleanly in the paper-doll; the full composite is identical to before.
 	c.rim_light(0.35)
 	c.outline(INK, diagonal=False)
 	return c

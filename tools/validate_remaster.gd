@@ -85,6 +85,45 @@ func _run() -> void:
 			_err("segment sheet %s missing or not 336x480 (4 dirs x 4 phases)" % s)
 		else:
 			print("  [ok] %s 336x480 (segment model: 4 dirs x 4 phases)" % s)
+	# 6. separated paper-doll layers (the live-game customizable hero) — body per
+	#    skin tone, hair/beard per style, gear per set, all 336x480
+	var layers: Array[String] = []
+	for t in ["fair", "tan", "brown", "deep"]:
+		layers.append("body_%s" % t)
+	for h in ["short", "long", "spiky", "ponytail", "bun", "bald"]:
+		layers.append("hair_%s" % h)
+	for b in ["stubble", "goatee", "full"]:
+		layers.append("beard_%s" % b)
+	for g in ["outfit_ranger", "cloakback_ranger", "collar_ranger", "outfit_iron", "helm_iron",
+			"outfit_plate", "helm_plate", "outfit_robe", "helm_robe", "outfit_rogue"]:
+		layers.append(g)
+	var bad := 0
+	for name in layers:
+		var path := "res://assets/remaster/char/%s.png" % name
+		var tex := load(path) as Texture2D
+		if tex == null or tex.get_width() != 336 or tex.get_height() != 480:
+			_err("paper-doll layer %s missing or not 336x480" % path); bad += 1
+	if bad == 0:
+		print("  [ok] %d paper-doll layers present at 336x480" % layers.size())
+	# 7. character creator carries the layered preview (cloak + collar + body/hair)
+	var cc := load("res://scenes/ui/character_creation.tscn") as PackedScene
+	if cc == null or not cc.can_instantiate():
+		_err("character_creation.tscn missing / cannot instantiate")
+	else:
+		var ci := cc.instantiate()
+		var prev := ci.get_node_or_null("Preview") as Node2D
+		var missing := ""
+		if prev == null:
+			missing = "Preview"
+		else:
+			for n in ["CloakBack", "Body", "Outfit", "Beard", "Hair", "Collar"]:
+				if prev.get_node_or_null(n) == null:
+					missing += n + " "
+		if missing != "":
+			_err("creator preview missing layer node(s): " + missing)
+		else:
+			print("  [ok] creator preview: cloakback < body < outfit < beard < hair < collar")
+		ci.free()
 	if _fail == 0:
 		print("\nRESULT: PASS — remaster slice assets + scene are wired")
 	else:
