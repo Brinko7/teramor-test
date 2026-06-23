@@ -124,6 +124,43 @@ func _run() -> void:
 		else:
 			print("  [ok] creator preview: cloakback < body < outfit < beard < hair < collar")
 		ci.free()
+	# 8. live player carries the remaster layers, and chest pieces drive a real set
+	var ps := load("res://scenes/entities/player.tscn") as PackedScene
+	if ps == null or not ps.can_instantiate():
+		_err("player.tscn missing / cannot instantiate")
+	else:
+		var pi := ps.instantiate()
+		var pmiss := ""
+		for n in ["CloakBack", "Sprite2D", "Outfit", "Hair", "Beard", "Helm", "Collar"]:
+			if pi.get_node_or_null(n) == null:
+				pmiss += n + " "
+		var body := pi.get_node_or_null("Sprite2D") as Sprite2D
+		if body != null and (body.hframes != 4 or body.vframes != 4):
+			_err("player body sprite must be 4x4 frames (remaster model)")
+		if pmiss != "":
+			_err("player missing remaster layer node(s): " + pmiss)
+		else:
+			print("  [ok] player paper-doll: cloakback/body/outfit/beard/hair/helm/collar, 4x4")
+		pi.free()
+	# every chest piece's armour_set must resolve to a baked outfit layer
+	var dir := DirAccess.open("res://resources/items")
+	var checked := 0
+	if dir != null:
+		dir.list_dir_begin()
+		var fn := dir.get_next()
+		while fn != "":
+			if fn.ends_with(".tres"):
+				var res: Resource = load("res://resources/items/" + fn) as Resource
+				var scr: Script = (res.get_script() as Script) if res != null else null
+				if scr != null and scr.resource_path.ends_with("armor_item.gd"):
+					var aset: StringName = res.get("armor_set")
+					if aset != &"":
+						checked += 1
+						var op := "res://assets/remaster/char/outfit_%s.png" % aset
+						if not ResourceLoader.exists(op):
+							_err("armour_set '%s' on %s has no %s" % [aset, fn, op])
+			fn = dir.get_next()
+	print("  [ok] %d tagged chest piece(s) resolve to a baked armour set" % checked)
 	if _fail == 0:
 		print("\nRESULT: PASS — remaster slice assets + scene are wired")
 	else:
