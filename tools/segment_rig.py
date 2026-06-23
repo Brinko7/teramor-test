@@ -35,6 +35,9 @@ STEEL = [(226, 232, 242, 255), (192, 200, 214, 255), (152, 162, 178, 255), (112,
 IRON  = [(158, 164, 174, 255), (128, 134, 146, 255), (100, 106, 120, 255), (74, 80, 92, 255), (52, 58, 68, 255)]
 RANGER_CLOAK = [(86, 108, 92, 255), (66, 86, 72, 255), (50, 68, 56, 255), (36, 52, 42, 255), (26, 38, 30, 255)]
 KNIGHT_CLOAK = [(168, 72, 64, 255), (140, 54, 50, 255), (112, 40, 38, 255), (84, 30, 30, 255), (60, 22, 22, 255)]
+DLEA = [(120, 94, 66, 255), (98, 74, 50, 255), (78, 58, 38, 255), (58, 42, 28, 255), (40, 28, 18, 255)]   # dark leather
+ROGUE_CLOAK = [(78, 80, 88, 255), (60, 62, 70, 255), (46, 48, 56, 255), (34, 36, 42, 255), (24, 26, 30, 255)]
+TREE = (96, 150, 96, 255)   # the Children-of-Tera heraldic green
 
 # ============================================================================
 # Skeleton — rest joints per view, and the walk that bends them.
@@ -142,6 +145,11 @@ ARMOR = {
 		"chest": "robe", "pauldron": "none", "legs": "robe", "boots": "leather",
 		"helm": "hood", "cloak": None,
 		"body": CLOTH["blue"], "tunic": CLOTH["blue"], "trouser": CLOTH["slate"], "boot": CLOTH["brown"],
+	},
+	"rogue": {  # hooded dark-leather skirmisher
+		"chest": "jerkin", "pauldron": "leather", "legs": "trousers", "boots": "leather",
+		"helm": "hood", "cloak": ROGUE_CLOAK, "studs": True,
+		"body": DLEA, "tunic": CLOTH["brown"], "trouser": CLOTH["slate"], "boot": DLEA,
 	},
 }
 
@@ -431,10 +439,11 @@ def _sleeve(c, J, side, view, ramp, SK, cuff=LEA):
 	c.ellipse(hand[0], hand[1], 3, 4, SK[2 if not far else 3])                     # bare hand
 	c.paint(hand[0] - 1, hand[1] - 1, SK[1]); c.paint(hand[0] + 2, hand[1] + 1, SK[3])
 
-def garment_jerkin(c, J, view, JK, TU, SK):
-	"""Leather jerkin over an undertunic, with belt, collar + one pauldron."""
+def garment_jerkin(c, J, view, JK, TU, SK, studs=False):
+	"""Leather jerkin over an undertunic, with belt, collar + one pauldron.
+	`studs` strews rivets across the chest (the rogue's studded leather)."""
 	cx, cy = J["chest"]; px, py = J["pelvis"]; sl = J["shoulder_l"]; sr = J["shoulder_r"]
-	_sleeve(c, J, "l", view, JK, SK)                                              # far sleeve first
+	_sleeve(c, J, "l", view, JK, SK, cuff=JK)                                      # far sleeve first
 	if view == "side":
 		for y in range(sl[1], py + 4):
 			t = (y - sl[1]) / max(1, py - sl[1]); fwd = int(round(8 - 2 * t))
@@ -457,13 +466,17 @@ def garment_jerkin(c, J, view, JK, TU, SK):
 				c.paint(cx - 12 + i, sl[1] + 2 + i, LEA[2]); c.paint(cx - 11 + i, sl[1] + 2 + i, LEA[3]); i += 1
 		else:
 			c.line(cx, sl[1], cx, py, JK[2])
+		if studs:
+			for sx in (cx - 7, cx, cx + 7):
+				c.paint(sx, cy - 2, SILV[1]); c.paint(sx, cy + 4, SILV[1])
+			for sx in (cx - 4, cx + 4): c.paint(sx, cy + 1, SILV[1])
 	# belt
 	c.rect(sl[0] - 1, py - 3, sr[0] + 1, py + 1, LEA[3]); c.rect(sl[0] - 1, py - 3, sr[0] + 1, py - 3, LEA[2])
 	c.rect(cx - 3, py - 4, cx + 3, py + 2, GOLD[1]); c.paint(cx + 2, py, GOLD[2]); c.paint(cx - 2, py - 3, GOLD[0])
-	_sleeve(c, J, "r", view, JK, SK)                                              # near sleeve last
-	# fitted leather pauldrons with a steel stud — grounded ranger armour
+	_sleeve(c, J, "r", view, JK, SK, cuff=JK)                                      # near sleeve last
+	# fitted leather pauldrons with a steel stud
 	def _pauldron(px, py, lit):
-		b = LEA if lit else [LEA[1], LEA[2], LEA[3], LEA[4], LEA[4]]
+		b = JK if lit else [JK[1], JK[2], JK[3], JK[4], JK[4]]
 		c.ellipse(px, py - 1, 5, 4, b[2]); c.ellipse(px, py - 2, 4, 2, b[1])
 		c.line(px - 5, py + 1, px + 5, py + 2, b[3])                               # lower rim shadow
 		c.paint(px, py - 3, b[0]); c.paint(px + (1 if lit else -1), py - 1, SILV[1])  # steel stud
@@ -589,9 +602,9 @@ def boot_plate(c, J, view, M):
 
 def draw_outfit(c, J, view, SET, SK):
 	chest = SET["chest"]
-	if chest == "jerkin":                                                         # the starter ranger kit
+	if chest == "jerkin":                                                         # ranger / rogue leather kit
 		garment_trousers(c, J, view, SET["trouser"]); garment_boots(c, J, view, SET["boot"])
-		garment_jerkin(c, J, view, SET["body"], SET["tunic"], SK)
+		garment_jerkin(c, J, view, SET["body"], SET["tunic"], SK, SET.get("studs", False))
 		return
 	# legs
 	if SET["legs"] == "greaves":
@@ -657,10 +670,14 @@ def _helm_hood(c, hx, hy, view, CL):
 # ---- weapons (held at rest in the main hand) ----
 
 WEAPONS = {
-	"sword": {"type": "sword", "blade": STEEL, "hilt": LEA},
-	"axe":   {"type": "axe",   "blade": STEEL, "haft": LEA},
-	"bow":   {"type": "bow",   "wood": LEA},
-	"staff": {"type": "staff", "wood": LEA, "gem": (120, 186, 214, 255)},
+	"sword":      {"type": "sword", "blade": STEEL, "hilt": LEA},
+	"axe":        {"type": "axe",   "blade": STEEL, "haft": LEA},
+	"bow":        {"type": "bow",   "wood": LEA},
+	"staff":      {"type": "staff", "wood": LEA, "gem": (120, 186, 214, 255)},
+	"dagger":     {"type": "dagger", "blade": STEEL, "hilt": DLEA},
+	"mace":       {"type": "mace",  "head": IRON, "haft": LEA},
+	"spear":      {"type": "spear", "head": STEEL, "haft": LEA},
+	"greatsword": {"type": "greatsword", "blade": STEEL, "hilt": LEA},
 }
 
 def held_weapon(c, J, view, wid):
@@ -668,11 +685,15 @@ def held_weapon(c, J, view, wid):
 	if w is None:
 		return
 	hx, hy = J["hand_r"]; t = w.get("type", "sword")
-	if t == "sword":
+	if t in ("sword", "dagger", "greatsword"):
 		bl = w["blade"]; hi = w["hilt"]
-		c.rect(hx - 1, hy - 6, hx + 1, hy - 1, hi[1]); c.paint(hx, hy - 7, hi[0]); c.rect(hx - 4, hy, hx + 4, hy + 1, hi[2])
-		for i in range(2, 20):
-			ww = 2 if i < 15 else (1 if i < 18 else 0)
+		big = (t == "greatsword"); tip = 10 if t == "dagger" else (26 if big else 20)
+		gw = 4 if not big else 5
+		c.rect(hx - 1, hy - 6, hx + 1, hy - 1, hi[1]); c.paint(hx, hy - 7, hi[0])      # grip
+		if big: c.disc(hx, hy - 7, 2, GOLD[1])                                         # pommel
+		c.rect(hx - gw, hy, hx + gw, hy + 1, hi[2]); c.paint(hx - gw, hy, hi[1]); c.paint(hx + gw, hy, hi[1])  # crossguard
+		for i in range(2, tip):
+			ww = (3 if big else 2) if i < tip - 5 else (1 if i < tip - 2 else 0)
 			c.rect(hx - ww, hy + i, hx + ww, hy + i, bl[2]); c.paint(hx - ww, hy + i, bl[0])
 			if ww > 1: c.paint(hx + ww, hy + i, bl[3])
 	elif t == "axe":
@@ -680,6 +701,15 @@ def held_weapon(c, J, view, wid):
 		c.rect(hx - 1, hy - 8, hx + 1, hy + 20, hf[2]); c.rect(hx - 1, hy - 8, hx, hy + 20, hf[1])   # haft
 		c.ellipse(hx + 5, hy - 3, 5, 7, bl[2]); c.rect(hx + 1, hy - 8, hx + 5, hy + 2, bl[2])        # blade
 		c.paint(hx + 9, hy - 3, bl[0]); c.rect(hx + 1, hy - 8, hx + 5, hy - 7, bl[1])
+	elif t == "mace":
+		hf = w["haft"]; hd = w["head"]
+		c.rect(hx - 1, hy - 4, hx + 1, hy + 20, hf[2]); c.rect(hx - 1, hy - 4, hx, hy + 20, hf[1])   # haft
+		c.disc(hx, hy - 8, 4, hd[2]); c.paint(hx - 2, hy - 10, hd[1])                                # flanged head
+		for dx, dy in ((-5, -8), (5, -8), (0, -13), (-3, -4), (3, -4)): c.paint(hx + dx, hy + dy, hd[3])
+	elif t == "spear":
+		hf = w["haft"]; hd = w["head"]
+		c.rect(hx - 1, hy - 18, hx + 1, hy + 22, hf[2]); c.rect(hx - 1, hy - 18, hx, hy + 22, hf[1]) # long haft
+		c.ellipse(hx, hy - 24, 3, 6, hd[2]); c.paint(hx, hy - 29, hd[0]); c.paint(hx - 2, hy - 24, hd[1])  # leaf head
 	elif t == "bow":
 		wd = w["wood"]
 		for i in range(-14, 15):
@@ -691,11 +721,61 @@ def held_weapon(c, J, view, wid):
 		c.rect(hx - 1, hy - 16, hx + 1, hy + 18, wd[2]); c.rect(hx - 1, hy - 16, hx, hy + 18, wd[1])
 		c.disc(hx, hy - 18, 3, gem); c.paint(hx - 1, hy - 19, (220, 240, 248, 255))                   # crystal head
 
+# ---- shields (off-hand) + heraldic emblems ----
+
+SHIELDS = {
+	"buckler": {"shape": "round", "face": IRON,  "boss": STEEL, "r": 6},
+	"round":   {"shape": "round", "face": LEA,   "boss": STEEL, "rim": IRON, "r": 8},
+	"heater":  {"shape": "heater", "face": STEEL, "trim": GOLD, "emblem": "tree", "ecol": TREE},
+	"kite":    {"shape": "kite",  "face": IRON,  "trim": STEEL, "emblem": "chevron", "ecol": GOLD[1]},
+}
+
+def _emblem(c, cx, cy, kind, col):
+	if kind == "tree":                                                            # Children-of-Tera crest
+		c.rect(cx - 1, cy, cx + 1, cy + 5, (96, 70, 46, 255))                      # trunk
+		c.disc(cx, cy - 2, 4, col); c.disc(cx - 3, cy, 2, col); c.disc(cx + 3, cy, 2, col)
+		c.paint(cx - 1, cy - 3, (200, 230, 190, 255))
+	elif kind == "chevron":
+		c.line(cx - 4, cy + 3, cx, cy - 2, col); c.line(cx, cy - 2, cx + 4, cy + 3, col)
+		c.line(cx - 4, cy + 5, cx, cy, col); c.line(cx, cy, cx + 4, cy + 5, col)
+
+def held_shield(c, J, view, sid):
+	s = SHIELDS.get(sid) if isinstance(sid, str) else sid
+	if s is None:
+		return
+	hx, hy = J["hand_l"]; F = s["face"]; cy = hy - 6
+	if view == "side":                                                            # off-hand is behind: a thin edge
+		ex = hx - 4
+		c.rect(ex - 1, cy - 9, ex + 1, cy + 11, F[3]); c.rect(ex - 1, cy - 9, ex, cy + 11, F[2]); return
+	if view == "back":                                                            # we see the boards + arm straps
+		c.ellipse(hx, cy, 8, 11, F[3]); c.ellipse(hx, cy, 7, 10, F[2])
+		c.rect(hx - 5, cy - 2, hx + 5, cy, LEA[3]); c.rect(hx - 5, cy + 4, hx + 5, cy + 6, LEA[3]); return
+	shape = s["shape"]
+	if shape == "round":
+		r = s["r"]
+		c.ellipse(hx, cy, r, r + 2, F[2]); c.ellipse(hx, cy, r, r + 2, s.get("rim", F)[3], fill=False)
+		c.ellipse(hx - 2, cy - 2, r - 3, r - 2, F[1])                              # lit face
+		c.disc(hx, cy, 2, s["boss"][1]); c.paint(hx - 1, cy - 1, s["boss"][0])     # central boss
+	else:                                                                         # heater / kite heraldic shield
+		tall = (shape == "kite")
+		top = cy - (12 if tall else 9); bot = cy + (14 if tall else 11)
+		for y in range(top, bot + 1):
+			t = (y - top) / max(1, bot - top)
+			half = int(round((7 if not tall else 6) * (1.0 - max(0.0, (t - 0.45) / 0.55) ** 1.5)))
+			if half < 1:
+				continue
+			c.rect(hx - half, y, hx + half, y, F[2])
+			c.rect(hx - half, y, hx - half + 1, y, F[1]); c.paint(hx + half, y, F[3])
+		trim = s.get("trim", F)
+		c.line(hx - 6, top + 1, hx + 6, top + 1, trim[1])                          # top trim
+		if s.get("emblem"):
+			_emblem(c, hx, cy - 1, s["emblem"], s.get("ecol", GOLD[0]))
+
 # ============================================================================
 # Compositor
 # ============================================================================
 
-def compose(view, phase, opts=None, dressed=True, weapon=None):
+def compose(view, phase, opts=None, dressed=True, weapon=None, shield=None):
 	o = look(opts)
 	SK = o["skin"]; HR = o["hair"]; SET = ARMOR.get(o["armor"], ARMOR["ranger"])
 	c = Canvas(FW, FH)
@@ -718,6 +798,8 @@ def compose(view, phase, opts=None, dressed=True, weapon=None):
 		draw_helm(c, J, view, SET)
 	if show_cloak:
 		cloak_collar(c, J, view, SET["cloak"])
+	if shield is not None:
+		held_shield(c, J, view, shield)
 	if weapon is not None:
 		held_weapon(c, J, view, weapon)
 	c.rim_light(0.35)
@@ -769,21 +851,33 @@ def main():
 		{"mark": "scar"}, {"mark": "warpaint"}, {"mark": "warpaint", "mark_col": (40, 60, 120, 255)},
 	]
 	_row([compose("front", 1, o) for o in axes]).save("/tmp/segment_axes.png")
-	# wardrobe: each armour set front + side, then the weapons
-	sets = ["ranger", "iron", "plate", "robe"]
+	# wardrobe: each armour set front + side
+	sets = ["ranger", "rogue", "iron", "plate", "robe"]
 	cols = []
 	for a in sets:
-		cols.append(compose("front", 1, {"armor": a}))
-		cols.append(compose("side", 1, {"armor": a}))
+		cols.append(compose("front", 1, {"armor": a})); cols.append(compose("side", 1, {"armor": a}))
 	_row(cols).save("/tmp/segment_armor.png")
 	# armour turnaround for one set (plate) to check all facings
 	_row(_turn({"armor": "plate", "build": "broad"}, True)).save("/tmp/segment_plate_turn.png")
-	# weapons in hand (ranger holding each)
-	weaps = ["sword", "axe", "bow", "staff"]
+	# rogue turnaround
+	_row(_turn({"armor": "rogue"}, True)).save("/tmp/segment_rogue_turn.png")
+	# all eight weapons in hand
+	weaps = ["sword", "greatsword", "axe", "mace", "spear", "dagger", "bow", "staff"]
 	_row([compose("front", 0, {"armor": "iron"}, weapon=w) for w in weaps]).save("/tmp/segment_weapons.png")
+	# shields (+ a sword), then a knight with shield + the tree crest
+	shs = ["buckler", "round", "heater", "kite"]
+	_row([compose("front", 0, {"armor": "iron"}, weapon="sword", shield=s) for s in shs]).save("/tmp/segment_shields.png")
+	# hero beauty shots: knight w/ greatsword+heater, rogue w/ dagger, ranger w/ bow, mage w/ staff
+	heroes = [
+		compose("front", 0, {"armor": "plate", "build": "broad"}, weapon="greatsword", shield="heater"),
+		compose("front", 0, {"armor": "rogue"}, weapon="dagger"),
+		compose("front", 0, {"armor": "ranger"}, weapon="bow"),
+		compose("front", 0, {"armor": "robe"}, weapon="staff"),
+	]
+	_row(heroes).save("/tmp/segment_heroes.png")
 	for v in ("front", "side"):
 		_row([compose(v, p, None) for p in range(4)]).save("/tmp/walk_%s.png" % v)
-	print("wrote turn + custom + hair + axes + armor + plate_turn + weapons + walk strips")
+	print("wrote turn + custom + hair + axes + armor + plate/rogue turns + weapons + shields + heroes + walk")
 
 if __name__ == "__main__":
 	main()

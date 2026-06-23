@@ -77,8 +77,8 @@ func _run() -> void:
 	# 5. segment-rig model sheets: bare base, default ranger, + the wardrobe
 	#    (iron / plate / robe armour sets) — all 336x480 (4 dirs x 4 phases)
 	for s in ["res://assets/remaster/seg_base.png", "res://assets/remaster/seg_walk.png",
-			"res://assets/remaster/seg_iron.png", "res://assets/remaster/seg_plate.png",
-			"res://assets/remaster/seg_robe.png"]:
+			"res://assets/remaster/seg_rogue.png", "res://assets/remaster/seg_iron.png",
+			"res://assets/remaster/seg_plate.png", "res://assets/remaster/seg_robe.png"]:
 		var seg := load(s) as Texture2D
 		if seg == null or seg.get_width() != 336 or seg.get_height() != 480:
 			_err("segment sheet %s missing or not 336x480 (4 dirs x 4 phases)" % s)

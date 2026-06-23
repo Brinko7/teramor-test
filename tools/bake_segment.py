@@ -48,7 +48,7 @@ def bake(name, dressed=True, opts=None):
 def main():
 	bake("seg_base.png", dressed=False)
 	bake("seg_walk.png")                                  # default ranger kit
-	for a in ("iron", "plate", "robe"):                   # the equippable wardrobe
+	for a in ("rogue", "iron", "plate", "robe"):          # the equippable wardrobe
 		bake("seg_%s.png" % a, opts={"armor": a})
 
 if __name__ == "__main__":
