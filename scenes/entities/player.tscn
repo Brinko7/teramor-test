@@ -1,11 +1,13 @@
-[gd_scene load_steps=33 format=3]
+[gd_scene load_steps=35 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/components/camera_shake.gd" id="24_shake"]
 [ext_resource type="Script" path="res://scripts/stats.gd" id="12_stats"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/char/body.png" id="2_sheet"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/char/outfit_ranger.png" id="13_outfit"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/char/hair_short.png" id="14_hair"]
+[ext_resource type="Texture2D" path="res://assets/remaster/char/body_tan.png" id="2_sheet"]
+[ext_resource type="Texture2D" path="res://assets/remaster/char/outfit_ranger.png" id="13_outfit"]
+[ext_resource type="Texture2D" path="res://assets/remaster/char/hair_short.png" id="14_hair"]
+[ext_resource type="Texture2D" path="res://assets/remaster/char/cloakback_ranger.png" id="27_cloak"]
+[ext_resource type="Texture2D" path="res://assets/remaster/char/collar_ranger.png" id="28_collar"]
 [ext_resource type="Script" path="res://scripts/health.gd" id="3_health"]
 [ext_resource type="Script" path="res://scripts/inventory.gd" id="4_inv"]
 [ext_resource type="Script" path="res://scripts/equipment.gd" id="5_equip"]
@@ -68,39 +70,55 @@ texture = ExtResource("25_arm")
 visible = false
 position = Vector2(10, 0)
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-modulate = Color(0.886, 0.698, 0.525, 1)
+[node name="CloakBack" type="Sprite2D" parent="."]
+z_index = -1
 centered = false
-offset = Vector2(-12, -40)
+offset = Vector2(-42, -116)
+texture = ExtResource("27_cloak")
+hframes = 4
+vframes = 4
+frame = 0
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+centered = false
+offset = Vector2(-42, -116)
 texture = ExtResource("2_sheet")
 hframes = 4
-vframes = 8
+vframes = 4
 frame = 0
 
 [node name="Outfit" type="Sprite2D" parent="."]
 centered = false
-offset = Vector2(-12, -40)
+offset = Vector2(-42, -116)
 texture = ExtResource("13_outfit")
 hframes = 4
-vframes = 8
-frame = 0
-
-[node name="Hair" type="Sprite2D" parent="."]
-modulate = Color(0.376, 0.243, 0.141, 1)
-centered = false
-offset = Vector2(-12, -40)
-texture = ExtResource("14_hair")
-hframes = 4
-vframes = 8
+vframes = 4
 frame = 0
 
 [node name="Beard" type="Sprite2D" parent="."]
 visible = false
 modulate = Color(0.376, 0.243, 0.141, 1)
 centered = false
-offset = Vector2(-12, -40)
+offset = Vector2(-42, -116)
 hframes = 4
-vframes = 8
+vframes = 4
+frame = 0
+
+[node name="Hair" type="Sprite2D" parent="."]
+modulate = Color(0.376, 0.243, 0.141, 1)
+centered = false
+offset = Vector2(-42, -116)
+texture = ExtResource("14_hair")
+hframes = 4
+vframes = 4
+frame = 0
+
+[node name="Collar" type="Sprite2D" parent="."]
+centered = false
+offset = Vector2(-42, -116)
+texture = ExtResource("28_collar")
+hframes = 4
+vframes = 4
 frame = 0
 
 [node name="GearFeet" type="Sprite2D" parent="."]
