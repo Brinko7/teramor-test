@@ -74,6 +74,13 @@ func _run() -> void:
 		else:
 			print("  [ok] slice scene: y-sorted entities, layered paper-doll + props")
 		inst.free()
+	# 5. segment-rig model sheets (the new modular 4-dir character model)
+	for s in ["res://assets/remaster/seg_base.png", "res://assets/remaster/seg_walk.png"]:
+		var seg := load(s) as Texture2D
+		if seg == null or seg.get_width() != 336 or seg.get_height() != 480:
+			_err("segment sheet %s missing or not 336x480 (4 dirs x 4 phases)" % s)
+		else:
+			print("  [ok] %s 336x480 (segment model: 4 dirs x 4 phases)" % s)
 	if _fail == 0:
 		print("\nRESULT: PASS — remaster slice assets + scene are wired")
 	else:
