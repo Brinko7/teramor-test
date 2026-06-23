@@ -9,7 +9,10 @@ composite — both from the same joints, proving "dress = stack layers".
 This is the 4-dir successor to bake_player.py's 8-dir sheet; it is ADDITIVE
 (new assets), leaving the existing remaster slice untouched until the migration.
 
-Run:  python3 tools/bake_segment.py  ->  assets/remaster/{seg_base,seg_walk}.png
+Run:  python3 tools/bake_segment.py  ->  assets/remaster/seg_*.png
+
+Bakes the bare base, the default (ranger) walk, and one sheet per equippable
+ARMOUR set (iron / plate / robe) — the wardrobe, ready to swap in-engine.
 """
 
 import os, sys
@@ -29,11 +32,11 @@ def _mirror(src):
 			out.paint(src.w - 1 - x, y, src.at(x, y))
 	return out
 
-def bake(name, dressed):
+def bake(name, dressed=True, opts=None):
 	sheet = Canvas(FW * COLS, FH * ROWS)
 	for r, (view, mir) in enumerate(LAYOUT):
 		for p in range(COLS):
-			cell = S.compose(view, p, None, dressed)
+			cell = S.compose(view, p, opts, dressed)
 			if mir:
 				cell = _mirror(cell)
 			sheet.blit(cell, p * FW, r * FH, mode="over")
@@ -44,7 +47,9 @@ def bake(name, dressed):
 
 def main():
 	bake("seg_base.png", dressed=False)
-	bake("seg_walk.png", dressed=True)
+	bake("seg_walk.png")                                  # default ranger kit
+	for a in ("iron", "plate", "robe"):                   # the equippable wardrobe
+		bake("seg_%s.png" % a, opts={"armor": a})
 
 if __name__ == "__main__":
 	main()
