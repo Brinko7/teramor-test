@@ -21,9 +21,10 @@ const ARROW_SCENE := preload("res://scenes/entities/arrow.tscn")
 @export var starting_weapon: WeaponItem
 @export var starting_items: Array[Item] = []
 
-## Column order of the 4-frame walk cycle. The facing row comes from DirUtil,
-## which reads the sprite's vframes (8 = the directional humanoid rig).
-const WALK_FRAMES := [0, 1, 0, 2]
+## Column order of the walk cycle. The facing row comes from DirUtil, which reads
+## the sprite's vframes (4 = the remaster cardinal rig: down/up/left/right). The
+## 4-dir model uses all four phases (0 rest, 1 stride, 2 rest, 3 counter-stride).
+const WALK_FRAMES := [0, 1, 2, 3]
 ## Preloaded so the global-class dependency resolves before this script
 ## compiles — avoids the editor's "DirUtil not declared" partial-reload error.
 const DIR_UTIL := preload("res://scripts/dir_util.gd")
@@ -52,6 +53,9 @@ const DODGE_COOLDOWN := 0.40
 @onready var outfit_sprite: Sprite2D = $Outfit
 @onready var hair_sprite: Sprite2D = $Hair
 @onready var beard_sprite: Sprite2D = $Beard
+## Remaster cloak layers: the cape behind the body and the mantle/collar over it.
+@onready var cloak_back_sprite: Sprite2D = $CloakBack
+@onready var collar_sprite: Sprite2D = $Collar
 @onready var gear_layers: Dictionary = {
 	ArmorItem.ArmorSlot.FEET: $GearFeet,
 	ArmorItem.ArmorSlot.LEGS: $GearLegs,
@@ -110,6 +114,10 @@ func _ready() -> void:
 	_visuals.setup(sprite, outfit_sprite, hair_sprite, gear_layers,
 		weapon_pivot, weapon_sprite, shield_pivot, shield_sprite, equipment,
 		weapon_holster, shield_back, attack_arm, beard_sprite)
+	# The remaster model bakes the outfit/cloak into its own layers, so the old
+	# 24x40 worn-armour + stowed-gear overlays are off (weapon/shield are drawn-
+	# only). Phase 0b restores visible gear as full armour-set swaps.
+	_visuals.legacy_body_overlays = false
 	equipment.changed.connect(_visuals.refresh_gear)
 	equipment.changed.connect(_on_gear_changed)
 	# Progression wiring: earn XP from kills, scale Health to leveled max HP.
@@ -138,13 +146,15 @@ func _on_gear_changed() -> void:
 	health.health = mini(health.health, health.max_health)
 	health.health_changed.emit(health.health, health.max_health)
 
-## Paints the paper-doll from the chosen identity: skin tints the body sprite,
-## the hair style swaps its texture and the hair colour tints it.
+## Paints the remaster paper-doll from the chosen identity: the body sheet is
+## picked by skin tone (full colour, no modulate, so the eyes stay right); the
+## hair/beard layers swap by style and tint by hair colour.
 func _apply_appearance() -> void:
-	sprite.modulate = PlayerProfile.skin_tone
-	hair_sprite.texture = PlayerProfile.hair_texture()
+	sprite.texture = PlayerProfile.body_layer()
+	sprite.modulate = Color.WHITE
+	hair_sprite.texture = PlayerProfile.hair_layer()
 	hair_sprite.modulate = PlayerProfile.hair_color
-	var beard_tex := PlayerProfile.beard_texture()
+	var beard_tex := PlayerProfile.beard_layer()
 	beard_sprite.texture = beard_tex
 	beard_sprite.visible = beard_tex != null
 	beard_sprite.modulate = PlayerProfile.hair_color
@@ -353,6 +363,8 @@ func _update_animation(delta: float, moving: bool) -> void:
 		_anim_time = 0.0
 	var col: int = WALK_FRAMES[int(_anim_time) % WALK_FRAMES.size()] if moving else 0
 	sprite.frame = _facing_row * sprite.hframes + col
+	cloak_back_sprite.frame = sprite.frame
+	collar_sprite.frame = sprite.frame
 	_visuals.sync_frame(sprite.frame)
 
 # --- Equipped-gear visuals --------------------------------------------------

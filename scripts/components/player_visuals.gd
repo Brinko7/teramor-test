@@ -22,8 +22,9 @@ extends Node
 ## Sideways gap between the main hand (weapon) and off hand (shield), measured
 ## perpendicular to the aim direction so the two never overlap.
 const HAND_SEPARATION := 5.0
-## Anchor for both hands in local space (roughly chest height).
-const HAND_ANCHOR := Vector2(0, -22)
+## Anchor for both hands in local space (roughly chest height on the 84x120 model,
+## whose feet sit at the body origin).
+const HAND_ANCHOR := Vector2(0, -44)
 ## Held-item draw order relative to the body sprite (z 0): in front for most aims,
 ## behind the player when aiming north so the gear reads as held on the far side.
 const HAND_Z_FRONT := 5
@@ -48,6 +49,12 @@ var _shield_back: Sprite2D
 ## Forearm sprite that rides the weapon pivot so a swing moves an arm, not just
 ## the blade. Shown only while the weapon is drawn.
 var _attack_arm: Sprite2D
+
+## The legacy 24x40 paper-doll overlays (worn-armour layers + stowed weapon/shield
+## on the body). The remaster 4-dir model bakes outfit/cloak into its own sheets and
+## doesn't use these, so the live player turns them off — weapon/shield then show
+## only while drawn/blocking. Phase 0b reintroduces visible gear as armour-set swaps.
+var legacy_body_overlays: bool = true
 
 ## True while a swing tween is actively rotating the weapon.
 var _swinging: bool = false
@@ -85,6 +92,8 @@ func sync_frame(frame: int) -> void:
 	_hair.frame = frame
 	if _beard != null and _beard.visible:
 		_beard.frame = frame
+	if not legacy_body_overlays:
+		return
 	for layer: Sprite2D in _gear_layers.values():
 		if layer.visible:
 			layer.frame = frame
@@ -105,7 +114,7 @@ func refresh_gear() -> void:
 	_attack_arm.visible = false
 	_weapon_drawn = false
 	_swinging = false
-	if weapon != null and weapon.stow_texture != null:
+	if legacy_body_overlays and weapon != null and weapon.stow_texture != null:
 		_weapon_holster.texture = weapon.stow_texture
 		_weapon_holster.frame = _body.frame
 		_weapon_holster.visible = true
@@ -116,17 +125,18 @@ func refresh_gear() -> void:
 	if shield != null and shield.hold_texture != null:
 		_shield_sprite.texture = shield.hold_texture
 	_shield_sprite.visible = false
-	if shield != null and shield.back_texture != null:
+	if legacy_body_overlays and shield != null and shield.back_texture != null:
 		_shield_back.texture = shield.back_texture
 		_shield_back.frame = _body.frame
 		_shield_back.visible = true
 	else:
 		_shield_back.visible = false
 
+	# Worn-armour overlay layers (legacy 24x40 paper-doll); off for the remaster model.
 	for slot: Variant in _gear_layers:
 		var layer: Sprite2D = _gear_layers[slot]
 		var piece: ArmorItem = _equipment.get_armor(slot) if _equipment != null else null
-		if piece != null and piece.overlay_sheet != null:
+		if legacy_body_overlays and piece != null and piece.overlay_sheet != null:
 			layer.texture = piece.overlay_sheet
 			layer.frame = _body.frame
 			layer.visible = true
@@ -157,6 +167,17 @@ func _pose_shield(aim_angle: float, perp: Vector2, flip: bool, blocking: bool) -
 		_shield_back.visible = false
 		_shield_sprite.visible = false
 		return
+	if not legacy_body_overlays:
+		# remaster model: no slung-on-back overlay; the shield shows in hand only
+		# while blocking.
+		_shield_back.visible = false
+		_shield_sprite.visible = blocking
+		if blocking:
+			_shield_pivot.position = HAND_ANCHOR - perp * HAND_SEPARATION
+			_shield_pivot.rotation = aim_angle
+			_shield_sprite.flip_v = flip
+			_shield_sprite.position.x = 13.0
+		return
 	if blocking or shield.back_texture == null:
 		_shield_back.visible = false
 		_shield_sprite.visible = true
@@ -177,12 +198,17 @@ func _pose_weapon(aim_angle: float, perp: Vector2, flip: bool) -> void:
 	if _weapon_drawn:
 		_weapon_holster.visible = false
 		_weapon_sprite.visible = has_held
-		_attack_arm.visible = has_held
+		_attack_arm.visible = has_held and legacy_body_overlays
 		if has_held and not _swinging:
 			_weapon_pivot.position = HAND_ANCHOR + perp * HAND_SEPARATION
 			_weapon_pivot.rotation = aim_angle
 			_weapon_sprite.flip_v = flip
 			_attack_arm.flip_v = flip
+	elif not legacy_body_overlays:
+		# remaster model: stowed weapon isn't drawn on the body; hide until an attack.
+		_weapon_holster.visible = false
+		_attack_arm.visible = false
+		_weapon_sprite.visible = false
 	else:
 		_weapon_holster.visible = has_stow
 		_attack_arm.visible = false
@@ -271,7 +297,7 @@ func _draw_weapon() -> void:
 	var weapon: WeaponItem = _equipment.get_weapon() if _equipment != null else null
 	var has_held: bool = weapon != null and weapon.held_texture() != null
 	_weapon_sprite.visible = has_held
-	_attack_arm.visible = has_held
+	_attack_arm.visible = has_held and legacy_body_overlays
 
 ## Return the weapon to its holster once the attack animation settles. Visibility
 ## flips back on the next update_pose.

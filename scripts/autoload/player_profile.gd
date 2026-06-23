@@ -58,6 +58,23 @@ func beard_texture() -> Texture2D:
 		return null
 	return load("res://assets/placeholder/char/beard_%s.png" % beard_style) as Texture2D
 
+## --- Remaster paper-doll layers (assets/remaster/char/) ----------------------
+## The new 4-dir model renders as stacked layers: a full-colour body sheet picked
+## by skin tone (no modulate), and neutral hair/beard tinted by hair colour. The
+## creator and the live player both pull from here.
+const REMASTER_CHAR := "res://assets/remaster/char/"
+
+func body_layer() -> Texture2D:
+	return load(REMASTER_CHAR + "body_%s.png" % skin_tone_name()) as Texture2D
+
+func hair_layer() -> Texture2D:
+	return load(REMASTER_CHAR + "hair_%s.png" % hair_style) as Texture2D
+
+func beard_layer() -> Texture2D:
+	if beard_style == "none":
+		return null
+	return load(REMASTER_CHAR + "beard_%s.png" % beard_style) as Texture2D
+
 func apply(p_name: String, p_skin: Color, p_hair_color: Color, p_style: String,
 		p_beard: String = "none") -> void:
 	char_name = p_name.strip_edges() if not p_name.strip_edges().is_empty() else "Ranger"
