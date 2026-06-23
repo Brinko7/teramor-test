@@ -24,6 +24,7 @@ import os, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from pixelforge import Canvas, ramp_hue  # noqa: E402
 from gen_cast import SKIN, HAIR, CLOTH, LEA, GOLD, SILV, INK, WHITE, BLUSH  # noqa: E402
+import gifutil  # noqa: E402
 
 FW, FH = 84, 120
 EYE = (96, 132, 92, 255); MOUTH = (150, 86, 78, 255); DARK = (52, 40, 38, 255)
@@ -75,10 +76,17 @@ WALK = [
 	(0, 0, 0,  0,  0,  0),
 	(3, 0, 1,  2, -5,  5),
 ]
+# Idle "breathing": the upper body lifts a hair mid-cycle, feet planted.
+IDLE_BOB = [0, 1, 1, 0]
 
-def resolve(view, phase):
-	l_lift, r_lift, bob, swing, near_dx, far_dx = WALK[phase]
+def resolve(view, phase, mode="walk"):
 	J = {k: list(v) for k, v in JOINTS[view].items()}
+	if mode == "idle":
+		bob = IDLE_BOB[phase % len(IDLE_BOB)]
+		for k in ("head", "neck", "chest", "shoulder_l", "shoulder_r"):
+			J[k][1] -= bob                                       # chest + head rise on the breath
+		return {k: (int(round(v[0])), int(round(v[1]))) for k, v in J.items()}
+	l_lift, r_lift, bob, swing, near_dx, far_dx = WALK[phase]
 	for k in ("head", "neck", "chest", "shoulder_l", "shoulder_r", "hand_l", "hand_r", "pelvis"):
 		J[k][1] -= bob
 	J["hand_r"][1] += swing; J["hand_l"][1] -= swing
@@ -771,36 +779,123 @@ def held_shield(c, J, view, sid):
 		if s.get("emblem"):
 			_emblem(c, hx, cy - 1, s["emblem"], s.get("ecol", GOLD[0]))
 
+# ---- stowed gear (worn on the body when not drawn) ----
+
+BACK_WEAPONS = {"greatsword", "spear", "bow", "staff"}   # slung across the back; the rest ride a hip scabbard
+
+def stow_shield(c, J, view, sid):
+	"""A shield slung on the back: full + emblem from behind, a rim peeking past
+	the body from the front/side."""
+	s = SHIELDS.get(sid) if isinstance(sid, str) else sid
+	if s is None:
+		return
+	F = s["face"]; cx = J["chest"][0]; cy = J["chest"][1] + 2
+	if view == "side":
+		bx = cx - 8
+		c.rect(bx - 1, cy - 9, bx + 1, cy + 10, F[3]); c.rect(bx - 1, cy - 9, bx, cy + 10, F[2]); return
+	if s.get("shape", "round") == "round":
+		r = s.get("r", 8)
+		c.ellipse(cx, cy, r, r + 2, F[2]); c.ellipse(cx - 1, cy - 1, r - 2, r, F[1]); c.disc(cx, cy, 2, s["boss"][1])
+	else:
+		top = cy - 9; bot = cy + 11
+		for y in range(top, bot + 1):
+			t = (y - top) / max(1, bot - top); half = int(round(7 * (1.0 - max(0.0, (t - 0.45) / 0.55) ** 1.5)))
+			if half < 1:
+				continue
+			c.rect(cx - half, y, cx + half, y, F[2]); c.rect(cx - half, y, cx - half + 1, y, F[1])
+	if view == "back" and s.get("emblem"):
+		_emblem(c, cx, cy - 1, s["emblem"], s.get("ecol", GOLD[0]))
+
+def stow_weapon_back(c, J, view, wid):
+	"""A two-hander / bow / staff slung diagonally across the back (hilt over the
+	right shoulder)."""
+	w = WEAPONS.get(wid) if isinstance(wid, str) else wid
+	if w is None:
+		return
+	t = w.get("type"); cx, cy = J["chest"]; sl = J["shoulder_l"][0]; sr = J["shoulder_r"][0]
+	if view == "side":
+		bx = cx - 7
+		c.rect(bx - 1, cy - 12, bx + 1, cy + 14, LEA[2]); c.rect(bx - 1, cy - 12, bx, cy + 14, LEA[1]); return
+	if t == "bow":
+		bx = cx if view == "back" else sl - 1
+		for i in range(-14, 15):
+			xx = bx - abs(i) * abs(i) // 24
+			c.paint(xx, cy + i, LEA[2]); c.paint(xx + 1, cy + i, LEA[1])
+		c.line(bx + 1, cy - 13, bx + 1, cy + 13, (224, 220, 208, 255)); return
+	x0, y0 = sl - 1, cy + 16; x1, y1 = sr + 2, cy - 16                             # lower-left -> upper-right
+	if t in ("staff", "spear"):
+		c.line(x0, y0, x1, y1, LEA[1]); c.line(x0 + 1, y0, x1 + 1, y1, LEA[2]); c.line(x0 - 1, y0, x1 - 1, y1, LEA[3])
+		if t == "spear":
+			c.ellipse(x1 + 1, y1 - 3, 2, 4, w["head"][2]); c.paint(x1 + 1, y1 - 7, w["head"][0])
+		else:
+			c.disc(x1 + 1, y1 - 3, 3, w["gem"]); c.paint(x1, y1 - 4, (220, 240, 248, 255))
+		return
+	bl = w["blade"]; hi = w.get("hilt", LEA)                                       # greatsword
+	c.line(x0, y0, x1, y1, bl[2]); c.line(x0 + 1, y0 + 1, x1 + 1, y1 + 1, bl[3]); c.line(x0 - 1, y0 - 1, x1 - 1, y1 - 1, bl[1])
+	c.rect(x1, y1 - 3, x1 + 2, y1 + 3, hi[1]); c.disc(x1 + 1, y1 - 4, 2, GOLD[1])  # hilt over the shoulder
+
+def stow_weapon_hip(c, J, view, wid):
+	"""A one-hander in a hip scabbard hung off the belt."""
+	w = WEAPONS.get(wid) if isinstance(wid, str) else wid
+	if w is None:
+		return
+	py = J["pelvis"][1]; hipx = (J["chest"][0] - 6) if view == "side" else (J["hip_l"][0] - 3)
+	short = (w.get("type") == "dagger"); bot = py + (9 if short else 16)
+	c.rect(hipx - 2, py - 2, hipx + 2, bot, LEA[2]); c.rect(hipx - 2, py - 2, hipx - 1, bot, LEA[1]); c.rect(hipx + 1, py - 2, hipx + 2, bot, LEA[3])
+	c.paint(hipx, bot, LEA[4])
+	hi = w.get("hilt", LEA)
+	c.rect(hipx - 1, py - 7, hipx + 1, py - 3, hi[1]); c.rect(hipx - 3, py - 3, hipx + 3, py - 2, hi[2])  # grip + guard
+	c.paint(hipx, py - 8, hi[0])
+
 # ============================================================================
 # Compositor
 # ============================================================================
 
-def compose(view, phase, opts=None, dressed=True, weapon=None, shield=None):
+def compose(view, phase, opts=None, dressed=True, weapon=None, shield=None, drawn=True, mode="walk"):
 	o = look(opts)
 	SK = o["skin"]; HR = o["hair"]; SET = ARMOR.get(o["armor"], ARMOR["ranger"])
 	c = Canvas(FW, FH)
-	J = resolve(view, phase)
+	J = resolve(view, phase, mode)
 	# body build widens/narrows the shoulders (and the arms ride them out)
 	bw = BUILD.get(o["build"], 0)
 	if bw and view != "side":
 		for k, s in (("shoulder_l", -1), ("shoulder_r", 1), ("hand_l", -1), ("hand_r", 1)):
 			J[k] = (J[k][0] + s * bw, J[k][1])
 	show_cloak = dressed and SET.get("cloak") is not None
+	back_view = (view == "back")
+	stow_w = weapon if (weapon is not None and not drawn) else None
+	stow_s = shield if (shield is not None and not drawn) else None
 	if show_cloak:
 		cloak_back(c, J, view, SET["cloak"])
+	# stowed back-gear sits BEHIND the body from the front/side (peeks past the edges)
+	if not back_view:
+		if stow_s is not None:
+			stow_shield(c, J, view, stow_s)
+		if stow_w is not None and stow_w in BACK_WEAPONS:
+			stow_weapon_back(c, J, view, stow_w)
 	base_legs(c, J, view, SK)
 	base_torso(c, J, view, SK)
 	base_arms(c, J, view, SK)
 	if dressed:
 		draw_outfit(c, J, view, SET, SK)
+	# from behind, the same back-gear rides ON TOP of the back
+	if back_view:
+		if stow_s is not None:
+			stow_shield(c, J, view, stow_s)
+		if stow_w is not None and stow_w in BACK_WEAPONS:
+			stow_weapon_back(c, J, view, stow_w)
+	# a hip scabbard sits in front of the body in every view
+	if stow_w is not None and stow_w not in BACK_WEAPONS:
+		stow_weapon_hip(c, J, view, stow_w)
 	base_head(c, J, view, SK, HR, o["hair_style"], o["beard"], o["mark"], o["mark_col"])
 	if dressed:
 		draw_helm(c, J, view, SET)
 	if show_cloak:
 		cloak_collar(c, J, view, SET["cloak"])
-	if shield is not None:
+	# drawn (in-hand / on-arm) gear
+	if drawn and shield is not None:
 		held_shield(c, J, view, shield)
-	if weapon is not None:
+	if drawn and weapon is not None:
 		held_weapon(c, J, view, weapon)
 	c.rim_light(0.35)
 	c.outline(INK, diagonal=False)
@@ -824,6 +919,15 @@ def _row(cols, scale=3, bg=(126, 160, 120, 255)):
 	for i, col in enumerate(cols):
 		m.blit(col, gap + i * (FW + gap), 8, mode="over")
 	return m.scaled(scale)
+
+def _idle_gif(path):
+	frames = []
+	for p in (0, 1, 2, 3):
+		m = Canvas(60, 124); m.rect(0, 0, m.w - 1, m.h - 1, (126, 160, 120, 255))
+		m.blit(compose("front", p, None, mode="idle"), (60 - FW) // 2, 124 - FH - 2, mode="over")
+		frames.append(m.scaled(3))
+	pal, idx = gifutil.quantize(frames)
+	gifutil.write_gif(path, pal, idx, frames[0].w, frames[0].h, 5)
 
 def _turn(opts=None, dressed=True):
 	cols = []
@@ -875,6 +979,19 @@ def main():
 		compose("front", 0, {"armor": "robe"}, weapon="staff"),
 	]
 	_row(heroes).save("/tmp/segment_heroes.png")
+	# stowed gear: weapon sheathed + shield slung, front + back
+	stowed = [
+		compose("front", 0, {"armor": "ranger"}, weapon="sword", shield="heater", drawn=False),
+		compose("back", 0, {"armor": "ranger"}, weapon="sword", shield="heater", drawn=False),
+		compose("front", 0, {"armor": "iron"}, weapon="greatsword", shield="kite", drawn=False),
+		compose("back", 0, {"armor": "iron"}, weapon="greatsword", shield="kite", drawn=False),
+		compose("front", 0, {"armor": "rogue"}, weapon="bow", drawn=False),
+		compose("back", 0, {"armor": "rogue"}, weapon="bow", drawn=False),
+	]
+	_row(stowed).save("/tmp/segment_stowed.png")
+	# idle breathing frames + an animated GIF to check the motion
+	_row([compose("front", p, None, mode="idle") for p in range(4)]).save("/tmp/segment_idle.png")
+	_idle_gif("/tmp/segment_idle.gif")
 	for v in ("front", "side"):
 		_row([compose(v, p, None) for p in range(4)]).save("/tmp/walk_%s.png" % v)
 	print("wrote turn + custom + hair + axes + armor + plate/rogue turns + weapons + shields + heroes + walk")

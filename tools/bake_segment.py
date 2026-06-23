@@ -32,11 +32,11 @@ def _mirror(src):
 			out.paint(src.w - 1 - x, y, src.at(x, y))
 	return out
 
-def bake(name, dressed=True, opts=None):
+def bake(name, dressed=True, opts=None, mode="walk"):
 	sheet = Canvas(FW * COLS, FH * ROWS)
 	for r, (view, mir) in enumerate(LAYOUT):
 		for p in range(COLS):
-			cell = S.compose(view, p, opts, dressed)
+			cell = S.compose(view, p, opts, dressed, mode=mode)
 			if mir:
 				cell = _mirror(cell)
 			sheet.blit(cell, p * FW, r * FH, mode="over")
@@ -48,6 +48,7 @@ def bake(name, dressed=True, opts=None):
 def main():
 	bake("seg_base.png", dressed=False)
 	bake("seg_walk.png")                                  # default ranger kit
+	bake("seg_idle.png", mode="idle")                     # standing breathing loop
 	for a in ("rogue", "iron", "plate", "robe"):          # the equippable wardrobe
 		bake("seg_%s.png" % a, opts={"armor": a})
 
