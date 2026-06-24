@@ -11,6 +11,9 @@ class_name Enemy
 @export var anim_fps: float = 6.0
 @export var detect_range: float = 80.0
 @export var touch_damage: int = 3
+## Resistance (0..1) that scales down the chance of an on-hit status landing — set
+## higher on hardy/elite foes so they shrug off burns and stuns.
+@export_range(0.0, 1.0) var status_resist: float = 0.0
 ## Whether this enemy performs a telegraphed melee strike. False for kiters (the
 ## archer) and non-combatants (wildlife, bear cub) — they never deal contact
 ## damage. `touch_damage` is the strike's damage.
@@ -104,7 +107,10 @@ func _physics_process(delta: float) -> void:
 	if _dying:
 		return
 	_acquire_target(delta)
-	_update_attack(delta)
+	# A stun roots the enemy (speed is zeroed by the status) and freezes its
+	# attack rhythm — no winding up or striking until it lifts.
+	if not StatusEffect.is_stunned(self):
+		_update_attack(delta)
 
 	# Movement is suppressed while winding up or striking so the tell reads and the
 	# attack commits to its direction; otherwise the subclass brain drives movement.

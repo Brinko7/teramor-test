@@ -99,6 +99,14 @@ static func _pick(item: Item, slot: int) -> AffixData:
 	return cands.back()
 
 static func _apply(item: Item, affix: AffixData, tier: int) -> void:
+	if affix.is_status():
+		# A status affix grants the weapon an on-hit effect rather than a stat bonus.
+		item.on_hit_status = affix.status_kind
+		item.on_hit_power = affix.status_power + int(round(affix.per_tier * float(maxi(0, tier - 1))))
+		item.on_hit_duration = affix.status_duration
+		item.on_hit_chance = affix.status_chance
+		item.on_hit_magnitude = affix.status_magnitude
+		return
 	var mag := affix.magnitude(tier, _rng)
 	match affix.stat:
 		AffixData.Stat.MELEE:

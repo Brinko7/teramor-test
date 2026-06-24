@@ -24,6 +24,19 @@ enum Stat { MELEE, RANGED, SPELL, MAX_HP, DEFENSE }
 ## Relative pick weight within its slot/target bucket.
 @export var weight: float = 1.0
 
+## --- Status affixes ---------------------------------------------------------
+## If status_kind != 0 (a StatusEffect.Kind) this is a STATUS affix: instead of a
+## stat bonus it grants the weapon an on-hit status (e.g. Flaming -> Burn). `stat`
+## is ignored for these.
+@export var status_kind: int = 0
+@export var status_power: int = 0          # DoT damage per tick
+@export var status_duration: float = 3.0
+@export_range(0.0, 1.0) var status_chance: float = 0.25
+@export var status_magnitude: float = 1.0  # SLOW: speed multiplier
+
+func is_status() -> bool:
+	return status_kind != 0
+
 ## Can this affix roll on the given item?
 func fits(item: Item) -> bool:
 	match target:

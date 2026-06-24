@@ -527,6 +527,9 @@ func _fire_projectile(weapon: WeaponItem) -> void:
 	arrow.global_position = global_position + _aim * 8.0 + Vector2(0, -10)
 	var ranged_dmg: int = weapon.damage + stats.ranged_power() + (equipment.bonus_ranged() if equipment != null else 0)
 	arrow.setup(_aim, ranged_dmg, weapon.projectile_speed, weapon.range)
+	if weapon.has_on_hit():
+		arrow.set_on_hit(weapon.on_hit_status, weapon.on_hit_power,
+			weapon.on_hit_duration, weapon.on_hit_chance, weapon.on_hit_magnitude)
 	get_parent().add_child(arrow)
 
 func _end_attack() -> void:
@@ -553,6 +556,19 @@ func _apply_hit(target) -> void:
 		var steal: float = equipment.lifesteal() if equipment != null else 0.0
 		if steal > 0.0:
 			health.heal(maxi(1, int(round(dmg * steal))))
+		_apply_weapon_status(weapon, target)
+
+## Roll the equipped weapon's on-hit status (Flaming/Venomous/etc.) against a
+## struck enemy, scaled down by the target's status resistance.
+func _apply_weapon_status(weapon: WeaponItem, target) -> void:
+	if weapon == null or not weapon.has_on_hit():
+		return
+	var chance: float = weapon.on_hit_chance
+	if "status_resist" in target:
+		chance *= (1.0 - clampf(target.status_resist, 0.0, 0.95))
+	if randf() <= chance:
+		StatusEffect.apply(target, weapon.on_hit_status, weapon.on_hit_power,
+			weapon.on_hit_duration, weapon.on_hit_magnitude)
 
 ## Whether a dodge can start: off cooldown, not mid-roll, not blocking, alive, and
 ## not in a menu/dialogue.

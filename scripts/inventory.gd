@@ -138,6 +138,8 @@ func save_state() -> Dictionary:
 					"name": it.name, "rarity": int(it.rarity),
 					"melee": it.bonus_melee, "ranged": it.bonus_ranged, "spell": it.bonus_spell,
 					"hp": it.bonus_max_hp, "defense": it.bonus_defense, "lifesteal": it.lifesteal,
+					"oh_kind": it.on_hit_status, "oh_power": it.on_hit_power,
+					"oh_dur": it.on_hit_duration, "oh_chance": it.on_hit_chance, "oh_mag": it.on_hit_magnitude,
 				}
 			entries.append(entry)
 	return {"slots": entries}
@@ -170,6 +172,11 @@ func _restore_rolled(base: Item, r: Dictionary) -> Item:
 	item.bonus_max_hp = int(r.get("hp", 0))
 	item.bonus_defense = int(r.get("defense", 0))
 	item.lifesteal = float(r.get("lifesteal", 0.0))
+	item.on_hit_status = int(r.get("oh_kind", 0))
+	item.on_hit_power = int(r.get("oh_power", 0))
+	item.on_hit_duration = float(r.get("oh_dur", 0.0))
+	item.on_hit_chance = float(r.get("oh_chance", 0.0))
+	item.on_hit_magnitude = float(r.get("oh_mag", 1.0))
 	item.rolled = true
 	item.base_path = base.resource_path
 	return item
