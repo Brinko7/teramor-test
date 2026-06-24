@@ -123,10 +123,23 @@ func save_state() -> Dictionary:
 		if slot.is_empty():
 			entries.append(null)
 		else:
-			entries.append({
-				"path": (slot["item"] as Item).resource_path,
+			var it := slot["item"] as Item
+			# A rolled instance has no resource_path of its own — persist the base
+			# path so load can reload it and re-apply the rolled stats.
+			var path: String = it.base_path if it.rolled and it.base_path != "" else it.resource_path
+			var entry := {
+				"path": path,
 				"count": int(slot["count"]),
-			})
+			}
+			# Rolled drops are unique instances — store their stats by value so the
+			# roll survives a save/load (reloading the base .tres would lose it).
+			if it.rolled:
+				entry["rolled"] = {
+					"name": it.name, "rarity": int(it.rarity),
+					"melee": it.bonus_melee, "ranged": it.bonus_ranged, "spell": it.bonus_spell,
+					"hp": it.bonus_max_hp, "defense": it.bonus_defense, "lifesteal": it.lifesteal,
+				}
+			entries.append(entry)
 	return {"slots": entries}
 
 func load_state(data: Dictionary) -> void:
@@ -139,5 +152,24 @@ func load_state(data: Dictionary) -> void:
 			continue
 		var item := load(entry["path"]) as Item
 		if item != null:
+			if entry.has("rolled"):
+				item = _restore_rolled(item, entry["rolled"])
 			slots[i] = {"item": item, "count": int(entry["count"])}
 	changed.emit()
+
+## Rebuild a rolled drop from its saved-by-value stats on top of the base item.
+func _restore_rolled(base: Item, r: Dictionary) -> Item:
+	var item := base.duplicate(true) as Item
+	if item == null:
+		return base
+	item.name = String(r.get("name", base.name))
+	item.rarity = int(r.get("rarity", base.rarity)) as Item.Rarity
+	item.bonus_melee = int(r.get("melee", 0))
+	item.bonus_ranged = int(r.get("ranged", 0))
+	item.bonus_spell = int(r.get("spell", 0))
+	item.bonus_max_hp = int(r.get("hp", 0))
+	item.bonus_defense = int(r.get("defense", 0))
+	item.lifesteal = float(r.get("lifesteal", 0.0))
+	item.rolled = true
+	item.base_path = base.resource_path
+	return item

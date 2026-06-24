@@ -37,6 +37,9 @@ class_name Enemy
 ## Items dropped on death. Each entry rolls independently against loot_chance.
 @export var loot_table: Array[Item] = []
 @export_range(0.0, 1.0) var loot_chance: float = 0.5
+## The difficulty tier this enemy was scaled to (set by apply_tier); rolled loot
+## affixes scale off it so deeper foes drop richer gear.
+var loot_tier: int = 1
 
 const PICKUP_SCENE := preload("res://scenes/entities/item_pickup.tscn")
 ## Preloaded so the global-class dependency resolves before this script
@@ -267,6 +270,7 @@ func _update_animation(delta: float, moving: bool) -> void:
 ## generator right after spawning so the deeper wilds field tougher, more
 ## rewarding creatures. Subclasses inherit this unchanged.
 func apply_tier(tier: int) -> void:
+	loot_tier = maxi(1, tier)
 	if tier <= 1:
 		return
 	var steps: int = tier - 1
@@ -350,6 +354,6 @@ func _drop_loot() -> void:
 		if item == null or randf() > loot_chance:
 			continue
 		var pickup := PICKUP_SCENE.instantiate() as ItemPickup
-		pickup.configure(item, 1)
+		pickup.configure(AffixRoller.roll(item, loot_tier), 1)
 		pickup.position = position + Vector2(randf_range(-6.0, 6.0), randf_range(-6.0, 6.0))
 		parent.call_deferred("add_child", pickup)

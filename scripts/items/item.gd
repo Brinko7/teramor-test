@@ -35,6 +35,14 @@ const RARITY_COLORS := [
 @export var bonus_defense: int = 0
 ## Fraction of melee damage dealt that is returned to the wielder as health.
 @export_range(0.0, 1.0) var lifesteal: float = 0.0
+## True on a per-instance rolled drop (a duplicate of a base item with random
+## affixes applied). Tells the inventory to serialize the rolled stats by value
+## instead of just reloading the base .tres, so the roll survives save/load.
+@export var rolled: bool = false
+## On a rolled instance, the res:// path of the base .tres it was duplicated from
+## (a duplicate's own resource_path is empty), so persistence can reload the base
+## and re-apply the rolled stats on top.
+@export var base_path: String = ""
 
 func is_weapon() -> bool:
 	return self is WeaponItem

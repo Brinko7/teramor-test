@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AffixData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/affix_data.gd" id="1_s"]
+
+[resource]
+script = ExtResource("1_s")
+id = &"tempered"
+word = "Tempered"
+slot = 0
+target = 2
+stat = 4
+base_min = 1
+base_max = 3
+per_tier = 0.8
+weight = 1.0
