@@ -25,6 +25,7 @@ func _ready() -> void:
 	_frame_ground()
 	_build_walls()
 	_build_roads()
+	_dress_edges()
 	_clamp_camera()
 
 ## Buildings (by instanced scene) a town's streets should connect.
@@ -69,6 +70,20 @@ func _build_roads() -> void:
 		roads.append([Vector2(cen.x, cen.y), Vector2(p.x, cen.y)])
 		roads.append([Vector2(p.x, cen.y), Vector2(p.x, p.y)])
 	RoadPainter.paint(layer, [Rect2(cen.x - 130, cen.y - 90, 260, 180)], roads)
+
+## Frame wooded places with a perimeter tree-line for depth (skip plains/desert).
+func _dress_edges() -> void:
+	var loc := WorldMap.get_location(location_id)
+	if loc == null or not (loc.region == &"hollenmark" or loc.region == &"cursed_wilds"):
+		return
+	var ents := get_node_or_null("Entities")
+	if ents == null:
+		return
+	var avoid: Array = []
+	for c in ents.get_children():
+		if c is Node2D:
+			avoid.append((c as Node2D).position)
+	EdgeDressing.plant_treeline(ents, map_size, int(hash(location_id)), avoid)
 
 
 ## Pick a music zone from this place's authored kind/region (camp/town/wild/cursed)

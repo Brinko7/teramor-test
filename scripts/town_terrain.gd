@@ -17,7 +17,19 @@ func _ready() -> void:
 	WorldMap.claim_arrival(&"cleaves_landing")
 	MusicManager.enter_zone(&"town")
 	_paint_roads()
+	_dress_edges()
 	_clamp_camera()
+
+## A perimeter tree-line behind the town — Cleeve's Landing sits at the forest edge.
+func _dress_edges() -> void:
+	var ents := get_node_or_null("Entities")
+	if ents == null:
+		return
+	var avoid: Array = []
+	for c in ents.get_children():
+		if c is Node2D:
+			avoid.append((c as Node2D).position)
+	EdgeDressing.plant_treeline(ents, map_size, 7, avoid)
 
 func _paint_roads() -> void:
 	var layer := get_node_or_null("Roads") as Node2D
