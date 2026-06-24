@@ -1,7 +1,7 @@
 [gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/great_tree.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="2_grass"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/grass32.png" id="2_grass"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/tree.png" id="3_tree"]
 [ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="4_player"]
 [ext_resource type="PackedScene" path="res://scenes/entities/transition_zone.tscn" id="5_tz"]
