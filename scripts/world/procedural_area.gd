@@ -737,3 +737,4 @@ func _clamp_camera() -> void:
 		cam.limit_top = 0
 		cam.limit_right = world_width
 		cam.limit_bottom = world_height
+		CameraFit.fit(cam, Vector2i(int(world_width), int(world_height)))

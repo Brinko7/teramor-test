@@ -196,7 +196,7 @@ shape = SubResource("RectangleShape2D_feet")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(0, -50)
-zoom = Vector2(0.58, 0.58)
+zoom = Vector2(1.0, 1.0)
 position_smoothing_enabled = true
 position_smoothing_speed = 8.0
 script = ExtResource("24_shake")

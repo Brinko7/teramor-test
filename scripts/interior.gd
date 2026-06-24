@@ -7,7 +7,12 @@ extends Node2D
 ## stay lit when it's dark outside.
 
 @export var room_size: Vector2i = Vector2i(320, 224)
-@export var camera_zoom: float = 2.0
+## NOTE: interiors still hold OLD-SCALE placeholder room art (320x224, 16px era).
+## At the hi-fi 1280x720 base this zoom keeps the small room filling the screen so no
+## void shows around it; the trade is the new 84x120 hero reads large in here. Proper
+## fix is migrating the interior art to the 32px / remaster scale (a follow-up), after
+## which this drops back toward ~1.5. Keep it high enough that room_size*zoom >= viewport.
+@export var camera_zoom: float = 4.0
 
 func _ready() -> void:
 	MusicManager.enter_zone(&"interior")

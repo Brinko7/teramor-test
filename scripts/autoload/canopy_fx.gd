@@ -12,8 +12,8 @@ extends CanvasLayer
 ## over the world; the day/night fade is handled here since CanvasLayers skip the
 ## world's CanvasModulate.
 
-const VW := 480.0
-const VH := 270.0
+const VW := 1280.0
+const VH := 720.0
 const TILE := 96.0
 const PARALLAX := 0.4     # how fast the canopy drifts against the player's motion
 const STRENGTH := 0.5     # peak opacity at midday

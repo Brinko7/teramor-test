@@ -24,3 +24,4 @@ func _ready() -> void:
 		cam.limit_top = 0
 		cam.limit_right = map_size.x
 		cam.limit_bottom = map_size.y
+		CameraFit.fit(cam, map_size)

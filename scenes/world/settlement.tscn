@@ -61,7 +61,7 @@ texture_repeat = 2
 centered = false
 texture = ExtResource("1_grass")
 region_enabled = true
-region_rect = Rect2(0, 0, 640, 480)
+region_rect = Rect2(0, 0, 1280, 960)
 
 [node name="Terrain" type="TileMapLayer" parent="."]
 tile_set = ExtResource("2_tileset")
