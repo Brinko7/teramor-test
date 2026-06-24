@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/placeholder/grass.png" id="1_grass"]
 [ext_resource type="Script" path="res://scripts/world/procedural_area.gd" id="2_gen"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/day_night.gd" id="9_daynight"]
 [ext_resource type="PackedScene" path="res://scenes/ui/minimap.tscn" id="10_minimap"]
 [ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="11_itembar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/buff_hud.tscn" id="buffhud_1"]
 
 [node name="ProceduralArea" type="Node2D"]
 script = ExtResource("2_gen")
@@ -47,5 +48,7 @@ script = ExtResource("9_daynight")
 [node name="Hotbar" parent="." instance=ExtResource("8_hotbar")]
 
 [node name="ItemHotbarHUD" parent="." instance=ExtResource("11_itembar")]
+
+[node name="BuffHUD" parent="." instance=ExtResource("buffhud_1")]
 
 [node name="Minimap" parent="." instance=ExtResource("10_minimap")]

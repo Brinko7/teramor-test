@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://c2a726n5ar6ej"]
+[gd_scene load_steps=15 format=3 uid="uid://c2a726n5ar6ej"]
 
 [ext_resource type="Script" path="res://scripts/interior.gd" id="1_interior"]
 [ext_resource type="Script" path="res://scripts/flicker_light.gd" id="2_flicker"]
@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="19_mana"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="20_hotbar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="21_itembar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/buff_hud.tscn" id="buffhud_1"]
 
 [sub_resource type="RectangleShape2D" id="hearth_col"]
 size = Vector2(72, 14)
@@ -163,3 +164,5 @@ color = Color(0.66, 0.6, 0.56, 1)
 [node name="AbilityHotbar" parent="." instance=ExtResource("20_hotbar")]
 
 [node name="ItemHotbarHUD" parent="." instance=ExtResource("21_itembar")]
+
+[node name="BuffHUD" parent="." instance=ExtResource("buffhud_1")]

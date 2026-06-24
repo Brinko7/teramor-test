@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ConsumableItem" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/consumable_item.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/hearty_stew.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hearty_stew"
+name = "Hearty Stew"
+description = "A thick turnip-and-mushroom stew. Restores health and keeps you mending for a while."
+icon = ExtResource("2_icon")
+max_stack = 10
+value = 30
+heal = 30
+buff_stat = 6
+buff_amount = 1
+buff_duration = 60.0

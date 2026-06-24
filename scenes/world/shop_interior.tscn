@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3]
+[gd_scene load_steps=28 format=3]
 
 [ext_resource type="Script" path="res://scripts/interior.gd" id="1_interior"]
 [ext_resource type="Texture2D" path="res://assets/remaster/world/counter.png" id="3_counter"]
@@ -15,6 +15,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="14_mana"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="15_hotbar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="25_itembar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/buff_hud.tscn" id="buffhud_1"]
 [ext_resource type="Resource" path="res://resources/items/seeds/turnip_seeds.tres" id="16_tseed"]
 [ext_resource type="Resource" path="res://resources/items/seeds/wheat_seeds.tres" id="17_wseed"]
 [ext_resource type="Resource" path="res://resources/items/health_potion.tres" id="18_hpot"]
@@ -117,3 +118,5 @@ color = Color(0.76, 0.71, 0.64, 1)
 [node name="AbilityHotbar" parent="." instance=ExtResource("15_hotbar")]
 
 [node name="ItemHotbarHUD" parent="." instance=ExtResource("25_itembar")]
+
+[node name="BuffHUD" parent="." instance=ExtResource("buffhud_1")]

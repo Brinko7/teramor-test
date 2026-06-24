@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=26 format=3]
 
 [ext_resource type="Script" path="res://scripts/prologue.gd" id="0_prologue"]
 [ext_resource type="Texture2D" path="res://assets/remaster/world/grass32.png" id="1_grass"]
@@ -18,6 +18,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud_coins.tscn" id="15_coins"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud_clock.tscn" id="16_clock"]
 [ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="17_itembar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/buff_hud.tscn" id="buffhud_1"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="18_abilitybar"]
 [ext_resource type="Resource" path="res://resources/npcs/elkar.tres" id="19_elkar"]
 
@@ -135,5 +136,7 @@ script = ExtResource("2_daynight")
 [node name="ClockHUD" parent="." instance=ExtResource("16_clock")]
 
 [node name="ItemHotbar" parent="." instance=ExtResource("17_itembar")]
+
+[node name="BuffHUD" parent="." instance=ExtResource("buffhud_1")]
 
 [node name="AbilityHotbar" parent="." instance=ExtResource("18_abilitybar")]

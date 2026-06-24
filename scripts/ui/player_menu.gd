@@ -440,6 +440,8 @@ func _item_tooltip(item: Item) -> String:
 		var c := item as ConsumableItem
 		if c.heal > 0:
 			lines.append("Heals %d HP" % c.heal)
+		if c.has_buff():
+			lines.append(c.buff_line())
 	for affix in item.affix_lines():
 		lines.append(String(affix))
 	if item.value > 0:
