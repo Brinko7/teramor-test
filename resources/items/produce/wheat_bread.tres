@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ConsumableItem" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/items/consumable_item.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/placeholder/items/wheat_bread.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"wheat_bread"
+name = "Wheat Bread"
+description = "A golden loaf baked from the harvest. Filling and fortifying against a blow."
+icon = ExtResource("2_icon")
+max_stack = 10
+value = 20
+heal = 18
+buff_stat = 3
+buff_amount = 3
+buff_duration = 120.0

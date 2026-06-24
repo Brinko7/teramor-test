@@ -1,4 +1,4 @@
-[gd_scene load_steps=53 format=3]
+[gd_scene load_steps=54 format=3]
 
 [ext_resource type="Texture2D" path="res://assets/remaster/world/grass32.png" id="1_grass"]
 [ext_resource type="TileSet" path="res://assets/tilesets/terrain.tres" id="2_tileset"]
@@ -22,6 +22,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/mana_bar.tscn" id="40_manabar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/ability_hotbar.tscn" id="41_hotbar"]
 [ext_resource type="PackedScene" path="res://scenes/ui/item_hotbar.tscn" id="57_itembar"]
+[ext_resource type="PackedScene" path="res://scenes/ui/buff_hud.tscn" id="buffhud_1"]
 [ext_resource type="Resource" path="res://resources/items/health_potion.tres" id="20_hpot"]
 [ext_resource type="Resource" path="res://resources/items/greater_potion.tres" id="21_gpot"]
 [ext_resource type="Resource" path="res://resources/items/iron_sword.tres" id="22_isword"]
@@ -519,3 +520,5 @@ script = ExtResource("31_daynight")
 [node name="AbilityHotbar" parent="." instance=ExtResource("41_hotbar")]
 
 [node name="ItemHotbarHUD" parent="." instance=ExtResource("57_itembar")]
+
+[node name="BuffHUD" parent="." instance=ExtResource("buffhud_1")]
