@@ -104,6 +104,9 @@ var _p2: float = 0.0
 
 ## Placed interior features as keep-out zones: [{pos: Vector2, radius: float, type: StringName}].
 var _features: Array = []
+## A standing feature (ruin/grove/thicket) promoted to a "point of interest" — the
+## forage cluster + any chest pin to it, so the landmark off the trail pays off.
+var _poi: Dictionary = {}
 
 ## Active position-triggered gates: {min_x, max_x, action: Callable, done: bool}.
 var _gates: Array = []
@@ -140,6 +143,7 @@ func _ready() -> void:
 	_spawn_encounters()
 	_spawn_treasure()
 	_spawn_gather_nodes()
+	_spawn_poi_forage()
 	_build_gates()
 	_place_signage()
 	_send_to_minimap()
@@ -307,6 +311,11 @@ func _place_features() -> void:
 			continue
 		_build_feature(kind, anchor, radius)
 		_features.append({"pos": anchor, "radius": _keepout_radius(kind, radius), "type": kind})
+	# Promote one "someone was here" feature to a point of interest worth detouring to.
+	var poi_kinds: Array = [&"ruin", &"grove", &"thicket"]
+	var cand: Array = _features.filter(func(f): return f["type"] in poi_kinds)
+	if not cand.is_empty():
+		_poi = cand[_rng.randi() % cand.size()]
 
 func _feature_radius(kind: StringName) -> float:
 	match kind:
@@ -573,9 +582,13 @@ func _spawn_treasure() -> void:
 	if _explore and _tier >= 3 and _rng.randf() < 0.3:
 		chests += 1
 	for c in range(chests):
-		var pos := _free_point(EDGE + 24, 0.0)
-		if pos.x < 0.0:
-			continue
+		var pos: Vector2
+		if c == 0 and not _poi.is_empty():
+			pos = _ring_point(_poi["pos"], float(_poi["radius"]) + 40.0)   # the rare chest sits at the landmark
+		else:
+			pos = _free_point(EDGE + 24, 0.0)
+			if pos.x < 0.0:
+				continue
 		_make_chest(pos, pool)
 
 ## Spawn a treasure chest at `pos` stocked from `pool` (deeper tiers stock fuller).
@@ -599,21 +612,44 @@ func _spawn_gather_nodes() -> void:
 	var base: int = _rng.randi_range(_biome.min_gather, maxi(_biome.min_gather, _biome.max_gather))
 	var count: int = int(round(float(base) * _density))
 	for i in range(count):
-		var path: String = _biome.gather_paths[_rng.randi() % _biome.gather_paths.size()]
-		if not ResourceLoader.exists(path):
-			continue
-		var item := load(path) as Item
-		if item == null:
-			continue
-		var node := GATHER_SCENE.instantiate()
 		var pos := _free_point(EDGE + 24, 0.0)
 		if pos.x < 0.0:
 			pos = Vector2(_rng.randi_range(EDGE + 24, world_width - EDGE - 24), _rng.randi_range(EDGE + 24, world_height - EDGE - 24))
-		if node is Node2D:
-			(node as Node2D).position = pos
-		_entities.add_child(node)
-		var qty: int = 2 + _rng.randi_range(0, 1 + _tier / 2)
-		node.call("configure", item, qty, GATHER_TINTS.get(item.id, Color.WHITE), GATHER_TOOLS.get(item.id, &""))
+		_make_gather(pos)
+
+## Tuck a small forage cluster against the point-of-interest feature, so the
+## landmark you spot off the trail reliably rewards the detour (foraging is the
+## steady reward; the rare chest, when it rolls, sits here too). The core hook
+## that turns "cross the field to the exit" into "what's over by that ruin?".
+func _spawn_poi_forage() -> void:
+	if _poi.is_empty() or _biome.gather_paths.is_empty() or _biome.max_gather <= 0:
+		return
+	var r: float = float(_poi["radius"]) + 28.0
+	for k in range(3):
+		_make_gather(_ring_point(_poi["pos"], r))
+
+## Spawn one harvestable resource node of a random biome material at `pos`.
+func _make_gather(pos: Vector2) -> void:
+	var path: String = _biome.gather_paths[_rng.randi() % _biome.gather_paths.size()]
+	if not ResourceLoader.exists(path):
+		return
+	var item := load(path) as Item
+	if item == null:
+		return
+	var node := GATHER_SCENE.instantiate()
+	if node is Node2D:
+		(node as Node2D).position = pos
+	_entities.add_child(node)
+	var qty: int = 2 + _rng.randi_range(0, 1 + _tier / 2)
+	node.call("configure", item, qty, GATHER_TINTS.get(item.id, Color.WHITE), GATHER_TOOLS.get(item.id, &""))
+
+## A point on the ring of radius `r` around `c`, clamped inside the playable area.
+func _ring_point(c: Vector2, r: float) -> Vector2:
+	var a: float = _rng.randf_range(0.0, TAU)
+	var p := c + Vector2(cos(a), sin(a)) * r
+	p.x = clampf(p.x, float(EDGE + 24), float(world_width - EDGE - 24))
+	p.y = clampf(p.y, float(EDGE + 24), float(world_height - EDGE - 24))
+	return p
 
 func _build_loot() -> Array:
 	var table: Array[Item] = []
