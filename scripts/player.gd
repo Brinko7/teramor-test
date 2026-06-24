@@ -31,16 +31,16 @@ const DIR_UTIL := preload("res://scripts/dir_util.gd")
 
 ## How far the melee hitbox sits from the player along the aim direction (scaled to
 ## the 84x120 hero's reach), and the bow's draw time before the arrow looses.
-const HITBOX_REACH := 42.0
+const HITBOX_REACH := 22.0
 const BOW_DRAW_TIME := 0.12
 ## Melee swing played as body frames (cols 4-7 of the 8-col sheet): wind-up, strike,
 ## follow-through, recover. Per-frame durations; the hit + slash + lunge land on the
 ## STRIKE frame so damage connects exactly when the blade sweeps across.
-const ATTACK_FRAME_TIME: Array[float] = [0.07, 0.07, 0.06, 0.08]
+const ATTACK_FRAME_TIME: Array[float] = [0.1, 0.12, 0.1, 0.1]
 const ATTACK_STRIKE_FRAME := 1
 ## Bow draw played as body frames (cols 8-10): nock, draw-back, loose. The arrow
 ## fires on the loose frame, so it leaves the bow exactly as the string snaps forward.
-const DRAW_FRAME_TIME: Array[float] = [1.5, 2.5, 0.6]
+const DRAW_FRAME_TIME: Array[float] = [0.2, 0.3, 0.1]
 const DRAW_LOOSE_FRAME := 2
 
 ## Combat-feel tunables: melee knockback dealt to foes, and the player's own
@@ -96,6 +96,9 @@ const DODGE_COOLDOWN := 0.40
 @onready var mana: Mana = get_node_or_null("Mana")
 @onready var ability_caster: AbilityCaster = get_node_or_null("AbilityCaster")
 @onready var item_hotbar: ItemHotbar = get_node_or_null("ItemHotbar")
+## The LPC paper-doll that now renders the player (the bespoke sprites below are
+## retired/hidden). Gameplay stays here; visuals are driven via lpc.play()/set_facing().
+@onready var lpc: LPCCharacter = $LPC
 
 var _facing_row: int = 0
 var _aim: Vector2 = Vector2.DOWN
@@ -161,6 +164,24 @@ func _ready() -> void:
 	_visuals.refresh_gear()
 	stats.skills_changed.connect(_on_skills_changed)
 	_sync_abilities()
+	_use_lpc_visuals()
+
+## Switch rendering to the LPC paper-doll: hide the retired bespoke sprites and stop
+## the appearance / armour-set code from re-showing them, then start the LPC idle.
+func _use_lpc_visuals() -> void:
+	for n in [sprite, outfit_sprite, hair_sprite, beard_sprite, cloak_back_sprite,
+			collar_sprite, helm_sprite, weapon_overlay, weapon_pivot, shield_pivot,
+			weapon_holster, shield_back]:
+		if n != null:
+			(n as CanvasItem).visible = false
+	for layer: Sprite2D in gear_layers.values():
+		layer.visible = false
+	if equipment.changed.is_connected(_apply_armor_set):
+		equipment.changed.disconnect(_apply_armor_set)
+	if PlayerProfile.changed.is_connected(_apply_appearance):
+		PlayerProfile.changed.disconnect(_apply_appearance)
+	lpc.set_facing(0)
+	lpc.play("idle")
 
 ## Max HP from level/attributes/skills plus equipped-gear HP affixes.
 func _max_hp() -> int:
@@ -425,6 +446,9 @@ func _update_animation(delta: float, moving: bool) -> void:
 	collar_sprite.frame = sprite.frame
 	helm_sprite.frame = sprite.frame
 	_visuals.sync_frame(sprite.frame)
+	# LPC rendering: facing + walk/idle.
+	lpc.set_facing(_facing_row)
+	lpc.play("walk" if moving else "idle")
 
 # --- Equipped-gear visuals --------------------------------------------------
 
@@ -476,6 +500,9 @@ func _start_attack() -> void:
 		weapon_overlay.visible = true
 	else:
 		weapon_overlay.visible = false
+	# LPC rendering: a bow draw (shoot) for ranged, a sword swing (slash) for melee.
+	lpc.set_facing(_facing_row)
+	lpc.play("shoot" if _ranged else "slash")
 
 ## Advance the melee swing: drive every paper-doll layer to the current attack column
 ## and, on the strike frame, open the hitbox + spawn the slash + lunge (once).
@@ -654,6 +681,7 @@ func _on_died() -> void:
 	_end_attack()
 	_attacking = false
 	weapon_overlay.visible = false
+	lpc.play("hurt")
 	modulate = Color(0.5, 0.5, 0.5)
 	GameManager.player_died()
 

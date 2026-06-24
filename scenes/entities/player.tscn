@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3]
+[gd_scene load_steps=37 format=3]
 
 [ext_resource type="Script" path="res://scripts/player.gd" id="1_player"]
 [ext_resource type="Script" path="res://scripts/components/camera_shake.gd" id="24_shake"]
@@ -31,6 +31,7 @@
 [ext_resource type="Resource" path="res://resources/abilities/healing_light.tres" id="23_heal"]
 [ext_resource type="Texture2D" path="res://assets/remaster/combat/attack_arm.png" id="25_arm"]
 [ext_resource type="Texture2D" path="res://assets/remaster/char/weapon_sword_atk.png" id="29_watk"]
+[ext_resource type="Script" path="res://scripts/lpc_character.gd" id="30_lpc"]
 [ext_resource type="Script" path="res://scripts/item_hotbar.gd" id="26_hotbar"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_feet"]
@@ -46,7 +47,7 @@ size = Vector2(18, 16)
 collision_layer = 2
 collision_mask = 1
 script = ExtResource("1_player")
-starting_weapon = ExtResource("7_bow")
+starting_weapon = ExtResource("6_sword")
 starting_items = Array[Resource]([ExtResource("7_bow"), ExtResource("8_vest"), ExtResource("11_shield"), ExtResource("9_potion"), ExtResource("9_potion"), ExtResource("10_herb"), ExtResource("15_hoe"), ExtResource("16_can"), ExtResource("15_pick"), ExtResource("15_axe"), ExtResource("15_rod"), ExtResource("17_tseed"), ExtResource("17_tseed"), ExtResource("17_tseed")])
 
 [node name="ShieldPivot" type="Node2D" parent="."]
@@ -194,9 +195,12 @@ z_index = 4
 position = Vector2(0, -3)
 shape = SubResource("RectangleShape2D_feet")
 
+[node name="LPC" type="Node2D" parent="."]
+script = ExtResource("30_lpc")
+
 [node name="Camera2D" type="Camera2D" parent="."]
-position = Vector2(0, -50)
-zoom = Vector2(1.0, 1.0)
+position = Vector2(0, -20)
+zoom = Vector2(1.7, 1.7)
 position_smoothing_enabled = true
 position_smoothing_speed = 8.0
 script = ExtResource("24_shake")

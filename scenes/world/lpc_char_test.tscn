@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/lpc_char_test.gd" id="1_demo"]
+[ext_resource type="Script" path="res://scripts/lpc_character.gd" id="2_char"]
+[ext_resource type="Texture2D" path="res://assets/lpc/tiles/grass_clean.png" id="3_grass"]
+
+[node name="LPCCharTest" type="Node2D"]
+script = ExtResource("1_demo")
+
+[node name="Ground" type="Sprite2D" parent="."]
+texture_repeat = 2
+centered = false
+position = Vector2(-400, -240)
+texture = ExtResource("3_grass")
+region_enabled = true
+region_rect = Rect2(0, 0, 800, 480)
+
+[node name="Char" type="Node2D" parent="."]
+script = ExtResource("2_char")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(0, -28)
+zoom = Vector2(2.2, 2.2)

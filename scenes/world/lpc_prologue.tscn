@@ -1,0 +1,80 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/lpc/tiles/grass_clean.png" id="1_grass"]
+[ext_resource type="Texture2D" path="res://assets/lpc/tiles/treetop.png" id="2_tree"]
+[ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="3_player"]
+[ext_resource type="Texture2D" path="res://assets/lpc/sprites/princess.png" id="4_npc"]
+
+[sub_resource type="RectangleShape2D" id="wall_h"]
+size = Vector2(700, 24)
+
+[sub_resource type="RectangleShape2D" id="wall_v"]
+size = Vector2(24, 440)
+
+[node name="LPCPrologue" type="Node2D"]
+
+[node name="Ground" type="Sprite2D" parent="."]
+texture_repeat = 2
+centered = false
+texture = ExtResource("1_grass")
+region_enabled = true
+region_rect = Rect2(0, 0, 700, 440)
+
+[node name="Walls" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
+
+[node name="Top" type="CollisionShape2D" parent="Walls"]
+position = Vector2(350, 4)
+shape = SubResource("wall_h")
+
+[node name="Bottom" type="CollisionShape2D" parent="Walls"]
+position = Vector2(350, 436)
+shape = SubResource("wall_h")
+
+[node name="Left" type="CollisionShape2D" parent="Walls"]
+position = Vector2(4, 220)
+shape = SubResource("wall_v")
+
+[node name="Right" type="CollisionShape2D" parent="Walls"]
+position = Vector2(696, 220)
+shape = SubResource("wall_v")
+
+[node name="Entities" type="Node2D" parent="."]
+y_sort_enabled = true
+
+[node name="TreeA" type="Sprite2D" parent="Entities"]
+centered = false
+offset = Vector2(-48, -110)
+position = Vector2(120, 120)
+texture = ExtResource("2_tree")
+region_enabled = true
+region_rect = Rect2(0, 112, 96, 112)
+
+[node name="TreeB" type="Sprite2D" parent="Entities"]
+centered = false
+offset = Vector2(-48, -110)
+position = Vector2(560, 150)
+texture = ExtResource("2_tree")
+region_enabled = true
+region_rect = Rect2(96, 112, 96, 112)
+
+[node name="TreeC" type="Sprite2D" parent="Entities"]
+centered = false
+offset = Vector2(-48, -110)
+position = Vector2(180, 380)
+texture = ExtResource("2_tree")
+region_enabled = true
+region_rect = Rect2(0, 112, 96, 112)
+
+[node name="NPC" type="Sprite2D" parent="Entities"]
+centered = false
+offset = Vector2(-32, -60)
+position = Vector2(420, 200)
+texture = ExtResource("4_npc")
+hframes = 9
+vframes = 4
+frame = 18
+
+[node name="Player" parent="Entities" instance=ExtResource("3_player")]
+position = Vector2(330, 250)
