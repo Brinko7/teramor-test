@@ -827,6 +827,106 @@ def draw_log(c):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# SMALL PROPS  (barrels / crates / chest / camp — foot-anchored, transparent bg)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def draw_barrel(c):
+    """Wooden barrel, gently bulged, with iron hoops ~36×52."""
+    cx, base_y = 18, 50
+    top = base_y - 46
+    for y in range(top, base_y):
+        t = (y - top) / float(base_y - top)
+        half = 11 + int(round(4 * (1 - abs(t - 0.5) * 2)))
+        R(c, cx - half, y, cx + half, y, WOOD[2])
+        c.paint(cx - half, y, WOOD[1]); c.paint(cx - half + 1, y, WOOD[1])
+        c.paint(cx + half, y, WOOD[3])
+    for sx in (cx - 7, cx, cx + 7):                          # staves
+        V(c, sx, top + 3, base_y - 2, WOOD[3])
+    for hy in (top + 3, (top + base_y) // 2, base_y - 4):    # iron hoops
+        t = (hy - top) / float(base_y - top)
+        half = 11 + int(round(4 * (1 - abs(t - 0.5) * 2)))
+        R(c, cx - half - 1, hy, cx + half + 1, hy + 1, META[2])
+        c.paint(cx - half - 1, hy, META[1]); c.paint(cx - half, hy, META[1])
+    E(c, cx, top + 1, 9, 3, WOOD[1])                         # lid
+    E(c, cx, top, 6, 2, WOOD[2])
+    c.outline(INK)
+
+
+def draw_crate(c):
+    """Planked wooden crate with diagonal braces ~42×42."""
+    cx, base_y = 21, 40
+    x0, y0, x1, y1 = cx - 18, base_y - 36, cx + 18, base_y
+    R(c, x0, y0, x1, y1, WOOD[2])
+    R(c, x0, y0, x0 + 2, y1, WOOD[1])                        # lit left
+    R(c, x1 - 2, y0, x1, y1, WOOD[3])                        # shade right
+    R(c, x0, y0, x1, y0 + 2, WOOD[1])                        # lit top
+    R(c, x0, y1 - 2, x1, y1, WOOD[3])
+    H(c, x0, x1, (y0 + y1) // 2, WOOD[3])                    # plank seam
+    L(c, x0, y1, x1, y0, WOOD[3])                            # X braces
+    L(c, x0, y0, x1, y1, WOOD[3])
+    for bx in (x0 + 1, x1 - 1):                              # corner battens
+        V(c, bx, y0, y1, WOOD[1])
+    c.outline(INK)
+
+
+def draw_chest(c):
+    """Iron-bound treasure chest with a domed lid + brass lock ~48×40."""
+    GOLD = [rgb(228, 192, 96), rgb(196, 156, 70), rgb(150, 116, 48)]
+    cx, base_y = 24, 38
+    x0, x1 = cx - 20, cx + 20
+    R(c, x0, base_y - 15, x1, base_y, WOOD[2])               # body
+    R(c, x0, base_y - 15, x0 + 2, base_y, WOOD[1])
+    R(c, x1 - 2, base_y - 15, x1, base_y, WOOD[3])
+    for i in range(13):                                      # domed lid
+        half = 20 * (13 - i) // 13
+        col = WOOD[1] if i < 3 else (WOOD[2] if i < 9 else WOOD[3])
+        R(c, cx - half, base_y - 15 - i, cx + half, base_y - 15 - i, col)
+    R(c, x0, base_y - 16, x1, base_y - 15, META[3])          # lid lip
+    for bx in (cx - 12, cx + 12):                            # iron bands
+        V(c, bx - 1, base_y - 26, base_y - 1, META[1]); V(c, bx, base_y - 26, base_y - 1, META[2])
+    R(c, cx - 3, base_y - 12, cx + 3, base_y - 5, GOLD[0])   # lock plate
+    c.paint(cx, base_y - 8, GOLD[2]); c.paint(cx - 3, base_y - 12, GOLD[1])
+    c.outline(INK)
+
+
+def draw_campfire(c):
+    """Stone-ringed campfire: crossed logs + a glowing flame ~48×42."""
+    cx, base_y = 24, 36
+    L(c, cx - 12, base_y - 3, cx + 12, base_y - 11, BARK[2])     # crossed logs
+    L(c, cx - 12, base_y - 4, cx + 12, base_y - 12, BARK[1])
+    L(c, cx + 12, base_y - 3, cx - 12, base_y - 11, BARK[3])
+    L(c, cx + 12, base_y - 4, cx - 12, base_y - 12, BARK[2])
+    ring = [(-18, -1), (-12, -5), (0, -7), (12, -5), (18, -1), (12, 1), (-12, 1)]
+    for dx, dy in ring:                                          # stone ring (front)
+        c.disc(cx + dx, base_y + dy, 4, STONE[2])
+        c.paint(cx + dx - 1, base_y + dy - 1, STONE[1])
+        c.paint(cx + dx + 1, base_y + dy + 1, STONE[3])
+    c.outline(INK)
+    for i, col in enumerate((EMBER[2], EMBER[1], EMBER[0])):     # flame (after outline)
+        E(c, cx, base_y - 11 - i * 4, 8 - i * 2, 6 - i, col)
+    c.paint(cx, base_y - 22, FLOW[0]); c.paint(cx, base_y - 21, EMBER[0])
+
+
+def draw_bed(c):
+    """Bed, top-down — frame, pillow + blanket, footboard-anchored ~64×104."""
+    cx, base_y = 32, 100
+    x0, x1, top = cx - 28, cx + 28, base_y - 100
+    R(c, x0, top, x1, base_y, WOOD[3])                       # frame
+    R(c, x0 + 2, top + 2, x1 - 2, base_y - 2, WOOD[2])
+    R(c, x0 + 3, top + 4, x1 - 3, base_y - 4, PLAS[1])       # mattress
+    R(c, x0 + 6, top + 6, x1 - 6, top + 22, PLAS[0])         # pillow (head)
+    R(c, x0 + 6, top + 21, x1 - 6, top + 22, PLAS[2])
+    R(c, x0 + 3, top + 30, x1 - 3, base_y - 4, CLOTH[1])     # blanket
+    R(c, x0 + 3, top + 30, x1 - 3, top + 32, CLOTH[0])       # top fold lit
+    R(c, x0 + 3, top + 30, x0 + 5, base_y - 4, CLOTH[0])
+    R(c, x1 - 5, top + 30, x1 - 3, base_y - 4, CLOTH[2])
+    for px in (x0, x1 - 3):                                  # corner posts
+        for py in (top, base_y - 4):
+            R(c, px, py, px + 3, py + 4, WOOD[1])
+    c.outline(INK)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # GROUND TILES  (32×32 seamless, no alpha)
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -1009,6 +1109,17 @@ SPRITES = [
      "tree stump with rings"),
     ("log.png",             72,  32,  36,  30, draw_log,
      "fallen log"),
+    # ── Small props (camp / storage) ───────────────────────────────────────
+    ("barrel.png",          36,  52,  18,  50, draw_barrel,
+     "hooped wooden barrel"),
+    ("crate.png",           42,  42,  21,  40, draw_crate,
+     "planked wooden crate"),
+    ("chest.png",           48,  40,  24,  38, draw_chest,
+     "iron-bound treasure chest"),
+    ("campfire.png",        48,  42,  24,  36, draw_campfire,
+     "stone-ringed campfire with flame"),
+    ("bed.png",             64, 104,  32, 100, draw_bed,
+     "top-down bed, footboard-anchored"),
 ]
 
 TILES = [
