@@ -20,6 +20,10 @@ var _title: Label
 var _subtitle: Label
 var _fade: ColorRect
 var _done: bool = false
+# The vista art is composed in a 480x270 space; scale it up to fill the actual
+# (now hi-fi 1280x720) viewport. Both are 16:9, so one uniform factor fits exactly.
+var _fill: float = 1.0
+var _center: Vector2 = Vector2(240, 135)
 
 func _ready() -> void:
 	layer = 95  # above the world, HUD and weather; below dialogue (100)
@@ -27,6 +31,10 @@ func _ready() -> void:
 	_build()
 
 func _build() -> void:
+	var vw := float(int(ProjectSettings.get_setting("display/window/size/viewport_width", 1280)))
+	var vh := float(int(ProjectSettings.get_setting("display/window/size/viewport_height", 720)))
+	_fill = vw / VW
+	_center = Vector2(vw, vh) * 0.5
 	_vista = Node2D.new()
 	add_child(_vista)
 	_add_layer("res://assets/placeholder/wilds_sky.png", Vector2(0, 0))
@@ -40,9 +48,11 @@ func _build() -> void:
 
 	_fade = ColorRect.new()
 	_fade.color = Color(0, 0, 0, 1)   # start black; play() reveals
-	_fade.size = Vector2(VW, VH)
+	_fade.size = _center * 2.0
 	_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_fade)
+
+	_set_zoom(1.0)   # apply the base fill scale so the vista covers the viewport
 
 func _add_layer(path: String, pos: Vector2) -> Sprite2D:
 	var s := Sprite2D.new()
@@ -56,12 +66,12 @@ func _make_label(text: String, y: float, size: int) -> Label:
 	var l := Label.new()
 	l.text = text
 	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	l.add_theme_font_size_override("font_size", size)
+	l.add_theme_font_size_override("font_size", int(round(size * _fill)))
 	l.add_theme_color_override("font_color", PARCHMENT)
 	l.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
 	l.add_theme_constant_override("shadow_offset_y", 1)
-	l.position = Vector2(0, y)
-	l.size = Vector2(VW, 24)
+	l.position = Vector2(0, y * _fill)
+	l.size = Vector2(_center.x * 2.0, 24 * _fill)
 	l.modulate = Color(1, 1, 1, 0)
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(l)
@@ -93,8 +103,9 @@ func play() -> void:
 func _set_zoom(z: float) -> void:
 	if _vista == null:
 		return
-	_vista.scale = Vector2(z, z)
-	_vista.position = CENTER * (1.0 - z)   # zoom about screen centre
+	# base fill scale (480x270 -> viewport) times the cinematic push-in z, about centre
+	_vista.scale = Vector2(z * _fill, z * _fill)
+	_vista.position = _center * (1.0 - z)
 
 func _input(event: InputEvent) -> void:
 	if _done:

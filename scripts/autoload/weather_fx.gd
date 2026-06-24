@@ -13,8 +13,8 @@ extends CanvasLayer
 ## All effects are code-built CPUParticles2D over tiny runtime textures (no assets),
 ## so tuning weather feel lives entirely here.
 
-const VW := 480.0
-const VH := 270.0
+const VW := 1280.0
+const VH := 720.0
 
 var _rain: CPUParticles2D
 var _snow: CPUParticles2D
