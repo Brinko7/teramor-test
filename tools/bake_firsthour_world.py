@@ -927,6 +927,136 @@ def draw_bed(c):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# INTERIOR FURNITURE  (foot-anchored, transparent bg, grounded palette)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def draw_table(c):
+    """Plank-top wooden table ~64×48."""
+    cx, base_y = 32, 46
+    for lx in (cx - 26, cx + 23):                            # legs
+        R(c, lx, base_y - 18, lx + 3, base_y, WOOD[3])
+        c.paint(lx, base_y - 18, WOOD[2])
+    R(c, cx - 30, base_y - 32, cx + 30, base_y - 18, WOOD[2])   # top
+    R(c, cx - 30, base_y - 32, cx + 30, base_y - 30, WOOD[1])   # lit front lip
+    R(c, cx - 30, base_y - 20, cx + 30, base_y - 18, WOOD[3])
+    for px in (cx - 15, cx, cx + 15):                        # plank seams
+        V(c, px, base_y - 31, base_y - 19, WOOD[3])
+    c.outline(INK)
+
+
+def draw_chair(c):
+    """Simple wooden chair ~28×44."""
+    cx, base_y = 14, 42
+    R(c, cx - 9, base_y - 14, cx + 9, base_y - 9, WOOD[2])   # seat
+    R(c, cx - 9, base_y - 14, cx + 9, base_y - 13, WOOD[1])
+    for lx in (cx - 9, cx + 7):                              # front legs
+        R(c, lx, base_y - 9, lx + 2, base_y, WOOD[3])
+    R(c, cx - 9, base_y - 30, cx - 7, base_y - 14, WOOD[3])  # back posts
+    R(c, cx + 7, base_y - 30, cx + 9, base_y - 14, WOOD[3])
+    for by in (base_y - 28, base_y - 24, base_y - 20):       # back slats
+        R(c, cx - 7, by, cx + 7, by + 1, WOOD[2])
+    c.outline(INK)
+
+
+def draw_hearth(c):
+    """Stone fireplace + mantle with a low fire ~84×84 (against a wall)."""
+    cx, base_y = 42, 80
+    R(c, cx - 38, base_y - 70, cx + 38, base_y, STONE[2])    # stone mass
+    c.mottle(cx - 37, base_y - 69, cx + 37, base_y - 1, STONE, random.Random(3), scale=7)
+    R(c, cx - 38, base_y - 70, cx + 38, base_y - 68, STONE[1])
+    R(c, cx - 40, base_y - 50, cx + 40, base_y - 44, WOOD[2])    # mantle shelf
+    R(c, cx - 40, base_y - 50, cx + 40, base_y - 48, WOOD[1])
+    R(c, cx - 22, base_y - 36, cx + 22, base_y, INK)        # firebox opening
+    R(c, cx - 22, base_y - 36, cx + 22, base_y - 34, STONE[4])
+    L(c, cx - 16, base_y - 4, cx + 16, base_y - 14, BARK[2])     # logs
+    L(c, cx + 16, base_y - 4, cx - 16, base_y - 14, BARK[3])
+    c.outline(INK)
+    for i, col in enumerate((EMBER[2], EMBER[1], EMBER[0])):     # flames
+        E(c, cx, base_y - 12 - i * 4, 11 - i * 3, 7 - i, col)
+    c.paint(cx, base_y - 26, FLOW[0])
+
+
+def draw_bookshelf(c):
+    """Tall bookshelf packed with books ~52×84."""
+    cx, base_y = 26, 80
+    x0, x1, top = cx - 24, cx + 24, base_y - 80
+    R(c, x0, top, x1, base_y, WOOD[3])                       # carcass
+    R(c, x0 + 2, top + 2, x1 - 2, base_y - 2, WOOD[4])       # dark interior
+    rnd = random.Random(17)
+    BOOK = [rgb(150, 70, 60), rgb(96, 110, 76), rgb(78, 96, 128), rgb(168, 140, 80), rgb(120, 84, 120)]
+    for shelf in range(4):                                   # 4 shelves of books
+        sy = top + 6 + shelf * 18
+        R(c, x0 + 2, sy + 14, x1 - 2, sy + 16, WOOD[2])      # shelf board
+        bx = x0 + 4
+        while bx < x1 - 5:
+            bw = rnd.randrange(3, 6); bh = rnd.randrange(10, 14)
+            col = BOOK[rnd.randrange(len(BOOK))]
+            R(c, bx, sy + 14 - bh, bx + bw - 1, sy + 13, col)
+            c.paint(bx, sy + 14 - bh, col)
+            bx += bw + 1
+    R(c, x0, top, x1, top + 2, WOOD[2])                      # top edge lit
+    c.outline(INK)
+
+
+def draw_cupboard(c):
+    """Two-door cupboard ~48×76."""
+    cx, base_y = 24, 72
+    x0, x1, top = cx - 22, cx + 22, base_y - 72
+    R(c, x0, top, x1, base_y, WOOD[2])
+    R(c, x0, top, x0 + 2, base_y, WOOD[1])
+    R(c, x1 - 2, top, x1, base_y, WOOD[3])
+    R(c, x0, top, x1, top + 2, WOOD[1])
+    V(c, cx, top + 4, base_y - 4, WOOD[3])                  # centre split
+    for dx in (cx - 16, cx + 12):                           # door panels
+        R(c, dx, top + 6, dx + 4, base_y - 8, WOOD[3])
+        R(c, dx, top + 6, dx + 4, top + 7, WOOD[1])
+    c.paint(cx - 3, base_y - 36, META[1]); c.paint(cx + 3, base_y - 36, META[1])  # knobs
+    c.outline(INK)
+
+
+def draw_counter(c):
+    """Long shop/tavern counter ~100×52."""
+    cx, base_y = 50, 48
+    x0, x1 = cx - 46, cx + 46
+    R(c, x0, base_y - 24, x1, base_y, WOOD[3])              # front face
+    c.mottle(x0 + 1, base_y - 23, x1 - 1, base_y - 1, WOOD, random.Random(9), scale=10)
+    R(c, x0 - 2, base_y - 30, x1 + 2, base_y - 24, WOOD[2])  # overhang top
+    R(c, x0 - 2, base_y - 30, x1 + 2, base_y - 28, WOOD[1])  # lit top edge
+    for px in range(x0 + 8, x1, 18):                        # panel grooves
+        V(c, px, base_y - 22, base_y - 2, WOOD[4])
+    c.outline(INK)
+
+
+def draw_rug(c):
+    """Woven oval rug, lies flat ~88×60 (centre-anchored)."""
+    cx, cy = 44, 30
+    RUG = [rgb(150, 78, 70), rgb(120, 60, 56), rgb(92, 46, 44)]
+    TRIM = [rgb(196, 170, 120), rgb(160, 134, 90)]
+    E(c, cx, cy, 42, 28, RUG[1])
+    E(c, cx, cy, 42, 28, RUG[2])
+    E(c, cx, cy, 38, 25, RUG[0])
+    E(c, cx, cy, 30, 19, RUG[1])
+    E(c, cx, cy, 14, 9, TRIM[1])
+    E(c, cx, cy, 10, 6, RUG[0])
+    for tx, ty in [(2, 30), (86, 30), (44, 2), (44, 58), (16, 8), (72, 8), (16, 52), (72, 52)]:
+        c.paint(tx, ty, TRIM[0])                            # border ticks
+    c.outline(INK)
+
+
+def draw_door_wood(c):
+    """Plank door in a timber frame, foot-anchored ~56×72 (for the south wall)."""
+    cx, base_y = 28, 70
+    R(c, cx - 26, base_y - 70, cx + 26, base_y, WOOD[4])        # frame
+    R(c, cx - 21, base_y - 66, cx + 21, base_y, WOOD[2])        # door slab
+    for px in (cx - 14, cx, cx + 14):                           # planks
+        V(c, px, base_y - 64, base_y - 2, WOOD[3])
+    R(c, cx - 21, base_y - 66, cx + 21, base_y - 64, WOOD[1])   # lit head
+    R(c, cx - 21, base_y - 40, cx + 21, base_y - 37, WOOD[4])   # cross brace
+    c.disc(cx + 15, base_y - 34, 2, META[1])                    # handle
+    c.outline(INK)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # GROUND TILES  (32×32 seamless, no alpha)
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -996,6 +1126,34 @@ def draw_plaza32(c):
             c.rect(max(0, bx), max(0, by), min(31, bx + bw), min(31, by + bh), col)
             c.rect(max(0, bx), max(0, by), min(31, bx + bw), max(0, by), STONE[0])
             c.rect(max(0, bx), max(0, by), max(0, bx), min(31, by + bh), STONE[0])
+
+
+def draw_wall_daub32(c):
+    """Seamless wattle-and-daub interior wall 32×32, vertical timber stud per tile."""
+    rnd = random.Random(81)
+    c.mottle(0, 0, 31, 31, PLAS, rnd, scale=8)              # plaster daub
+    R(c, 0, 0, 2, 31, WOOD[3])                              # timber stud (tiles -> every 32px)
+    c.paint(1, 0, WOOD[2])
+    for _ in range(10):                                     # daub speckle
+        c.paint(rnd.randrange(4, 31), rnd.randrange(0, 32),
+                PLAS[0] if rnd.random() < 0.5 else PLAS[2])
+
+
+def draw_wood_floor32(c):
+    """Seamless plank-wood interior floor 32×32 (planks run horizontal)."""
+    rnd = random.Random(71)
+    PLANK = 8
+    for y in range(32):
+        base = WOOD[2] if (y // PLANK) % 2 == 0 else WOOD[3]
+        for x in range(32):
+            c.paint(x, y, base)
+    for band in range(0, 32, PLANK):                        # long floorboards
+        H(c, 0, 31, band, BARK[3])                          # seam groove
+        H(c, 0, 31, band + 1, WOOD[1])                      # lit board top
+    for _ in range(30):                                     # lengthwise grain streaks
+        gy = rnd.randrange(0, 32)
+        gx = rnd.randrange(0, 26)
+        c.line(gx, gy, gx + rnd.randrange(3, 6), gy, WOOD[1] if rnd.random() < 0.5 else WOOD[4])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1120,6 +1278,23 @@ SPRITES = [
      "stone-ringed campfire with flame"),
     ("bed.png",             64, 104,  32, 100, draw_bed,
      "top-down bed, footboard-anchored"),
+    # ── Interior furniture ─────────────────────────────────────────────────
+    ("table.png",           64,  48,  32,  46, draw_table,
+     "plank-top wooden table"),
+    ("chair.png",           28,  44,  14,  42, draw_chair,
+     "slat-back wooden chair"),
+    ("hearth.png",          84,  84,  42,  80, draw_hearth,
+     "stone fireplace + mantle with fire"),
+    ("bookshelf.png",       52,  84,  26,  80, draw_bookshelf,
+     "tall bookshelf of books"),
+    ("cupboard.png",        48,  76,  24,  72, draw_cupboard,
+     "two-door cupboard"),
+    ("counter.png",        100,  52,  50,  48, draw_counter,
+     "long shop/tavern counter"),
+    ("rug.png",             88,  60,  44,  30, draw_rug,
+     "woven oval rug (centre-anchored, lies flat)"),
+    ("door_wood.png",       56,  72,  28,  70, draw_door_wood,
+     "plank door for an interior south wall"),
 ]
 
 TILES = [
@@ -1129,6 +1304,8 @@ TILES = [
     ("path32.png",   32, 32, draw_path32),
     ("stone32.png",  32, 32, draw_stone32),
     ("plaza32.png",  32, 32, draw_plaza32),
+    ("wood_floor32.png", 32, 32, draw_wood_floor32),
+    ("wall_daub32.png",  32, 32, draw_wall_daub32),
 ]
 
 DECALS = [
