@@ -1,20 +1,28 @@
 extends Node
 class_name StatusEffect
 
-## A timed status applied to a target by parenting one of these under it. BURN
-## ticks damage through the target's take_damage(); SLOW scales the target's
-## `speed` and restores it on expiry. Reapplying the same kind refreshes the
-## timer instead of stacking. Self-frees when its duration elapses.
+## A timed status applied to a target by parenting one of these under it.
+##   BURN / POISON / BLEED — damage-over-time, ticking through take_damage() (each
+##     tick pops a damage number, which is the on-screen tell).
+##   SLOW  — scales the target's `speed` by `magnitude` in (0,1), restored on expiry.
+##   STUN  — roots the target (speed 0) and reads as stunned via is_stunned(), so
+##     enemies stop moving and can't wind up an attack until it lifts.
+## Reapplying the same kind refreshes the timer instead of stacking. Self-frees when
+## its duration elapses.
 
-enum Kind { NONE, BURN, SLOW }
+enum Kind { NONE, BURN, SLOW, POISON, BLEED, STUN }
 
 const TICK_INTERVAL := 0.5
+## The kinds that deal damage over time.
+const DOT_KINDS := [Kind.BURN, Kind.POISON, Kind.BLEED]
+## Kinds that zero the target's speed for their duration.
+const ROOT_KINDS := [Kind.STUN]
 
 var kind: int = Kind.NONE
 var duration: float = 0.0
-## BURN: damage dealt per tick. SLOW: unused.
+## DoT kinds: damage per tick. Others: unused.
 var power: int = 0
-## SLOW: speed multiplier in (0,1). BURN: unused.
+## SLOW: speed multiplier in (0,1). Others: unused.
 var magnitude: float = 1.0
 
 var _elapsed: float = 0.0
@@ -37,16 +45,25 @@ static func apply(target: Node, kind_: int, power_: int, duration_: float, magni
 	fx.magnitude = magnitude_
 	target.add_child(fx)
 
+## True while `target` is under a rooting status (e.g. STUN) — used by AI to halt.
+static func is_stunned(target: Node) -> bool:
+	if target == null:
+		return false
+	for child: Node in target.get_children():
+		if child is StatusEffect and (child as StatusEffect).kind in ROOT_KINDS:
+			return true
+	return false
+
 func _ready() -> void:
-	if kind == Kind.SLOW:
+	if kind == Kind.SLOW or kind in ROOT_KINDS:
 		var t := get_parent()
 		if t != null and "speed" in t:
 			_orig_speed = t.speed
-			t.speed = t.speed * magnitude
+			t.speed = t.speed * (0.0 if kind in ROOT_KINDS else magnitude)
 
 func _process(delta: float) -> void:
 	_elapsed += delta
-	if kind == Kind.BURN:
+	if kind in DOT_KINDS:
 		_tick += delta
 		while _tick >= TICK_INTERVAL:
 			_tick -= TICK_INTERVAL
@@ -61,7 +78,7 @@ func refresh(new_duration: float) -> void:
 	duration = maxf(duration, new_duration)
 
 func _expire() -> void:
-	if kind == Kind.SLOW and _orig_speed >= 0.0:
+	if _orig_speed >= 0.0:
 		var t := get_parent()
 		if t != null and "speed" in t:
 			t.speed = _orig_speed

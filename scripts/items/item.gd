@@ -44,6 +44,18 @@ const RARITY_COLORS := [
 ## and re-apply the rolled stats on top.
 @export var base_path: String = ""
 
+## --- On-hit status (weapons) ------------------------------------------------
+## A weapon may carry an on-hit status (StatusEffect.Kind) that lands with a
+## chance on each strike — granted by status affixes like "Flaming"/"Venomous".
+@export var on_hit_status: int = 0   # StatusEffect.Kind; 0 = NONE
+@export var on_hit_power: int = 0    # DoT damage per tick
+@export var on_hit_duration: float = 0.0
+@export_range(0.0, 1.0) var on_hit_chance: float = 0.0
+@export var on_hit_magnitude: float = 1.0   # SLOW: speed multiplier
+
+func has_on_hit() -> bool:
+	return on_hit_status != 0 and on_hit_chance > 0.0
+
 func is_weapon() -> bool:
 	return self is WeaponItem
 
@@ -62,7 +74,9 @@ func rarity_color() -> Color:
 ## True if this item carries any equip affix (for tooltip rendering).
 func has_affixes() -> bool:
 	return bonus_melee != 0 or bonus_ranged != 0 or bonus_spell != 0 \
-		or bonus_max_hp != 0 or bonus_defense != 0 or lifesteal > 0.0
+		or bonus_max_hp != 0 or bonus_defense != 0 or lifesteal > 0.0 or has_on_hit()
+
+const ON_HIT_NAMES := ["", "Burn", "Slow", "Poison", "Bleed", "Stun"]
 
 ## Affix bonuses as ready-made "+N Melee" style lines for tooltips.
 func affix_lines() -> Array:
@@ -79,4 +93,6 @@ func affix_lines() -> Array:
 		lines.append("+%d Defense" % bonus_defense)
 	if lifesteal > 0.0:
 		lines.append("%d%% Lifesteal" % int(round(lifesteal * 100.0)))
+	if has_on_hit() and on_hit_status < ON_HIT_NAMES.size():
+		lines.append("%d%% %s on hit" % [int(round(on_hit_chance * 100.0)), ON_HIT_NAMES[on_hit_status]])
 	return lines
