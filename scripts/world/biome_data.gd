@@ -19,6 +19,13 @@ class_name BiomeData
 ## and underground (cave).
 @export var has_canopy: bool = false
 
+## Macro layout archetype the generator shapes the area around, so biomes don't all
+## move like the same ribbon: &"ribbon" (a meandering forest path, the default),
+## &"open" (gentle near-straight trail, few features — plains/desert breadth),
+## &"winding" (serpentine path through crowding features — deep woods), or
+## &"corridor" (a clear path hemmed by dense features — caves/canyons).
+@export var layout: StringName = &"ribbon"
+
 ## Enemy scene paths and matching relative spawn weights (parallel arrays; a
 ## missing/short weights array means uniform odds).
 @export var enemy_paths: PackedStringArray = PackedStringArray()

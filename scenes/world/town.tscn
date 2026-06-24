@@ -106,6 +106,8 @@ shape = SubResource("wall_h_bottom")
 position = Vector2(1488, 1432)
 shape = SubResource("wall_h_bottom")
 
+[node name="Roads" type="Node2D" parent="."]
+
 [node name="Entities" type="Node2D" parent="."]
 y_sort_enabled = true
 

@@ -6,6 +6,7 @@
 script = ExtResource("1_script")
 id = &"cave"
 display_name = "The Undervault"
+layout = &"corridor"
 ground_texture_path = "res://assets/placeholder/grass.png"
 ground_tint = Color(0.42, 0.44, 0.55, 1)
 enemy_paths = PackedStringArray("res://scenes/entities/enemy_brute.tscn", "res://scenes/entities/enemy.tscn", "res://scenes/entities/enemy_wolf.tscn")
