@@ -1,13 +1,12 @@
-[gd_scene load_steps=31 format=3]
+[gd_scene load_steps=27 format=3]
 
 [ext_resource type="Script" path="res://scripts/interior.gd" id="1_interior"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/tavern_room.png" id="2_room"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/counter.png" id="3_counter"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/counter.png" id="3_counter"]
 [ext_resource type="Script" path="res://scripts/flicker_light.gd" id="4_flicker"]
 [ext_resource type="Texture2D" path="res://assets/placeholder/light_soft.png" id="5_light"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/hearth.png" id="6_hearth"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/table.png" id="7_table"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/chair.png" id="8_chair"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/hearth.png" id="6_hearth"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/table.png" id="7_table"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/chair.png" id="8_chair"]
 [ext_resource type="PackedScene" path="res://scenes/entities/npc.tscn" id="9_npc"]
 [ext_resource type="PackedScene" path="res://scenes/entities/contract_board.tscn" id="10_board"]
 [ext_resource type="PackedScene" path="res://scenes/entities/transition_zone.tscn" id="11_tz"]
@@ -26,176 +25,145 @@
 [ext_resource type="Texture2D" path="res://assets/placeholder/npc_keeper.png" id="23_keeper"]
 [ext_resource type="Resource" path="res://resources/npcs/sorrel.tres" id="24_sorrel"]
 
-[sub_resource type="RectangleShape2D" id="wall_v"]
-size = Vector2(12, 224)
-
-[sub_resource type="RectangleShape2D" id="wall_h_bottom"]
-size = Vector2(320, 12)
-
-[sub_resource type="RectangleShape2D" id="wall_h_top"]
-size = Vector2(170, 16)
-
 [sub_resource type="RectangleShape2D" id="counter_col"]
-size = Vector2(98, 12)
+size = Vector2(96, 14)
 
 [sub_resource type="RectangleShape2D" id="hearth_col"]
-size = Vector2(48, 14)
+size = Vector2(72, 14)
 
 [sub_resource type="RectangleShape2D" id="table_col"]
-size = Vector2(40, 12)
+size = Vector2(54, 16)
 
 [node name="TavernInterior" type="Node2D"]
 script = ExtResource("1_interior")
+room_size = Vector2i(608, 432)
 
 [node name="Floor" type="Sprite2D" parent="."]
-texture = ExtResource("2_room")
 centered = false
-
-[node name="Walls" type="StaticBody2D" parent="."]
-
-[node name="WallLeft" type="CollisionShape2D" parent="Walls"]
-position = Vector2(10, 112)
-shape = SubResource("wall_v")
-
-[node name="WallRight" type="CollisionShape2D" parent="Walls"]
-position = Vector2(310, 112)
-shape = SubResource("wall_v")
-
-[node name="WallBottom" type="CollisionShape2D" parent="Walls"]
-position = Vector2(160, 220)
-shape = SubResource("wall_h_bottom")
-
-[node name="WallTopLeft" type="CollisionShape2D" parent="Walls"]
-position = Vector2(80, 52)
-shape = SubResource("wall_h_top")
-
-[node name="WallTopRight" type="CollisionShape2D" parent="Walls"]
-position = Vector2(240, 52)
-shape = SubResource("wall_h_top")
 
 [node name="Entities" type="Node2D" parent="."]
 y_sort_enabled = true
 
 [node name="Hearth" type="StaticBody2D" parent="Entities"]
 y_sort_enabled = true
-position = Vector2(280, 108)
+position = Vector2(516, 132)
 collision_layer = 1
 collision_mask = 0
 
 [node name="Sprite2D" type="Sprite2D" parent="Entities/Hearth"]
 texture = ExtResource("6_hearth")
 centered = false
-offset = Vector2(-28, -58)
+offset = Vector2(-42, -80)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Entities/Hearth"]
 position = Vector2(0, -7)
 shape = SubResource("hearth_col")
 
 [node name="Fire" type="PointLight2D" parent="Entities/Hearth"]
-position = Vector2(-1, -18)
+position = Vector2(0, -36)
 color = Color(1, 0.74, 0.42, 1)
 energy = 1.3
 texture = ExtResource("5_light")
-texture_scale = 1.5
+texture_scale = 2.4
 script = ExtResource("4_flicker")
 base_energy = 1.35
 
 [node name="Counter" type="StaticBody2D" parent="Entities"]
 y_sort_enabled = true
-position = Vector2(160, 150)
+position = Vector2(280, 178)
 collision_layer = 1
 collision_mask = 0
 
 [node name="Sprite2D" type="Sprite2D" parent="Entities/Counter"]
 centered = false
-offset = Vector2(-54, -30)
+offset = Vector2(-50, -48)
 texture = ExtResource("3_counter")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Entities/Counter"]
-position = Vector2(0, -6)
+position = Vector2(0, -8)
 shape = SubResource("counter_col")
 
 [node name="ContractBoard" parent="Entities" instance=ExtResource("10_board")]
-position = Vector2(44, 98)
+position = Vector2(70, 150)
 board_title = "The Drowned Stag — Bounties"
 contracts = Array[Quest]([ExtResource("20_qwolf"), ExtResource("21_qband"), ExtResource("22_qbrute")])
 
 [node name="Table1" type="StaticBody2D" parent="Entities"]
 y_sort_enabled = true
-position = Vector2(92, 188)
+position = Vector2(150, 312)
 collision_layer = 1
 collision_mask = 0
 
 [node name="Sprite2D" type="Sprite2D" parent="Entities/Table1"]
 texture = ExtResource("7_table")
 centered = false
-offset = Vector2(-25, -30)
+offset = Vector2(-32, -46)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Entities/Table1"]
-position = Vector2(0, -7)
+position = Vector2(0, -8)
 shape = SubResource("table_col")
 
 [node name="Chair1Back" type="Sprite2D" parent="Entities"]
-position = Vector2(92, 170)
+position = Vector2(150, 274)
 texture = ExtResource("8_chair")
 centered = false
-offset = Vector2(-9, -26)
+offset = Vector2(-14, -42)
 
 [node name="Chair1Front" type="Sprite2D" parent="Entities"]
-position = Vector2(92, 206)
+position = Vector2(150, 356)
 texture = ExtResource("8_chair")
 centered = false
-offset = Vector2(-9, -26)
+offset = Vector2(-14, -42)
 
 [node name="Table2" type="StaticBody2D" parent="Entities"]
 y_sort_enabled = true
-position = Vector2(236, 188)
+position = Vector2(450, 312)
 collision_layer = 1
 collision_mask = 0
 
 [node name="Sprite2D" type="Sprite2D" parent="Entities/Table2"]
 texture = ExtResource("7_table")
 centered = false
-offset = Vector2(-25, -30)
+offset = Vector2(-32, -46)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Entities/Table2"]
-position = Vector2(0, -7)
+position = Vector2(0, -8)
 shape = SubResource("table_col")
 
 [node name="Chair2Back" type="Sprite2D" parent="Entities"]
-position = Vector2(236, 170)
+position = Vector2(450, 274)
 texture = ExtResource("8_chair")
 centered = false
-offset = Vector2(-9, -26)
+offset = Vector2(-14, -42)
 
 [node name="Chair2Front" type="Sprite2D" parent="Entities"]
-position = Vector2(236, 206)
+position = Vector2(450, 356)
 texture = ExtResource("8_chair")
 centered = false
-offset = Vector2(-9, -26)
+offset = Vector2(-14, -42)
 
 [node name="Barrel1" parent="Entities" instance=ExtResource("12_barrel")]
-position = Vector2(40, 150)
+position = Vector2(560, 384)
 
 [node name="TavernKeeper" parent="Entities" instance=ExtResource("9_npc")]
-position = Vector2(160, 116)
+position = Vector2(280, 138)
 speaker_name = "Bram, the Keeper"
 lines = PackedStringArray("Welcome to the Drowned Stag, traveler.", "Your father? Aye — Elkar drank here the night before he took a contract into the Deepwood. Never came back.", "Folk say the woods swallowed him. I'm not so sure. Check the board, and mind yourself out there.")
 offered_quest = ExtResource("19_qelkar")
 sprite_texture = ExtResource("23_keeper")
 
 [node name="Sorrel" parent="Entities" instance=ExtResource("9_npc")]
-position = Vector2(270, 198)
+position = Vector2(450, 250)
 data = ExtResource("24_sorrel")
 
 [node name="Player" parent="Entities" instance=ExtResource("13_player")]
-position = Vector2(160, 188)
+position = Vector2(300, 372)
 
 [node name="from_town" type="Marker2D" parent="Entities" groups=["spawn"]]
-position = Vector2(160, 188)
+position = Vector2(300, 372)
 
 [node name="ExitDoor" parent="Entities" instance=ExtResource("11_tz")]
-position = Vector2(160, 208)
+position = Vector2(304, 404)
 target_scene = "res://scenes/world/town.tscn"
 target_spawn = "to_tavern"
 

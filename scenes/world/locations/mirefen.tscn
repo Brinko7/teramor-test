@@ -1,7 +1,7 @@
 [gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/location.gd" id="e1"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/dirt.png" id="e2"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/dirt32.png" id="e2"]
 [ext_resource type="PackedScene" path="res://scenes/entities/player.tscn" id="e3"]
 [ext_resource type="PackedScene" path="res://scenes/ui/world_hud.tscn" id="e4"]
 [ext_resource type="Script" path="res://scripts/day_night.gd" id="e5"]

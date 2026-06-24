@@ -1,8 +1,8 @@
 [gd_scene load_steps=2 format=3]
 
-[ext_resource type="Texture2D" path="res://assets/placeholder/flower.png" id="1_tex"]
+[ext_resource type="Texture2D" path="res://assets/remaster/world/flower.png" id="1_tex"]
 
 [node name="Flower" type="Sprite2D"]
 centered = false
-offset = Vector2(-8, -16)
+offset = Vector2(-14, -34)
 texture = ExtResource("1_tex")
