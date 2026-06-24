@@ -127,12 +127,20 @@ var _dodge_cd: float = 0.0
 var _dodge_dir: Vector2 = Vector2.DOWN
 ## Cosmetic rendering (worn gear, held weapon/shield), created in _ready().
 var _visuals: PlayerVisuals
+## Timed food buffs, folded into the combat math. Created in _ready().
+var _buffs: PlayerBuffs
 ## Scene-placed start position, used as the respawn point after death.
 var _home_position: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group("player")
 	add_to_group("persistent")
+	# Food buffs — created early (named "Buffs" so ConsumableItem.use finds it) and
+	# before the HP pool is sized, since _max_hp() folds in a Max HP buff.
+	_buffs = PlayerBuffs.new()
+	_buffs.name = "Buffs"
+	add_child(_buffs)
+	_buffs.changed.connect(_on_gear_changed)
 	hitbox.monitoring = false
 	hitbox_shape.disabled = true
 	_visuals = PlayerVisuals.new()
@@ -185,7 +193,8 @@ func _use_lpc_visuals() -> void:
 
 ## Max HP from level/attributes/skills plus equipped-gear HP affixes.
 func _max_hp() -> int:
-	return stats.max_hp + (equipment.bonus_max_hp() if equipment != null else 0)
+	return stats.max_hp + (equipment.bonus_max_hp() if equipment != null else 0) \
+		+ (_buffs.bonus(PlayerBuffs.Stat.MAX_HP) if _buffs != null else 0)
 
 ## Equipped gear changed: resize the health pool to include gear HP affixes.
 func _on_gear_changed() -> void:
@@ -407,7 +416,8 @@ func _movement(delta: float) -> void:
 
 	var input := _move_input()
 
-	velocity = input * speed + _lunge
+	var move_speed: float = speed + float(_buffs.bonus(PlayerBuffs.Stat.SPEED) if _buffs != null else 0)
+	velocity = input * move_speed + _lunge
 	move_and_slide()
 	_lunge = _lunge.move_toward(Vector2.ZERO, LUNGE_DECAY * delta)
 
@@ -552,7 +562,8 @@ func _update_attack_anim(delta: float) -> void:
 func _fire_projectile(weapon: WeaponItem) -> void:
 	var arrow := ARROW_SCENE.instantiate() as Projectile
 	arrow.global_position = global_position + _aim * 8.0 + Vector2(0, -10)
-	var ranged_dmg: int = weapon.damage + stats.ranged_power() + (equipment.bonus_ranged() if equipment != null else 0)
+	var ranged_dmg: int = weapon.damage + stats.ranged_power() + (equipment.bonus_ranged() if equipment != null else 0) \
+		+ (_buffs.bonus(PlayerBuffs.Stat.RANGED) if _buffs != null else 0)
 	arrow.setup(_aim, ranged_dmg, weapon.projectile_speed, weapon.range)
 	if weapon.has_on_hit():
 		arrow.set_on_hit(weapon.on_hit_status, weapon.on_hit_power,
@@ -577,7 +588,8 @@ func _apply_hit(target) -> void:
 		var weapon: WeaponItem = _current_weapon()
 		var weapon_dmg: int = weapon.damage if weapon != null else attack_power
 		# Base (level + attributes + skills), the weapon's flat damage, and gear affixes.
-		var dmg: int = stats.attack_power() + weapon_dmg + (equipment.bonus_melee() if equipment != null else 0)
+		var dmg: int = stats.attack_power() + weapon_dmg + (equipment.bonus_melee() if equipment != null else 0) \
+			+ (_buffs.bonus(PlayerBuffs.Stat.MELEE) if _buffs != null else 0)
 		_hit_enemies.append(target)
 		target.take_damage(dmg, _aim * MELEE_KNOCKBACK, true)
 		var steal: float = equipment.lifesteal() if equipment != null else 0.0
@@ -630,6 +642,7 @@ func take_damage(amount: int) -> void:
 	# Mitigation = leveled defense + worn armor defense (+ shield block if raised).
 	var reduction: int = stats.defense_power()
 	reduction += equipment.total_defense() if equipment != null else 0
+	reduction += _buffs.bonus(PlayerBuffs.Stat.DEFENSE) if _buffs != null else 0
 	if _blocking:
 		var shield: ArmorItem = equipment.get_shield()
 		if shield != null:

@@ -584,6 +584,35 @@ touches the audio/VFX systems. New tool/fish art is baked by `tools/gen_tools.py
 starting kit hands the player all five tools. Full keybinds live in `docs/CONTROLS.md`.
 Headless coverage: `tools/validate_tools.gd`.
 
+### Cooking & food buffs (the farm → combat bridge)
+Produce becomes **food that grants timed combat buffs**, so the farming/foraging
+half feeds the fighting half. A cooked dish is just a `ConsumableItem` (`.tres`)
+that carries an optional buff alongside its heal: `buff_stat` (a `PlayerBuffs.Stat`
+index, `-1` = none), `buff_amount`, and `buff_duration`. `use(user)` heals **and**,
+when `user` has a `Buffs` child, calls `Buffs.apply(stat, amount, duration)`.
+
+- **PlayerBuffs** (`scripts/player_buffs.gd`, `class_name PlayerBuffs`) is a player
+  child node (created in `player.gd._ready`, named `"Buffs"`) holding timed bonuses
+  to derived stats — `MELEE / RANGED / SPELL / DEFENSE / MAX_HP / SPEED / REGEN`.
+  `apply` refreshes a same-stat buff to the **stronger** amount and **longer** time
+  (no stacking); `bonus(stat)` sums; `_process` ticks each down, accumulates REGEN
+  into whole-HP heals via the sibling `Health`, and emits `changed` on apply/expiry.
+  Buffs are **transient** (not saved). The player folds `bonus()` into its combat
+  math at five sites — `_max_hp()` (MAX_HP), movement (SPEED), ranged + melee damage,
+  and `take_damage` mitigation (DEFENSE) — recomputing the HP pool on `changed`.
+- **The dishes** live in `resources/items/produce/` and the **cooking recipes** in
+  `resources/recipes/cook_*.tres` (loaded by the existing crafting UI like any
+  recipe): Hearty Stew (turnip+mushroom → regen), Grilled Skewer (raw meat → melee),
+  Wheat Bread (wheat → defense), Forager's Salad (mushroom+herb → speed). Add a dish
+  by authoring a `ConsumableItem` + a `Recipe` — no code change. Icons are baked by
+  **`tools/gen_cooking.py`** (pixelforge style, `items/*.png`).
+- **The HUD** `scripts/buff_hud.gd` / `scenes/ui/buff_hud.tscn` (a code-built
+  CanvasLayer, layer 80, bundled into `world_hud.tscn` and the individual-HUD scenes)
+  lists each active buff with its countdown, bound to the player's `Buffs` via the
+  `"player"` group; hidden when none are active. The player menu tooltip shows a
+  dish's `buff_line()` ("+4 Melee for 90s"). Headless coverage:
+  `tools/validate_cooking.gd`.
+
 ### Recruiting the camp (the cozy-social → automation loop)
 Befriend a camp member, enlist them, and they tend the camp while you're off in
 the wilds — the bridge from the relationship layer to the farming layer.
