@@ -1,7 +1,7 @@
 extends SceneTree
 
 ## Headless check for the "living cities" pass:
-##   1. The Townsfolk pedestrian + its scene are well-formed (4x8 walk sheet).
+##   1. The Townsfolk pedestrian + its scene are well-formed (4x4 remaster walk sheet).
 ##   2. The TownsfolkCrowd spawner actually fills its PARENT with pedestrians (so
 ##      they y-sort against the town), positioned on the stroll waypoints.
 ##   3. Chimney smoke exists and is wired onto the hearth buildings.
@@ -34,10 +34,10 @@ func _run() -> void:
 	if folk_scene != null:
 		var folk := folk_scene.instantiate()
 		var spr := folk.get_node_or_null("Sprite2D") as Sprite2D
-		if _is_townsfolk(folk) and spr != null and spr.hframes == 4 and spr.vframes == 8:
-			_ok("Townsfolk scene uses the 4x8 directional walk sheet")
+		if _is_townsfolk(folk) and spr != null and spr.hframes == 4 and spr.vframes == 4:
+			_ok("Townsfolk scene uses the 4x4 remaster directional walk sheet")
 		else:
-			_err("Townsfolk scene is missing its walk-sheet Sprite2D (4x8)")
+			_err("Townsfolk scene is missing its walk-sheet Sprite2D (4x4)")
 		folk.free()
 	else:
 		_err("townsfolk.tscn failed to load")

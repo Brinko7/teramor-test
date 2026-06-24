@@ -7,14 +7,12 @@ extends Node2D
 
 const TOWNSFOLK := preload("res://scenes/entities/townsfolk.tscn")
 
+# Remaster villager walk-sheets (84x120 frames, 4 dirs x 4 phases). A per-body
+# tint + gait variation (below) keeps the small pool from reading as clones.
 const _DEFAULT_LOOKS: Array[String] = [
-	"res://assets/placeholder/npc_villager.png",
-	"res://assets/placeholder/npc_townswoman.png",
-	"res://assets/placeholder/npc_warden.png",
-	"res://assets/placeholder/npc_quartermaster.png",
-	"res://assets/placeholder/npc_grocer.png",
-	"res://assets/placeholder/npc_gossip.png",
-	"res://assets/placeholder/npc_child.png",
+	"res://assets/remaster/cast/villager_a.png",
+	"res://assets/remaster/cast/villager_b.png",
+	"res://assets/remaster/cast/villager_c.png",
 ]
 
 @export var count: int = 8

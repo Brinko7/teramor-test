@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/npc.gd" id="1_npc"]
-[ext_resource type="Texture2D" path="res://assets/placeholder/npc_villager.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/remaster/cast/villager_a.png" id="2_tex"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_radius"]
 radius = 42.0

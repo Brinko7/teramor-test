@@ -86,7 +86,8 @@ func _run() -> void:
 		else:
 			print("  [ok] %s 336x480 (segment model: 4 dirs x 4 phases)" % s)
 	# 6. separated paper-doll layers (the live-game customizable hero) — body per
-	#    skin tone, hair/beard per style, gear per set, all 336x480
+	#    skin tone, hair/beard per style, gear per set, all 924x480
+	#    (4 dirs x 11 frames: 4 walk + 4 melee-swing + 3 bow-draw, per bake_layers.py)
 	var layers: Array[String] = []
 	for t in ["fair", "tan", "brown", "deep"]:
 		layers.append("body_%s" % t)
@@ -101,10 +102,10 @@ func _run() -> void:
 	for name in layers:
 		var path := "res://assets/remaster/char/%s.png" % name
 		var tex := load(path) as Texture2D
-		if tex == null or tex.get_width() != 336 or tex.get_height() != 480:
-			_err("paper-doll layer %s missing or not 336x480" % path); bad += 1
+		if tex == null or tex.get_width() != 924 or tex.get_height() != 480:
+			_err("paper-doll layer %s missing or not 924x480" % path); bad += 1
 	if bad == 0:
-		print("  [ok] %d paper-doll layers present at 336x480" % layers.size())
+		print("  [ok] %d paper-doll layers present at 924x480" % layers.size())
 	# 7. character creator carries the layered preview (cloak + collar + body/hair)
 	var cc := load("res://scenes/ui/character_creation.tscn") as PackedScene
 	if cc == null or not cc.can_instantiate():
@@ -135,12 +136,12 @@ func _run() -> void:
 			if pi.get_node_or_null(n) == null:
 				pmiss += n + " "
 		var body := pi.get_node_or_null("Sprite2D") as Sprite2D
-		if body != null and (body.hframes != 4 or body.vframes != 4):
-			_err("player body sprite must be 4x4 frames (remaster model)")
+		if body != null and (body.hframes != 11 or body.vframes != 4):
+			_err("player body sprite must be 11x4 frames (remaster model: 4 walk + 4 swing + 3 draw)")
 		if pmiss != "":
 			_err("player missing remaster layer node(s): " + pmiss)
 		else:
-			print("  [ok] player paper-doll: cloakback/body/outfit/beard/hair/helm/collar, 4x4")
+			print("  [ok] player paper-doll: cloakback/body/outfit/beard/hair/helm/collar, 11x4")
 		pi.free()
 	# every chest piece's armour_set must resolve to a baked outfit layer
 	var dir := DirAccess.open("res://resources/items")
