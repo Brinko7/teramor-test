@@ -623,7 +623,7 @@ func _make_chest(pos: Vector2, pool: Array) -> void:
 	var n: int = clampi(1 + _tier / 2, 1, 3)
 	var items: Array = []
 	for i in range(n):
-		items.append(pool[_rng.randi() % pool.size()])
+		items.append(AffixRoller.roll(pool[_rng.randi() % pool.size()], _tier))
 	chest.call("configure", items)
 
 ## Scatter harvestable resource nodes (mining/foraging). Richer deeper in.
