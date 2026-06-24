@@ -6,6 +6,7 @@
 script = ExtResource("1_script")
 id = &"deepwood"
 display_name = "The Deepwood"
+layout = &"winding"
 ground_texture_path = "res://assets/placeholder/grass.png"
 ground_tint = Color(0.6, 0.74, 0.55, 1)
 has_canopy = true

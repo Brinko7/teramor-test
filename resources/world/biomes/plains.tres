@@ -6,6 +6,7 @@
 script = ExtResource("1_script")
 id = &"plains"
 display_name = "The Plint Plains"
+layout = &"open"
 ground_texture_path = "res://assets/placeholder/grass_dry.png"
 ground_tint = Color(1, 0.97, 0.78, 1)
 enemy_paths = PackedStringArray("res://scenes/entities/enemy.tscn", "res://scenes/entities/enemy_wolf.tscn", "res://scenes/entities/enemy_archer.tscn")

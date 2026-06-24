@@ -6,6 +6,7 @@
 script = ExtResource("1_script")
 id = &"desert"
 display_name = "The Terakin Sands"
+layout = &"open"
 ground_texture_path = "res://assets/placeholder/dirt.png"
 ground_tint = Color(0.96, 0.85, 0.6, 1)
 enemy_paths = PackedStringArray("res://scenes/entities/enemy.tscn", "res://scenes/entities/enemy_archer.tscn", "res://scenes/entities/enemy_brute.tscn")

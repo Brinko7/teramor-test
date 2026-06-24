@@ -6,6 +6,7 @@
 script = ExtResource("1_script")
 id = &"vast_edge"
 display_name = "The Edge of the Vast"
+layout = &"winding"
 ground_texture_path = "res://assets/placeholder/grass.png"
 ground_tint = Color(0.4, 0.37, 0.5, 1)
 has_canopy = true

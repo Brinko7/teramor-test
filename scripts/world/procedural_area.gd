@@ -112,6 +112,8 @@ var _poi: Dictionary = {}
 var _gates: Array = []
 ## Set once a gate fires, so the player can't trip a second exit during the fade.
 var _exiting: bool = false
+## Macro layout archetype, read from the biome (see BiomeData.layout).
+var _layout: StringName = &"ribbon"
 
 func _ready() -> void:
 	_rng.randomize()
@@ -123,11 +125,11 @@ func _ready() -> void:
 	_tier = int(pending.get("tier", fallback_tier))
 	_return_to = StringName(pending.get("return_to", ""))
 	_explore = bool(pending.get("explore", false))
-
 	if _biome == null or _entities == null:
 		push_warning("procedural_area: no biome staged and no fallback set")
 		return
 
+	_layout = _biome.layout if _biome.layout != &"" else &"ribbon"
 	_density = clampf(float(world_width * world_height) / BASE_AREA, 1.0, 4.5)
 	_setup_decals()
 	_setup_trail()
@@ -212,8 +214,16 @@ func _setup_decals() -> void:
 ## enveloped so the trail pins to mid-height at both edge "mouths".
 func _setup_trail() -> void:
 	_trail_base = world_height * 0.5
-	_amp1 = _rng.randf_range(150.0, 210.0)
-	_amp2 = _rng.randf_range(60.0, 110.0)
+	match _layout:
+		&"open":                                       # plains/desert: a near-straight track
+			_amp1 = _rng.randf_range(40.0, 90.0)
+			_amp2 = _rng.randf_range(15.0, 45.0)
+		&"winding":                                    # deep woods: a serpentine path
+			_amp1 = _rng.randf_range(210.0, 285.0)
+			_amp2 = _rng.randf_range(95.0, 150.0)
+		_:                                             # ribbon / corridor: the classic meander
+			_amp1 = _rng.randf_range(150.0, 210.0)
+			_amp2 = _rng.randf_range(60.0, 110.0)
 	_f1 = _rng.randf_range(2.0, 3.2) * TAU
 	_f2 = _rng.randf_range(4.0, 6.5) * TAU
 	_p1 = _rng.randf_range(0.0, TAU)
@@ -292,7 +302,18 @@ func _scatter_groundcover() -> void:
 ## loot don't pile on top of it (and clearings stay open).
 func _place_features() -> void:
 	var kinds := [&"grove", &"grove", &"clearing", &"clearing", &"pond", &"ruin", &"thicket", &"thicket"]
-	var want: int = _rng.randi_range(4, 7)
+	# Feature count is the openness lever: few features read as open country, many
+	# crowd the trail into a corridor.
+	var want: int
+	match _layout:
+		&"open":
+			want = _rng.randi_range(3, 4)
+		&"winding":
+			want = _rng.randi_range(6, 9)
+		&"corridor":
+			want = _rng.randi_range(7, 10)
+		_:
+			want = _rng.randi_range(4, 7)
 	var mx: int = EDGE + 140
 	var my: int = EDGE + 140
 	for _i in range(want):

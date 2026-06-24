@@ -6,6 +6,7 @@
 script = ExtResource("1_script")
 id = &"cursed_wilds"
 display_name = "The Cursed Wilds"
+layout = &"winding"
 ground_texture_path = "res://assets/placeholder/grass.png"
 ground_tint = Color(0.5, 0.44, 0.6, 1)
 has_canopy = true
